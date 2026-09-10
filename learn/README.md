@@ -1,6 +1,6 @@
 # Learn — the Entroptics course
 
-**The Entroptics course, as files.** 50 lessons that start at grade-ten mathematics and end at a working instrument: what a read measures, what it costs to move a signal, and how far the method carries outside the place it was built.
+**The Entroptics course, as files.** 49 lessons that start at grade-ten mathematics and end at a working instrument: what a read measures, what it costs to move a signal, and how far the method carries outside the place it was built.
 
 **This course is a work in progress and still needs refinement.** It is published because it is useful to read, not because it is finished: expect rough edges, uneven depth between sections, and lessons that will be revised.
 
@@ -8,7 +8,7 @@ The table below is the complete set. [`index.html`](index.html) is the browsable
 
 | | |
 |---|---|
-| lessons | **50** |
+| lessons | **49** |
 | slides | **363** |
 | figures re-derived from live code | **3007** |
 | exercises | **34** |
@@ -66,7 +66,6 @@ Three disciplines are enforced mechanically rather than by care:
 | C4 | [Observer](c4-observer.html) | why tense is decay | 9 | 38 |
 | C5 | [Generation Without a Model](c5-operators.html) | continuing a sentence with no trained weights anywhere | 7 | 21 |
 | D1 | [The Lens Inside a Language Model](d1-jacobian-lens.html) | a language model's transport, read as geometry | 8 | 45 |
-| D2 | [The Same Instrument, Elsewhere](d2-elsewhere.html) | the same reads inside retrieval and a radio link | 6 | 30 |
 | D5 | [A Claim About the World](d5-mass-gap.html) | checking a claim about physical reality, and what checking found | 9 | 88 |
 | D5a | [The Entropy Floor](d5a-entropy-floor.html) | the counting that fixes kappa_0, carried out in front of the reader | 10 | 36 |
 | D5b | [The Margin](d5b-the-margin.html) | why the vortex tension stays under the floor at every coupling | 8 | 39 |
