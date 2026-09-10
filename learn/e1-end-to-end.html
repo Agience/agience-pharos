@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One Question, All the Way Down</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson E1 &middot; the capstone</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 8px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab th:last-child,table.tab td:last-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:19px; color:var(--amber); text-align:center; margin:20px 0}
+p.formula b{color:var(--teal)}
+p.eq{white-space:normal; line-height:1.8; font-size:13.5px}
+.stats{display:flex; gap:26px; flex-wrap:wrap; border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule); padding:14px 0; margin:14px 0}
+.stat b{font-family:"IBM Plex Mono",monospace; font-size:26px; color:var(--amber);
+  font-weight:600; display:block; line-height:1.15}
+.stat span{font-size:12px; color:var(--ink3)}
+</style><section class="slide on">
+<p class="eyebrow">Unit E1 &middot; the capstone</p>
+<h1>One Question,<br>All the Way <em>Down</em></h1>
+<p class="lead">Every unit before this one taught a piece. This one takes a single sentence and
+puts it through them in order &mdash; text, to coordinates, to a screen, to a read &mdash; and reports what
+happened.</p>
+<p class="eq">Chlorophyll in the leaf absorbs sunlight, and the plant converts water and carbon dioxide into glucose and oxygen.</p>
+<p class="warn">Three steps, each measured: what the store held, where the chain stopped, and what
+the reads do on a record with no ordered axis. <strong>Every number on these slides is the one the
+chain produced.</strong></p>
+</section>
+
+<section class="slide">
+<h2>Step one: what the store actually knew</h2>
+<p>The frame came back 18 &times; 512 &mdash; one row per token, as promised. Then the count that
+changes the reading of everything after it:</p>
+<div class="stats"><div class="stat"><b>18</b><span>tokens in the sentence</span></div>
+<div class="stat"><b>3</b><span>the store could place</span></div>
+<div class="stat"><b>15</b><span>out of vocabulary</span></div></div>
+<p class="eq"><code>chlorophyll</code> <code>in</code> <code>the</code> <code>leaf</code> <code>absorbs</code> <code>sunlight</code> <code>and</code> <code>plant</code> <code>converts</code> <code>water</code> <code>carbon</code> <code>dioxide</code> <code>into</code> <code>glucose</code> <code>oxygen</code> </p>
+<p>Some of those are function words with no hypernym tree and are correctly absent &mdash; unit C1
+taught that this construction reads <em>nouns only</em>. But <code>chlorophyll</code>,
+<code>leaf</code>, <code>oxygen</code> and <code>water</code> are ordinary nouns.</p>
+<p class="warn">So read &ldquo;out of vocabulary&rdquo; precisely. It does <strong>not</strong> mean
+&ldquo;not a word&rdquo;. It means <strong>this store's corpus does not carry that concept</strong>
+&mdash; and on this node it does not. The ontology is a store, not a dictionary, and what a word
+means here is a measurement against a particular corpus that a particular host pointed at.</p>
+<p class="note">Which is also why the previous slide matters more than it first appears. The store
+decides the vocabulary; the import decides the store.</p>
+</section>
+
+<section class="slide">
+<h2>Is that about the sentence, or about the store?</h2>
+<p>The previous slide reports <strong>15 of 18</strong> tokens unknown, and says that is a statement
+about this store's corpus. Read that carefully: the number is a fact about
+<em>one sentence</em>, and the sentence beside it is a claim about a <em>corpus</em>. Eighteen tokens
+cannot carry it.</p>
+<p>So: five more ordinary English sentences, deliberately on different subjects, through the same
+entry point in the same process.</p>
+<table class="tab"><thead><tr><th>sentence</th><th>tokens</th><th>unknown</th><th>share</th>
+</tr></thead><tbody><tr class='hi'><td>Chlorophyll in the leaf absorbs sunlight, an&hellip;</td><td>18</td><td class='hit'>15</td><td>0.833</td></tr><tr><td>The committee met on Tuesday and agreed to p&hellip;</td><td>13</td><td class='hit'>12</td><td>0.923</td></tr><tr><td>She poured the coffee, opened the newspaper,&hellip;</td><td>13</td><td class='hit'>11</td><td>0.846</td></tr><tr><td>Rain fell steadily on the roof of the old ba&hellip;</td><td>13</td><td class='hit'>11</td><td>0.846</td></tr><tr><td>The engine failed twice before the mechanic &hellip;</td><td>12</td><td class='hit'>11</td><td>0.917</td></tr><tr><td>Children were playing football in the park w&hellip;</td><td>11</td><td class='hit'>11</td><td>1.000</td></tr></tbody></table>
+<p class="warn"><strong>71 of 80 tokens &mdash; 88.8% &mdash; are out of vocabulary</strong>, and
+the first sentence was the <em>easiest</em> of the six. The share runs from 0.833 to
+<strong>1.000</strong>, and at the top of that range <em>every token in the sentence</em> is unknown.
+This is not a sentence that happened to be unlucky.</p>
+<p class="note cool">Which is what the claim needed to be worth making. It now says something about
+the store: on ordinary English prose about committees, coffee, rain, engines and football, this
+corpus resolves about <strong>one token in nine</strong>. The chain downstream is therefore not
+carrying a degraded signal, it is carrying almost none &mdash; and that is the thing the aperture
+goes on to read as zero.</p>
+</section>
+
+<section class="slide">
+<h2>Step two: where the chain actually stopped</h2>
+<p>With most tokens unplaceable, the call emitted rows anyway. It
+emitted a muted fallback row per unknown token &mdash; by a mechanism whose own docstring calls it
+<em>deprecated</em>, and which is still the default because changing it *&ldquo;changes retrieval
+behaviour and the A/B has not run&rdquo;*.</p>
+<p>So the chain continued, carrying a frame with almost nothing in it. The next stage is an
+aperture read, and it is the first thing in the pipeline able to tell:</p>
+<svg viewBox="0 0 650 80" width="650" height="80" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><defs><marker id="fa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--rule,#d2d5d0)"/></marker></defs><rect x="1" y="1" width="96" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="49.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">text</text><text x="49.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">18 tokens</text><line x1="97" y1="24" x2="119" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="123" y="1" width="96" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="171.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">the store</text><text x="171.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">3 placed</text><line x1="219" y1="24" x2="241" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="245" y="1" width="136" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="313.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">fallback rows</text><text x="313.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">15 substituted</text><line x1="381" y1="24" x2="403" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="407" y="1" width="96" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="455.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">the frame</text><text x="455.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">18 x 512</text><line x1="503" y1="24" x2="525" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="529" y="1" width="120" height="46" rx="2" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber-line,#d99a34)"/><text x="589.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="600" fill="var(--amber,#a5620c)" text-anchor="middle">the read</text><text x="589.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">K_signal = 0</text><text x="325.0" y="72.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.6">the information was lost at stage three; the zero appeared at stage five</text></svg>
+<p class="formula">K_signal &nbsp;=&nbsp; <b>0</b></p>
+<p><strong>Nothing resolved above the floor.</strong> The chain did read zero &mdash; one stage later
+than the information was lost.</p>
+<p class="warn">That gap is the lesson, and it generalises past this system. <strong>A pipeline
+reads zero where something can measure, and the information can go missing earlier</strong>, and those are
+different places. The tokeniser knew perfectly well it had failed on fifteen tokens; it had no
+instrument to say so with, so it emitted its best surface guess. The instrument two stages down had
+no idea a substitution had occurred &mdash; it simply read what arrived and reported nothing there.</p>
+<p class="note cool">The exact zero is what saves it. Because the read <em>lands on exactly zero</em>
+and returns no small number, the failure surfaces as a plain zero in place of a weak result a
+reader could have acted on.</p>
+</section>
+
+<section class="slide">
+<h2>Step three: the control, on a record with no order</h2>
+<p>To show the chain works when the corpus <em>does</em> have the words, the coordinates are
+built directly from the ontology &mdash; unit C1's method, which is known good &mdash; and twelve
+nouns from one topic are read against twelve unrelated ones. If the reads mean anything, those two should
+not look alike.</p>
+<table class="tab"><thead><tr><th>channels</th><th>set</th><th>rows</th><th>K signal</th>
+<th>contrast</th><th>coherence</th></tr></thead><tbody><tr><td>8</td><td>one topic</td><td>12</td><td class='hit'>0</td><td>0.739499</td><td>-1.461340</td></tr><tr><td>8</td><td>unrelated</td><td>12</td><td class='hit'>0</td><td>0.567024</td><td>1.128951</td></tr><tr><td>8</td><td>both, mixed</td><td>24</td><td class='hit'>0</td><td>0.669821</td><td>-0.442183</td></tr><tr><td>16</td><td>one topic</td><td>12</td><td class='hit'>0</td><td>0.721611</td><td>-0.935679</td></tr><tr><td>16</td><td>unrelated</td><td>12</td><td class='hit'>0</td><td>0.758116</td><td>1.600367</td></tr><tr><td>16</td><td>both, mixed</td><td>24</td><td class='hit'>0</td><td>0.721973</td><td>0.746155</td></tr><tr><td>32</td><td>one topic</td><td>12</td><td class='hit'>0</td><td>0.777625</td><td>-0.343397</td></tr><tr><td>32</td><td>unrelated</td><td>12</td><td class='hit'>0</td><td>0.738044</td><td>1.364778</td></tr><tr><td>32</td><td>both, mixed</td><td>24</td><td class='hit'>0</td><td>0.792294</td><td>0.860879</td></tr></tbody></table>
+<p class="warn"><strong>0 of 9 readings resolved anything at all</strong>, and contrast does not
+separate the topical set from the unrelated one at any width.</p>
+<p>The result is structural. Every read in Track A is about structure <strong>along an ordered
+axis</strong> &mdash; how a signal decays from one step to the
+next, whether the order carries anything, what happens across a boundary. <strong>A bag of words
+has no such axis.</strong> Twelve rows in an arbitrary order are twelve independent points, and
+there is genuinely nothing there to resolve.</p>
+<p class="note cool">Which is exactly why the real entry point emits <em>&ldquo;one ordered row per
+token&rdquo;</em>, and why unit A5 &mdash; reading an axis made of symbols &mdash; is a unit at all.
+The order is not packaging. <strong>The order is the thing being measured.</strong></p>
+</section>
+
+<section class="slide">
+<h2>What the trace showed</h2>
+<p>One question, three steps, each step measured where it stood.</p>
+<table class="tab"><thead><tr><th>step</th><th>what happened</th></tr></thead><tbody>
+<tr><td>the store's vocabulary</td><td>15 of 18 tokens absent from <em>this corpus</em></td></tr>
+<tr><td>the unknown tokens</td><td>emitted <strong>fallback rows</strong> by
+a deprecated mechanism</td></tr>
+<tr><td>the aperture read</td><td><code>K_signal = 0</code> &mdash; zero, one stage downstream of
+the loss</td></tr>
+<tr><td>the positive control</td><td>resolved <strong>0 of 9</strong> readings, at three
+channel widths</td></tr>
+</tbody></table>
+<p>Two things the whole method rests on are visible in this one trace. <strong>A claim is worth what
+its control is worth</strong>: this control resolved nothing on an unordered bag, which marks the
+edge of what these reads can be asked &mdash; they answer questions about structure along an axis,
+and a record with no such axis sits outside their scope. And <strong>an exact zero is loud
+where a weak answer is quiet</strong>: the chain lost its information at one step, and reported an
+exact zero at the next step, which is where a reader can see it.</p>
+<p class="note">Everything on these slides is recomputed on every build, so the counts track the
+store itself.</p>
+<p class="note"><strong>Unit E2</strong> is the companion to this one: it runs the same instrument
+over a record whose answer was withheld until after the reading, which is the only version of this
+trace that cannot be tuned after the fact.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-endtoend-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-endtoend-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

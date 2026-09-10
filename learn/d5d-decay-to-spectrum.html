@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>From Decay to Spectrum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D5d &middot; the bridge</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+pre.rec{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7; background:var(--sunk);
+        border-left:2px solid var(--edge); padding:10px 14px; overflow-x:auto}
+</style><section class="slide on" data-act="spectrum">
+<h1>From Decay to Spectrum</h1>
+<p class="lede">The measurement returns a rate. The claim is about a Hamiltonian. This unit is the
+step between them, and it is where the track closes.</p>
+<p class="note">The symbols here, said aloud: <strong>&rho;</strong> is <em>rho</em>, a magnitude across one cut; <strong>&kappa;</strong> is <em>kappa</em> and <strong>&Delta;</strong> is <em>delta</em>. <span class="mono">&ge;</span> is <em>greater than or equal</em>, <span class="mono">&le;</span> is <em>less than or equal</em>, <span class="mono">&plusmn;</span> is <em>plus or minus</em>, and <span class="mono">&infin;</span> is <em>infinity</em>.</p>
+<table class="tab"><thead><tr><th>unit</th><th>what it established</th></tr></thead><tbody>
+<tr><td>D5a</td><td>the floor, by counting: &kappa;<sub>0</sub> = &frac14; ln 3 = 0.274653</td></tr>
+<tr><td>D5b</td><td>the tension stays under it at every coupling</td></tr>
+<tr><td>D5c</td><td>the instrument that reads both off a lattice field</td></tr>
+<tr><td class="hit">D5d</td><td class="hit">a decay rate becomes a statement about a
+spectrum</td></tr>
+</tbody></table>
+<p>The target, written out. <code>H</code> is the Hamiltonian, <code>spec</code> its set of energy
+levels, and the vacuum sits at zero:</p>
+<p class="formula">spec H &nbsp;&sube;&nbsp; {0} &nbsp;&cup;&nbsp; [&Delta;, &infin;)</p>
+<p>Which says: the vacuum, then <strong>nothing at all</strong> until &Delta;. That empty interval
+is the mass gap.</p>
+</section>
+
+<section class="slide" data-act="spectrum">
+<h2>One cut settles every cut</h2>
+<p>The Euclidean lattice has a <strong>transfer operator</strong>: the object that advances the
+state by one step along the time axis. Correlations across <em>n</em> steps are that operator
+applied <em>n</em> times.</p>
+<p><strong>Reflection positivity</strong> is the property that makes the operator
+<strong>self-adjoint</strong>, which is the well-behaved case: its modes are independent of each
+other, and each one is simply multiplied by its own factor at every step. Repeating the step
+<em>n</em> times therefore multiplies by that factor <em>n</em> times, so the magnitude across
+<em>n</em> cuts is the magnitude across one, raised to the power <em>n</em>:</p>
+<p class="formula">&rho;&prime;(n) &nbsp;=&nbsp; &rho;&prime;(1)<sup>n</sup></p>
+<p>That single line does the heavy lifting for the whole argument, and it is worth seeing why.</p>
+<ul class="pieces">
+<li><strong>It makes a local bound global.</strong> Establish
+<code>&rho;&prime;(1) &lt; 1</code> once, at one plaquette, and every <em>n</em> follows by taking
+powers. There is nothing left to prove at larger separations.</li>
+<li><strong>It makes the gap uniform in volume.</strong> The bound has no volume in it, so a bigger
+lattice cannot weaken it &mdash; which is what "uniform in volume" means and what the continuum
+limit needs.</li>
+<li><strong>It turns a magnitude into a rate.</strong> A multiplier of
+<code>&rho;&prime;(1)</code> per step is a decay at rate
+<code>&minus;log &rho;&prime;(1)</code>, so the gap and the magnitude are the same fact.</li>
+</ul>
+<p class="note cool">Reflection positivity is a cited input here, from Osterwalder&ndash;Seiler. It
+appears in the formal development as <code>wilson_reflection_positive</code>, and the closing slide
+shows exactly which theorems lean on it.</p>
+</section>
+
+<section class="slide" data-act="spectrum">
+<h2>The floor, written as a ceiling</h2>
+<p>D5a's counting gave a rate. A rate of at least &kappa;<sub>0</sub> per step is a multiplier of at
+most <code>e</code> to the minus that rate, so the same statement reads as a ceiling on the
+single-cut magnitude:</p>
+<p class="formula">rate &ge; &kappa;<sub>0</sub> &nbsp;&hArr;&nbsp; magnitude &le;
+e<sup>&minus;&kappa;<sub>0</sub></sup> = 3<sup>&minus;&frac14;</sup> = <strong>0.7598</strong></p>
+<p>So the single-plaquette statement to establish is
+<code>&rho;&prime;(1) = m<sub>cell</sub> &le; 0.7598</code>, and reflection positivity carries it to
+every separation. That inequality is machine-checked at one cell.</p>
+<p>The forward read then measures the same quantity on real configurations, at a range of lattice
+sizes:</p>
+<table class="tab"><thead><tr><th>L</th><th>configs</th><th>&Delta;</th>
+<th>m<sub>hi</sub></th><th>error</th><th>against 0.7598</th></tr></thead><tbody><tr class="hi"><td>8</td><td>128</td><td>0.233</td><td class="hit">0.792</td><td>&plusmn;1.078</td><td>above</td></tr><tr><td>12</td><td>128</td><td>1.187</td><td class="hit">0.305</td><td>&plusmn;0.110</td><td>under</td></tr><tr><td>16</td><td>96</td><td>1.160</td><td class="hit">0.314</td><td>&plusmn;0.025</td><td>under</td></tr><tr><td>20</td><td>128</td><td>1.112</td><td class="hit">0.329</td><td>&plusmn;0.015</td><td>under</td></tr><tr><td>24</td><td>128</td><td>0.739</td><td class="hit">0.477</td><td>&plusmn;0.113</td><td>under</td></tr><tr><td>28</td><td>128</td><td>0.997</td><td class="hit">0.369</td><td>&plusmn;0.013</td><td>under</td></tr><tr class="hi"><td>32</td><td>128</td><td>0.376</td><td class="hit">0.687</td><td>&plusmn;0.263</td><td>under</td></tr></tbody></table>
+<p>Across the scaling window <strong>L = 12&ndash;28</strong> the read sits between
+<strong>0.305</strong> and <strong>0.477</strong>, mean <strong>0.359</strong> &mdash; comfortably
+under the ceiling, with no trend toward it.</p>
+</section>
+
+<section class="slide" data-act="spectrum">
+<h2>The endpoints say so themselves</h2>
+<p>Two rows sit outside the window, and their own error bars are what put them there.</p>
+<p class="warn">At <strong>L = 8</strong> the read is <strong>0.792 &plusmn; 1.078</strong>. The
+error is <strong>1.4&times; the value</strong>. A measurement whose uncertainty exceeds its own
+result has established nothing in either direction, and this is the only row above the ceiling
+&mdash; which is what a read at the edge of its resolution looks like.</p>
+<table class="tab"><thead><tr><th>L</th><th>m<sub>hi</sub></th><th>error &divide; value</th>
+<th>what the row supports</th></tr></thead><tbody><tr class="hi"><td>8</td><td>0.792</td><td class="hit">1.36</td><td>the error exceeds half the value</td></tr><tr><td>12</td><td>0.305</td><td class="hit">0.36</td><td>resolved</td></tr><tr><td>16</td><td>0.314</td><td class="hit">0.08</td><td>resolved</td></tr><tr><td>20</td><td>0.329</td><td class="hit">0.04</td><td>resolved</td></tr><tr><td>24</td><td>0.477</td><td class="hit">0.24</td><td>resolved</td></tr><tr><td>28</td><td>0.369</td><td class="hit">0.04</td><td>resolved</td></tr><tr class="hi"><td>32</td><td>0.687</td><td class="hit">0.38</td><td>resolved</td></tr></tbody></table>
+<p>The window is where the instrument resolves. Reporting the edges alongside it, with their
+uncertainties, is what lets a reader check that the window was chosen by the measurement.</p>
+<p class="note cool">This is unit A10's question in a new place: how much record does a read need
+before its answer means anything? Here the answer is written in the error column.</p>
+</section>
+
+<section class="slide" data-act="spectrum">
+<h2>Two reads, two jobs</h2>
+<p>The aperture read establishes that a mode <strong>decays</strong>: the magnitude sits below the
+ceiling and off the unit circle. That is its job, and the numbers below show exactly where its job
+ends and another read's begins.</p>
+<p class="warn"><strong>The phase is K<sub>signal</sub>'s to answer.</strong> Coulomb U(1), above
+its deconfinement transition, reads a finite aperture too: <strong>0.410</strong> at
+&beta;&nbsp;=&nbsp;1.70 and <strong>0.379</strong> at &beta;&nbsp;=&nbsp;2.50, both under the
+0.7598 ceiling. Confined SU(2) at L&nbsp;=&nbsp;32 reads <strong>0.687</strong>, above both of them.
+So the two orderings run opposite ways: aperture magnitude and phase are independent readings, and
+each needs its own instrument.</p>
+<p>So the deconfinement transition is carried by <strong>K<sub>signal</sub></strong>, the order
+parameter of unit D5c, and the aperture read supplies something narrower and still load-bearing:
+that the SU(N) ensemble the theorem concerns satisfies the aperture condition, verified at runtime
+on that ensemble.</p>
+<p class="note cool">Two reads, two jobs. K<sub>signal</sub> answers <em>which phase</em>; the
+aperture margin answers <em>is the mode decaying</em>. Naming which question a number answers is
+what keeps a measurement from being asked to do somebody else's work.</p>
+</section>
+
+<section class="slide" data-act="spectrum">
+<h2>The whole thing, on a calculator</h2>
+<p>Every quantity in this argument is a <strong>factor per step</strong>. The measurement gives one
+number &mdash; how much of a fluctuation survives one step along the time axis &mdash; and
+everything else follows by multiplying, dividing and taking a logarithm.</p>
+<p class="formula">measured: <strong>0.3588</strong> survives each step</p>
+<p class="note">Rounded to four places, and everything below is worked from <em>that</em> number, so
+what you type is what the table shows.</p>
+<p><strong>One.</strong> Multiply it by itself to walk down the axis. This is the same arithmetic
+unit <strong>B3</strong> used for travel across a distance, and unit <strong>A3</strong> measured as
+a point-spread along an ordered axis:</p>
+<table class="tab"><thead><tr><th>steps</th><th>what is left</th></tr></thead><tbody><tr><td>1</td><td class="hit">0.358800</td></tr><tr><td>2</td><td class="hit">0.128737</td></tr><tr><td>5</td><td class="hit">0.005947</td></tr><tr><td>10</td><td class="hit">3.54e-05</td></tr></tbody></table>
+<p>After ten steps the fluctuation is down to <strong>3.54e-05</strong> of itself. That is what
+&ldquo;the screen forgets&rdquo; means, and it is why the correlation has a finite reach.</p>
+<p><strong>Two.</strong> Compare it against the ceiling unit <strong>D5a</strong> counted. A
+plaquette carries 3<sup>&frac14;</sup> = 1.3161 times as many shapes, so a step has to lose at least
+one part in that:</p>
+<table class="tab"><thead><tr><th></th><th>survives</th><th>lost per step</th></tr></thead><tbody>
+<tr><td>the ceiling, 1 &divide; 3<sup>&frac14;</sup></td><td>0.7598</td><td>24.0&percnt;</td></tr>
+<tr class="hi"><td>this measurement</td><td class="hit">0.3588</td><td class="hit">64.1&percnt;</td></tr>
+</tbody></table>
+<p>The measured step loses <strong>64.1&percnt;</strong> where it needed to lose
+<strong>24.0&percnt;</strong>. It clears, with room.</p>
+<p><strong>Three.</strong> Write the factor as a rate, which is what a gap is:</p>
+<p class="formula">&Delta; &nbsp;=&nbsp; &minus;ln(0.3588) &nbsp;=&nbsp; <strong>1.0250</strong>
+&nbsp;&nbsp;against&nbsp;&nbsp; &kappa;<sub>0</sub> = 0.2747</p>
+<p class="note">A positive number, and it clears the floor by <strong>0.7503</strong>. That subtraction
+is the mass gap: the vacuum, then a clear interval, then everything else.</p>
+<p class="note cool">Nothing on this slide needs an eigenvalue. The operator finds the factor; the
+reader checks what the factor implies. Those are two different jobs, and only the first one needs
+the machinery.</p>
+</section>
+
+<section class="slide" data-act="spectrum">
+<h2>The bridge: a decay becomes a spectrum</h2>
+<p>Now the last step. The transfer operator's spectrum sits inside a set the decay pins down: the
+vacuum at 1, and everything else below the ceiling the decay rate fixes.</p>
+<p class="formula">spec T &nbsp;&sube;&nbsp; {1} &nbsp;&cup;&nbsp; [&epsilon;,
+e<sup>&minus;&Delta;</sup>]</p>
+<p>The Hamiltonian is what turns a multiplier into an energy, and it is defined by taking the
+logarithm of the operator &mdash; the same relation as one mode's, applied to the whole
+operator at once:</p>
+<p class="formula">H &nbsp;=&nbsp; &minus;log T</p>
+<p>Feeding the first line into the second sends 1 to 0 and sends the ceiling
+<code>e<sup>&minus;&Delta;</sup></code> to &Delta;, and <code>&minus;log</code> is decreasing, so
+the interval between them is carried across intact:</p>
+<p class="formula">spec H &nbsp;&sube;&nbsp; {0} &nbsp;&cup;&nbsp; [&Delta;, &infin;)</p>
+<p>Which is the statement the track set out to reach: the vacuum, then a clear interval, then the
+rest of the spectrum.</p>
+<p class="note cool">In the formal development this is <code>Reconstruction.hamiltonian</code>,
+built as <code>cfc (fun x =&gt; -Real.log x) T</code> &mdash; the continuous functional calculus,
+which is what applies a function to an operator's spectrum. The step is
+<code>hamiltonian_spectrum_ge_gap</code>, and the assembled statement is
+<code>hamiltonian_mass_gap</code>.</p>
+<p class="note"><strong>This step imports no physics.</strong>
+<code>ym_mass_gap_spectral</code> carries <strong>3</strong> axioms, and they are the three foundational ones every
+Lean development uses: <code>Classical.choice, Quot.sound, propext</code>. The bridge from decay to spectrum is mathematics, and the
+footprint table says so.</p>
+</section>
+
+<section class="slide" data-act="spectrum">
+<h2>What the machine checked, and on what</h2>
+<p>A machine-checked proof is checked <em>relative to what it assumes</em>, so the useful question
+is which assumptions each result carries. The development publishes that per declaration, and these
+are its counts:</p>
+<table class="tab"><thead><tr><th>declarations</th><th>what they carry</th></tr></thead><tbody>
+<tr><td class="hit">130 of 149</td><td>the three foundational axioms only</td></tr>
+</tbody></table>
+<p>Three names appear in every Lean development ever written &mdash;
+<code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code> &mdash; and carry no
+physics. Everything beyond them is a stated input, and the top-level results differ in how many they
+take:</p>
+<table class="tab"><thead><tr><th>declaration</th><th>axioms</th><th>beyond the foundational
+three</th></tr></thead><tbody><tr><td><code>ym_mass_gap_spectral</code></td><td class="hit">3</td><td>&mdash;</td></tr><tr><td><code>ym_mass_gap_grid_certified</code></td><td class="hit">4</td><td><code>wilson_reflection_positive</code></td></tr><tr><td><code>ym_mass_gap</code></td><td class="hit">7</td><td><code>d2_le_bound</code>, <code>wilson_reflection_positive</code>, <code>ym_asymfree</code>, <code>ym_character</code></td></tr></tbody></table>
+<p>Reading that table is the point of having it. The <strong>spectral</strong> step takes nothing.
+The <strong>grid-certified</strong> route takes reflection positivity and closes the interior with a
+finite grid instead. The <strong>direct</strong> route takes four cited results, each named, each
+pointing at published work.</p>
+<p class="note">Parsed from <code>research/data/13_dat_axiom_footprints.csv</code> at build time, so this table is the
+development's own report.</p>
+</section>
+
+<section class="slide" data-act="spectrum">
+<h2>The chain, end to end</h2>
+<p>Four units, one inequality, and every link measured or proved:</p>
+<p class="formula">&Delta; &nbsp;&ge;&nbsp; &kappa;<sub>0</sub> &minus; &mu;(&beta;) &nbsp;&gt;&nbsp;
+0</p>
+<ul class="pieces">
+<li><strong>&kappa;<sub>0</sub> = 0.274653, by counting</strong> (D5a). Directed cube-paths: three
+choices, four plaquettes. No coupling, no spacing.</li>
+<li><strong>&mu;(&beta;) stays under it</strong> (D5b). A cited bound evaluated at strong coupling,
+a computed limit at weak coupling, a theorem with one measured input in between.</li>
+<li><strong>Both read off real fields</strong> (D5c). One reduction to a screen, an eigenvalue for
+the rate, a mode count for the phase.</li>
+<li><strong>The rate becomes a spectrum</strong> (D5d). Reflection positivity gives
+&rho;&prime;(n) = &rho;&prime;(1)<sup>n</sup>, the floor gives the single-cut ceiling 0.7598, and
+&minus;log carries the interval to spec H &sube; {0} &cup; [&Delta;, &infin;).</li>
+</ul>
+<p class="note cool">In the development the gap is <em>defined</em> as that margin &mdash;
+<code>LatticeYM.massGap M &beta; := M.&kappa;&#8320; &minus; M.&mu; &beta;</code> in
+<code>research/lean/MassGap/GapRate.lean</code> &mdash; and
+<code>massGap_pos_of_confinement</code> is the one-line consequence: the tension under the floor
+<em>is</em> the positive gap.</p>
+<p class="note">What this track establishes is what the sources say, measured where they can be
+measured. Running the toolchain is a separate act, and judging whether the cited inputs are the
+right ones is a physics question.</p>
+<p class="note cool">Next: unit <strong>D5e</strong> runs the whole thing on a
+calculator &mdash; eight lines, from a cube's six faces to a positive gap, each one an operation on
+the line above it. Everything these four units established, in the order a reader would do it, with
+no value carried in from outside.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-spectrum-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-spectrum-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

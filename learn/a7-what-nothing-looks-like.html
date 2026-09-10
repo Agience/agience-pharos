@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What Does Nothing Look Like?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson sixteen &middot; the null</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab th:nth-child(2),table.tab td:nth-child(2){text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:18px 0}
+ul.pieces{line-height:1.85}
+</style><section class="slide on">
+<h1>What Does<br>Nothing Look Like?</h1>
+<p class="lede">Every read in this curriculum answers the same shape of question: <em>is there more
+here than there would be if there were nothing?</em></p>
+<p>Which is useless until somebody says what <strong>nothing</strong> looks like. That choice is
+made in every unit so far, usually in one line, and it decides the answer completely.</p>
+<p class="note">Taught last because it needs the earlier units as examples. It could equally have
+been taught first.</p>
+</section>
+
+<section class="slide">
+<h2>You have already made this choice five times</h2>
+<table class="tab"><thead><tr><th>unit</th><th>the question</th><th>and &ldquo;nothing&rdquo; was</th></tr></thead><tbody>
+<tr><td>A4</td><td>is this record ordered?</td><td>the same rows in a random order</td></tr>
+<tr><td>A5</td><td>does this text have structure?</td><td>the same letters, shuffled</td></tr>
+<tr><td>A6</td><td>are these two records related?</td><td>the same two records, <em>re-paired</em> &mdash; each side's own structure kept</td></tr>
+<tr><td>C5</td><td>can this stream be continued?</td><td>the operator's own noise level</td></tr>
+<tr><td>D2</td><td>is this retrieval better?</td><td>the same screen and the same stopping rule on both sides</td></tr>
+</tbody></table>
+<p>Look at the A6 row against the A5 row. Both shuffle. They shuffle <em>different things</em>,
+because they are asking different questions &mdash; A5 destroys the order inside one record, A6
+keeps each record's own order and destroys only the correspondence between them.</p>
+<p class="formula">keep the record's own shape &middot; destroy the thing under test</p>
+<p class="warn">That sentence is the whole of this unit. Everything below measures what each choice
+costs.</p>
+</section>
+
+<section class="slide">
+<h2>The test a null has to pass</h2>
+<p>How do you know your &ldquo;nothing&rdquo; is a fair one? There is one direct check:</p>
+<p class="formula">apply the null to a draw from <em>itself</em> &mdash; it should find nothing</p>
+<p>Generate data that genuinely has no structure <em>by the null's own definition</em>, hand it to
+the same instrument, and count what it reports. A correctly calibrated null finds about zero. If it
+finds five, then five is what it will add to every real measurement you ever make with it.</p>
+<p>The test is cheap, it needs no ground truth, and it is the only way to catch a null that is
+simply set too low. On the next slide it is run on a real object: the internal transport of a small
+language model, the same kind of thing unit D1 read.</p>
+<p class="note">This check tells you the level is honest. Whether the null asks the right question
+is a separate matter: a perfectly calibrated null can still destroy the wrong thing.</p>
+<p class="note cool">The level has a name in the instrument: the read is <code>noise_floor</code>,
+and the count of what stands above it is <code>basis_dim</code> &mdash; how many directions the
+record genuinely spends its energy on &mdash; alongside <code>top_share</code>, the fraction the
+strongest one takes. These slides use the English words throughout; the identifiers are given here
+once so a reader can find the same quantities in the reference.</p>
+</section>
+
+<section class="slide">
+<h2>The default one does not pass</h2>
+<table class="tab"><thead><tr><th>layer</th><th>null</th><th>floor</th><th>modes found</th>
+<th>modes in its OWN null</th><th>calibrated</th></tr></thead><tbody><tr><td>5</td><td>mp</td><td>2.716</td><td>41</td><td class='hit'>12</td><td>&mdash;</td></tr><tr><td>5</td><td>robust</td><td>3.183</td><td>19</td><td class='hit'>12</td><td>&mdash;</td></tr><tr><td>5</td><td>sign flip</td><td>12.283</td><td>1</td><td class=''>&mdash;</td><td>yes</td></tr><tr><td>5</td><td>within row</td><td>9.669</td><td>2</td><td class=''>&mdash;</td><td><strong>no</strong></td></tr><tr><td>5</td><td>within col</td><td>10.905</td><td>1</td><td class=''>&mdash;</td><td>yes</td></tr><tr><td>10</td><td>mp</td><td>2.396</td><td>6</td><td class='hit'>12</td><td>&mdash;</td></tr><tr><td>10</td><td>robust</td><td>2.043</td><td>7</td><td class='hit'>12</td><td>&mdash;</td></tr><tr><td>10</td><td>sign flip</td><td>32.105</td><td>1</td><td class=''>&mdash;</td><td>yes</td></tr><tr><td>10</td><td>within row</td><td>29.452</td><td>1</td><td class=''>&mdash;</td><td><strong>no</strong></td></tr><tr><td>10</td><td>within col</td><td>31.147</td><td>1</td><td class=''>&mdash;</td><td>yes</td></tr></tbody></table>
+<p>Read the fifth column. The two standard floors report <strong>twelve</strong> modes in data that
+by their own definition contains none. Not one or two &mdash; twelve, every time, at both layers.</p>
+<p class="warn">Now the consequence, in the third and fourth columns. At layer 5 the default floor
+sits at <strong>2.716</strong> and reports <strong>41</strong> modes. A calibrated null puts the
+floor at <strong>12.283</strong> &mdash; 4.5 times higher &mdash; and reports
+<strong>1</strong>.</p>
+<p>Same matrix. Same instrument. <strong>41 modes or 1</strong>, depending entirely on what you
+decided nothing looks like.</p>
+</section>
+
+<section class="slide">
+<h2>What shuffling every entry destroys</h2>
+<p>The tempting way to make &ldquo;nothing&rdquo; out of a table of numbers is to shuffle all its
+entries. Keep every value, destroy every position. It sounds maximally fair, and the data shows
+what it costs:</p>
+<table class="tab"><thead><tr><th>layer</th><th>largest entry sits at</th><th>size, against the typical entry</th></tr></thead><tbody>
+<tr><td>5</td><td>(447, 138)</td><td>134.2&times;</td></tr>
+<tr><td>10</td><td class="hit">(447, 138)</td><td class="hit">455.6&times;</td></tr>
+</tbody></table>
+<p><strong>The same coordinate, on both layers.</strong> A few specific positions carry enormous
+weight, and they are the <em>same</em> positions from layer to layer, which makes them a property of
+the model.</p>
+<p class="warn">Shuffle every entry and those few huge values get sprinkled evenly across the whole
+table. That <strong>manufactures</strong> a broad bulk of moderate values, and a bulk is exactly what
+a floor is measured from &mdash; so the floor lands low. The null fails in the direction that
+flatters your result.</p>
+<p class="note">A shuffle that destroys more than the question asked about looks rigorous, and it is
+the most respectable way to get a wrong answer.</p>
+</section>
+
+<section class="slide">
+<h2>Nulls that keep the shape</h2>
+<p>The fix follows from the rule. The question is whether the magnitudes line up into a pattern, so
+that alignment is what a null destroys. How big the entries are and where the weight sits &mdash;
+the object's magnitude profile &mdash; is what an honest null holds fixed.</p>
+<p>So three nulls, each holding the profile fixed and destroying only the alignment:</p>
+<table class="tab"><thead><tr><th>null</th><th>keeps</th><th>destroys</th></tr></thead><tbody>
+<tr><td>sign flip</td><td>every entry's size <em>exactly</em> &mdash; every row total, every column total, the lot</td><td>the signs</td></tr>
+<tr><td>within row</td><td>each row's set of values</td><td>where they sit in the row</td></tr>
+<tr><td>within column</td><td>each column's set of values</td><td>where they sit in the column</td></tr>
+</tbody></table>
+<svg class="fig-bars" viewBox="0 0 520 167" width="520" height="167" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">where each null puts the floor, on one and the same matrix</text><rect x="74.0" y="28" width="84.9" height="18" fill="var(--teal,#20635f)" opacity="0.45"/><text x="66.0" y="41.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">mp</text><text x="464.0" y="41.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">2.716</text><rect x="74.0" y="55" width="99.5" height="18" fill="var(--teal,#20635f)" opacity="0.45"/><text x="66.0" y="68.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">robust</text><text x="464.0" y="68.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">3.183</text><rect x="74.0" y="82" width="384.0" height="18" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="66.0" y="95.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">sign flip</text><text x="464.0" y="95.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">12.283</text><rect x="74.0" y="109" width="302.3" height="18" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="66.0" y="122.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">within row</text><text x="464.0" y="122.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">9.669</text><rect x="74.0" y="136" width="340.9" height="18" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="66.0" y="149.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">within col</text><text x="464.0" y="149.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">10.905</text></svg>
+<p>The gap between the two groups is the whole problem. Same matrix; the floors differ by more than
+<strong>four times</strong>, and everything above a floor is what you go on to report.</p>
+</section>
+
+<section class="slide">
+<h2>Is thirty draws enough?</h2>
+<p>Two of the five floors on that table are computed in closed form. The other three are
+<strong>sampled</strong> &mdash; drawn 30 times from the null and read off &mdash; and the
+comparison this whole unit rests on puts a sampled floor against an analytic one. A unit about what
+nothing looks like owes an answer about its own nothing.</p>
+<p>So the same floors, on layer 5, at three draw counts:</p>
+<table class="tab"><thead><tr><th>floor at</th><th>sign flip</th><th>within row</th><th>within col</th></tr></thead><tbody><tr><td>30 draws</td><td>12.2828</td><td>9.6694</td><td>10.9051</td></tr><tr><td>60 draws</td><td>12.2416</td><td>9.6796</td><td>10.9061</td></tr><tr><td>120 draws</td><td>12.2389</td><td>9.6796</td><td>10.9053</td></tr></tbody></table>
+<p>And at 5 different seeds, all at 30 draws:</p>
+<table class="tab"><thead><tr><th></th><th>sign flip</th><th>within row</th><th>within col</th></tr></thead><tbody><tr><td>seed 0</td><td>12.2828</td><td>9.6694</td><td>10.9051</td></tr><tr><td>seed 1</td><td>12.2760</td><td>9.6569</td><td>10.8925</td></tr><tr><td>seed 2</td><td>12.2153</td><td>9.6748</td><td>10.8945</td></tr><tr><td>seed 3</td><td>12.2206</td><td>9.6880</td><td>10.8939</td></tr><tr><td>seed 4</td><td>12.2315</td><td>9.6576</td><td>10.9032</td></tr></tbody></table>
+<p class="note cool">Across every one of those conditions the widest a floor moves is
+<strong>0.6%</strong> of its own value, on <em>sign flip</em>. The floor holds that tightly across four
+draw counts and five seeds. <strong>And every verdict is identical</strong> &mdash; the modes each
+floor admits are 1 for sign flip, 2 for within row, 1 for within col, at every draw count and every seed.</p>
+<p class="warn">Which is a real answer, and it took a measurement to get. Two other units in this
+course carried a claim resting on too few draws until someone counted: one had a control of a single
+sample, and one read a rate off four. <strong>Thirty is enough here, and running the sweep is how you
+know.</strong></p>
+</section>
+
+<section class="slide">
+<h2>And one of them carries a flag</h2>
+<p>The three replacements are checked the same way, and the machinery reports the answer. Each says
+whether it passed its own calibration check on this particular object:</p>
+<table class="tab"><thead><tr><th>null</th><th>layer 5</th><th>layer 10</th></tr></thead><tbody>
+<tr><td>sign flip</td><td>calibrated</td><td>calibrated</td></tr>
+<tr><td class="hit">within row</td><td class="hit">does not calibrate</td><td class="hit">does not calibrate</td></tr>
+<tr><td>within column</td><td>calibrated</td><td>calibrated</td></tr>
+</tbody></table>
+<p><strong>Within-row does not calibrate on this transport</strong>, and the read says so. It returns
+its floor &mdash; the <strong>9.669</strong> in the table above &mdash; with the flag set. Each
+null encodes an assumption about what would count as nothing on this object; this one's does not
+hold here, and the number arrives labelled.</p>
+<p class="warn">An unlabelled floor displaces every number downstream by the same hidden amount, and
+every one of them still looks fine. <strong>The label is what makes the condition visible</strong>,
+and it carries more than a withheld number would: the caller sees the figure the null arrived at and the flag
+saying the null cannot stand behind it.</p>
+</section>
+
+<section class="slide">
+<h2>The largest effect of any single choice</h2>
+<p>Every unit before this one measured things against a background of nothing. This one is about the background,
+and it has the largest effect of any single choice in the whole construction &mdash; on one matrix,
+<strong>41 modes or 1</strong>, from nothing but the definition of nothing.</p>
+<ul class="pieces">
+<li><strong>Every read carries a null, stated or not.</strong> If you did not choose one, something
+chose for you, and its default is unlikely to fit your object.</li>
+<li><strong>Keep the record's own shape; destroy the thing under test.</strong> A shuffle that
+destroys more manufactures the very bulk the floor is measured from.</li>
+<li><strong>Run the null against itself.</strong> Cheap, needs no ground truth, and catches the
+whole class of floors that are simply too low.</li>
+<li><strong>A null can be calibrated and still be the wrong question.</strong> The check tells you
+the level is honest, not that you asked the right thing.</li>
+</ul>
+<p class="warn">Which reframes a result in unit D2. A method compared against plain similarity
+lost badly &mdash; because the two sides had been given different stopping rules. That was not a bad
+result. <strong>It was a badly chosen null</strong>, and it produced a confident, reproducible,
+entirely wrong number, exactly as this unit predicts.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-nothing-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-nothing-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

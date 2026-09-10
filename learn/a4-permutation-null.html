@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Is There Anything There?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson four &middot; the null</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.big{font-family:"IBM Plex Mono",monospace; font-size:26px; color:var(--amber); font-weight:600; margin:6px 0}
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child{text-align:left}
+table.tab tfoot td{color:var(--ink3)}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:18px; color:var(--amber); text-align:center; margin:18px 0}
+.rad{border-top:1px solid var(--amber); padding:0 3px}
+ul.pieces{line-height:1.9}
+</style><section class="slide on">
+<h1>Is There<br>Anything There?</h1>
+<p class="lede">The first three units all read a record whose rows were in a meaningful order &mdash;
+time, mostly &mdash; and every one of them <em>assumed</em> that order was real. None of them
+checked.</p>
+<p>This unit asks the question they skipped, and the honest answer turns out to be
+computable.</p>
+<p class="note">Two records, both already familiar: the EEG from unit A3, and the same closing
+prices unit A1 opened with.</p>
+</section>
+
+<section class="slide">
+<h2>The two records</h2>
+<p><span class="exA">record A &mdash; the EEG.</span> <strong>800</strong> readings from
+<strong>4</strong> electrodes, taken one after another. The rows are ordered in time and we have
+every reason to believe that matters.</p>
+<svg class="fig-grid" viewBox="0 0 296 366" width="296" height="366" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><rect x="34" y="30" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="65.0" y="65.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.04</text><rect x="96" y="30" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="127.0" y="65.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.04</text><rect x="158" y="30" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="189.0" y="65.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.08</text><rect x="220" y="30" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="251.0" y="65.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.04</text><rect x="34" y="92" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="65.0" y="127.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.01</text><rect x="96" y="92" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="127.0" y="127.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-0.06</text><rect x="158" y="92" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="189.0" y="127.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.12</text><rect x="220" y="92" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="251.0" y="127.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-0.11</text><rect x="34" y="154" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="65.0" y="189.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-0.09</text><rect x="96" y="154" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="127.0" y="189.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-0.78</text><rect x="158" y="154" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="189.0" y="189.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.44</text><rect x="220" y="154" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="251.0" y="189.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-1.29</text><rect x="34" y="216" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="65.0" y="251.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.29</text><rect x="96" y="216" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="127.0" y="251.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-0.63</text><rect x="158" y="216" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="189.0" y="251.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.16</text><rect x="220" y="216" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="251.0" y="251.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-1.50</text><rect x="34" y="278" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="65.0" y="313.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.32</text><rect x="96" y="278" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="127.0" y="313.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-0.99</text><rect x="158" y="278" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="189.0" y="313.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-0.21</text><rect x="220" y="278" width="62" height="62" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="251.0" y="313.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-1.60</text><text x="65.0" y="22.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">e1</text><text x="127.0" y="22.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">e2</text><text x="189.0" y="22.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">e3</text><text x="251.0" y="22.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">e4</text><path d="M 14 33 L 14 337" stroke="var(--amber,#a5620c)" stroke-width="1.4" marker-end="url(#ar)" fill="none"/><g transform="translate(7,185.0) rotate(-90)"><text x="0.0" y="0.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">time</text></g><text x="158.0" y="22.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">electrode</text><text x="34.0" y="358.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.7">first 5 of 800 rows</text><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--amber,#a5620c)"/></marker></defs></svg>
+<p><span class="exB">record B &mdash; the market.</span> <strong>71</strong> months of closing
+prices for <strong>8</strong> companies. Also ordered in time.</p>
+<p>Both <em>look</em> ordered. The question is whether the order carries anything a measurement can
+find &mdash; and &ldquo;it obviously does&rdquo; is not a measurement.</p>
+</section>
+
+<section class="slide">
+<h2>The honest test</h2>
+<p>If the order matters, then <strong>destroying the order should destroy something you can
+measure</strong>. If nothing changes, the order was never carrying anything.</p>
+<p>So: take the record and shuffle the rows into a random sequence. Every row is still there. Every
+number is still there. Each electrode still has exactly the same 800 readings in it. The
+<em>only</em> thing gone is which came after which.</p>
+<p>Then measure both, and compare.</p>
+<p class="note">This is the same move unit A5 makes on symbol sequences. It is the single most
+reusable idea in the whole curriculum: <strong>to find out whether something matters, remove it and
+see what breaks.</strong></p>
+</section>
+
+<section class="slide">
+<h2>And it does break</h2>
+<svg class="fig-bars" viewBox="0 0 530 96" width="530" height="96" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">coherence z — same numbers, one with its order destroyed</text><rect x="135.2" y="28" width="332.8" height="23" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="118.8" y="44.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">EEG, as recorded</text><text x="474.0" y="44.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">+41.29</text><rect x="126.8" y="60" width="8.4" height="23" fill="var(--teal,#20635f)" opacity="0.45"/><text x="118.8" y="76.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">EEG, rows shuffled</text><text x="474.0" y="76.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">-1.05</text><line x1="135.2" y1="24" x2="135.2" y2="88" stroke="var(--rule,#d2d5d0)" stroke-width="1"/><line x1="151.4" y1="24" x2="151.4" y2="88" stroke="var(--ink,#1b1d22)" stroke-width="1.3" stroke-dasharray="5 3"/><text x="151.4" y="20.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.8">z = 2</text></svg>
+<p>From <strong>+41.29</strong> to <strong>-1.05</strong>. Not smaller &mdash; <em>gone</em>, and
+slightly negative, which is what a number centred on zero does when it lands on the low side.</p>
+<p>Nothing was removed except the order, so whatever the read was seeing, it was seeing the order.
+That is what a <strong>z-score</strong> is for: it says how far a measurement sits from what you
+would get if the thing you care about were not there, counted in units of ordinary wobble. Two is
+the usual line. <strong>+41.29</strong> is not close to the line.</p>
+</section>
+
+<section class="slide">
+<h2>You never have to shuffle</h2>
+<p>The obvious way to get that comparison is to shuffle a thousand times and see where the real
+record lands. That works, it is slow, and it gives a slightly different answer every run because it
+depends on the shuffles you happened to draw.</p>
+<p>You do not have to. Start with what is actually being measured &mdash; how alike, on average,
+each row is to the one after it:</p>
+<p class="formula">A &nbsp;=&nbsp; mean<sub>i</sub> &nbsp;Re&nbsp;&langle;&nbsp;row<sub>i</sub>&nbsp;,&nbsp;row<sub>i+1</sub>&nbsp;&rangle;<sup>2</sup></p>
+<p><strong>&langle;&nbsp;a&nbsp;,&nbsp;b&nbsp;&rangle;</strong> is the inner product &mdash; multiply
+the two rows entry by entry and add the results up. <strong>Squaring it drops the sign</strong>, so
+two rows that move oppositely count as much as two that move together &mdash; what is being asked is
+whether consecutive rows are <em>related</em>, in either direction.
+<strong>mean<sub>i</sub></strong> averages that over every neighbouring pair in the record.</p>
+<p class="note">And because &mu; and the spread are built from the same squared products, multiplying
+the <em>whole record</em> by a constant leaves z exactly where it was. One row made louder does move
+it, which is right: that row really has become less like its neighbours.</p>
+<p>Now the key step. Under a random shuffle, each compared pair becomes <em>a uniformly random pair
+of distinct rows</em>. So the average value of A over all possible shuffles is just the average over
+all row pairs &mdash; and you can compute that directly, from the record you already have, without
+drawing a single shuffle.</p>
+<p class="note">The library calls the exact average <strong>&mu;</strong> &mdash; the Greek letter
+<strong>mu</strong>, said <em>MEW</em>, the standard name for a mean. The spread around it has an
+exact formula too (the Cliff&ndash;Ord / Mantel second moment), which matters because neighbouring
+pairs <em>share a row</em> and so are not independent.</p>
+</section>
+
+<section class="slide">
+<h2>The z-score, in full</h2>
+<p class="formula">z &nbsp;=&nbsp; ( A &nbsp;&minus;&nbsp; &mu; ) &nbsp;&divide;&nbsp; &radic;<span class="rad">Var</span></p>
+<p>Three pieces, and every one of them is computed from the record itself:</p>
+<ul class="pieces">
+<li><strong>A</strong> &mdash; what the record actually scores.</li>
+<li><strong>&mu;</strong> (mu) &mdash; what it would score on average if the rows were in a random
+order. Exact, not sampled.</li>
+<li><strong>&radic;<span class="rad">Var</span></strong> &mdash; the square root of the variance,
+which is the ordinary spread of A across shuffles. <strong>&radic;</strong> is the
+<strong>square root</strong> sign. Also exact.</li>
+</ul>
+<p>So z answers: <em>how many ordinary wobbles above the no-order average is this record?</em> No
+random number generator is involved anywhere, which means the same record gives the same z every
+time, on every machine.</p>
+<p class="warn">The exactness is the whole point. A shuffled null is an estimate of a thing that has
+a closed form &mdash; and paying a thousand shuffles for a worse version of a number you could have
+computed is a bad trade.</p>
+</section>
+
+<section class="slide">
+<h2>Four verdicts</h2>
+<svg class="fig-bars" viewBox="0 0 560 152" width="560" height="152" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">four records, one instrument</text><rect x="168.2" y="28" width="329.8" height="21" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="151.8" y="43.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">EEG, as recorded</text><text x="504.0" y="43.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">+41.287</text><rect x="168.2" y="58" width="74.3" height="21" fill="var(--teal,#20635f)" opacity="0.45"/><text x="151.8" y="73.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">market — prices</text><text x="504.0" y="73.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">+9.304</text><rect x="168.2" y="88" width="1.0" height="21" fill="var(--teal,#20635f)" opacity="0.45"/><text x="151.8" y="103.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">market — monthly change</text><text x="504.0" y="103.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">+0.127</text><rect x="159.8" y="118" width="8.4" height="21" fill="var(--teal,#20635f)" opacity="0.45"/><text x="151.8" y="133.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">EEG, rows shuffled</text><text x="504.0" y="133.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">-1.046</text><line x1="168.2" y1="24" x2="168.2" y2="144" stroke="var(--rule,#d2d5d0)" stroke-width="1"/><line x1="184.1" y1="24" x2="184.1" y2="144" stroke="var(--ink,#1b1d22)" stroke-width="1.3" stroke-dasharray="5 3"/><text x="184.1" y="20.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.8">z = 2</text></svg>
+<p><span class="exA">The EEG</span> is ordered, overwhelmingly: <strong>+41.29</strong>.</p>
+<p><span class="exB">The market's prices</span> are ordered too, at <strong>+9.30</strong> &mdash;
+but for a duller reason than it looks. A share price does not jump; today's is near yesterday's. The
+read is picking up that neighbouring rows are simply <em>close together</em>.</p>
+<p><span class="exB">The month-to-month changes</span> read <strong>+0.127</strong>. Subtract the
+level and the order stops carrying anything the instrument can find. That is the honest answer, and
+it is the same one unit A5 reaches from a completely different direction &mdash; reduced to
+up/flat/down symbols, the same prices gave redundancy exactly <strong>0.0000</strong>.</p>
+<p class="note">Two instruments that share no code path, agreeing on the same record. That
+agreement is worth more than either reading alone.</p>
+</section>
+
+<section class="slide">
+<h2>But can you trust the null?</h2>
+<p>A z-score is only meaningful if it really is centred on zero with a spread of one when there is
+nothing there. So feed the instrument pure noise &mdash; 400 draws of it at each of several shapes,
+with no structure of any kind &mdash; and check.</p>
+<table class="tab"><thead><tr><th>rows</th><th>columns</th><th>mean z</th><th>spread</th>
+<th>share above 2</th></tr></thead><tbody><tr><td>300</td><td>4</td><td>+0.009</td><td>1.011</td><td>0.0400</td></tr><tr><td>300</td><td>12</td><td>+0.094</td><td>1.014</td><td>0.0350</td></tr><tr><td>300</td><td>30</td><td>+0.045</td><td>0.969</td><td>0.0175</td></tr><tr><td>120</td><td>30</td><td>-0.001</td><td>0.966</td><td>0.0275</td></tr><tr><td>80</td><td>200</td><td>+0.006</td><td>0.997</td><td>0.0300</td></tr><tr><td>1000</td><td>12</td><td>+0.018</td><td>1.020</td><td>0.0300</td></tr></tbody>
+<tfoot><tr><td colspan="2">target</td><td>0</td><td>1</td><td>0.0228</td></tr></tfoot></table>
+<p>Centred, spread one, and the share landing above 2 sits between <strong>0.0175</strong> and
+<strong>0.0400</strong> against a target of 0.0228 &mdash; across shapes from 4 columns to 200.</p>
+<p class="note">The small excess in the last column is real and understood: the standardisation is
+exact, but the <em>shape</em> of the tail is not quite a bell curve at these sizes. The library's
+own <code>exp4_coherence.py</code> runs <strong>2000</strong> draws &mdash; 400 at each of five
+shapes &mdash; and <em>measures</em> <strong>0.0265</strong>. That figure is not quoted from a
+docstring: this unit's audit imports that script, runs it, and fails if the number moves.</p>
+<p class="warn"><strong>A calibration check needs enough draws to calibrate</strong>, and this table
+does not. At 400 draws per shape the share still swings from 0.0175 to 0.0400 &mdash; a spread of
+<strong>0.0225</strong> around a target of 0.0228, where the excess it would take to see is
+0.0265 &minus; 0.0228 = <strong>0.0037</strong>. <strong>The spread is 6 times the quantity being
+measured.</strong> The excess is real; reading it takes the library's 2,000 draws. This table is
+here to show the z-score is centred and spread one, which 400 draws is ample for.</p>
+</section>
+
+<section class="slide">
+<h2>The same question, asked of the null you actually use</h2>
+<p>That table fed the instrument <em>synthetic noise</em>. The null this unit is built on is
+<strong>a shuffle of the real record</strong>, which keeps every row exactly as it was and destroys
+only the order. Those are two different nulls, and there is no reason in advance for them to have
+the same tail. So: <strong>2000</strong> shuffles of the EEG, each one
+through the whole instrument.</p>
+<table class="tab"><thead><tr><th></th><th>closed form</th><th>2000 shuffles of the record</th>
+</tr></thead><tbody>
+<tr class="hi"><td>mean</td><td>0</td><td>+0.0335</td></tr>
+<tr class="hi"><td>spread</td><td>1</td><td>1.0172</td></tr>
+<tr><td>lowest</td><td>&mdash;</td><td>-2.1276</td></tr>
+<tr><td>highest</td><td>&mdash;</td><td>+5.1013</td></tr>
+</tbody></table>
+<p><strong>&mu; and Var hold.</strong> A mean that lands on zero and a spread that lands on one,
+with nothing fitted &mdash; measured from outside the library, on the null the theorem is
+<em>about</em>. That is the closed form of the previous slides earning its keep.</p>
+<p class="warn">The tail is a different story, and the numbers stack up:</p>
+<table class="tab"><thead><tr><th>share above z = 2</th><th></th></tr></thead><tbody>
+<tr><td>a bell curve</td><td>0.0228</td></tr>
+<tr><td>synthetic noise, the library's 2,000 draws</td><td>0.0265</td></tr>
+<tr class="hi"><td><strong>shuffles of this record, 2000 draws</strong></td><td><strong>0.0515</strong></td></tr>
+</tbody></table>
+<p>Shuffling a real record puts <strong>0.0515</strong> of the draws above z = 2 &mdash;
+<strong>1.9&times;</strong> the synthetic-noise share and <strong>2.3&times;</strong> a bell
+curve's. Of 2000 shuffles, <strong>103</strong> land above +2 and <strong>1</strong> below
+&minus;2: the null is centred, correctly scaled, and distinctly <em>right-leaning</em>.</p>
+<p class="note cool">Which is worth stating plainly, because it is the practical content of this
+whole unit: <strong>&mu; and Var pin the centre and the spread; the tail is a separate
+measurement.</strong> The two moments are exact and cheap and you should use them &mdash; and on
+this record's null a z of 2 is a <strong>one in 19</strong> event, where a bell curve puts it at
+one in <strong>44</strong>.</p>
+<p class="note">And it leaves the record itself untouched. The EEG scores <strong>+41.29</strong>
+&mdash; <strong>8.1&times;</strong> the loudest of 2000 shuffles constructed to contain nothing. A
+tail twice as heavy as expected does not begin to reach it.</p>
+</section>
+
+<section class="slide">
+<h2>At what zoom does it appear?</h2>
+<p>One more question the earlier units never asked: <em>how much of the record do you have to look
+at before the structure shows up?</em> Read the same EEG through a sliding window and vary the
+window's width. It turns out <strong>two different questions give two different answers.</strong></p>
+<svg class="fig-bars" viewBox="0 0 545 308" width="545" height="308" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">coherence z, reading the EEG through windows of each width</text><rect x="60.8" y="28" width="27.4" height="14" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="39.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">8 rows</text><text x="489.0" y="39.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">2.68</text><rect x="60.8" y="51" width="31.0" height="14" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="62.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">12 rows</text><text x="489.0" y="62.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">3.03</text><rect x="60.8" y="74" width="34.0" height="14" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="85.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">18 rows</text><text x="489.0" y="85.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">3.33</text><rect x="60.8" y="97" width="66.4" height="14" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="52.8" y="108.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">28 rows</text><text x="489.0" y="108.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">6.50</text><rect x="60.8" y="120" width="86.9" height="14" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="52.8" y="131.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">43 rows</text><text x="489.0" y="131.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">8.49</text><rect x="60.8" y="143" width="153.1" height="14" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="154.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">65 rows</text><text x="489.0" y="154.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">14.97</text><rect x="60.8" y="166" width="202.8" height="14" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="177.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">99 rows</text><text x="489.0" y="177.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">19.83</text><rect x="60.8" y="189" width="117.7" height="14" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="52.8" y="200.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">150 rows</text><text x="489.0" y="200.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">11.51</text><rect x="60.8" y="212" width="165.6" height="14" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="52.8" y="223.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">228 rows</text><text x="489.0" y="223.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">16.19</text><rect x="60.8" y="235" width="196.5" height="14" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="52.8" y="246.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">346 rows</text><text x="489.0" y="246.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">19.21</text><rect x="60.8" y="258" width="267.7" height="14" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="52.8" y="269.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">526 rows</text><text x="489.0" y="269.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">26.18</text><rect x="60.8" y="281" width="422.2" height="14" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="52.8" y="292.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">800 rows</text><text x="489.0" y="292.5" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">41.29</text><line x1="81.3" y1="24" x2="81.3" y2="300" stroke="var(--ink,#1b1d22)" stroke-width="1.3" stroke-dasharray="5 3"/><text x="81.3" y="20.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.8">z = 2</text></svg>
+<p>Coherence is already <strong>2.68</strong> through a window of just <strong>8</strong> rows
+&mdash; above the line on the very first try. <em>Something</em> is ordered, and you can tell from a
+tiny slice.</p>
+<p>But asking to actually <strong>resolve a mode</strong> &mdash; to pull out a distinct pattern
+that stands above the noise floor, which is what units A1 to A3 were counting &mdash; is a harder
+question, and it needs a wider window:</p>
+<table class="tab"><thead><tr><th>window</th><th>coherence z</th><th>modes resolved</th>
+<th>first</th></tr></thead><tbody><tr><td>8</td><td>2.68</td><td>0</td><td></td></tr><tr><td>12</td><td>3.03</td><td>0</td><td></td></tr><tr><td>18</td><td>3.33</td><td>0</td><td></td></tr><tr><td>28</td><td>6.50</td><td>1</td><td>&#10003;</td></tr><tr><td>43</td><td>8.49</td><td>1</td><td></td></tr><tr><td>65</td><td>14.97</td><td>0</td><td></td></tr><tr><td>99</td><td>19.83</td><td>0</td><td></td></tr><tr><td>150</td><td>11.51</td><td>1</td><td></td></tr><tr><td>228</td><td>16.19</td><td>2</td><td></td></tr><tr><td>346</td><td>19.21</td><td>2</td><td></td></tr><tr><td>526</td><td>26.18</td><td>2</td><td></td></tr><tr><td>800</td><td>41.29</td><td>2</td><td></td></tr></tbody></table>
+<p>Nothing resolves until <strong>28</strong> rows. The library reports exactly that as the
+<strong>resolved window: 28 rows</strong> &mdash; the smallest window at which one mode first stands
+above the floor. Strongest coherence is at <strong>800</strong> rows: the whole record.</p>
+<p class="warn">Look at windows 65 and 99, where the count falls back to <strong>0</strong> after
+having been 1. Widening the window admits more signal <em>and</em> more noise, and at those two
+widths the floor rises faster than the mode does. <strong>The staircase is not monotonic</strong>,
+and the instrument reports the shape it measures.</p>
+<p class="note">Same idea as the entropy-matched scale in unit A1, made literal. There it set how
+finely to divide an axis; here it sets how much axis you need before a question can be answered at
+all.</p>
+</section>
+
+<section class="slide">
+<h2>Order, measured</h2>
+<p>Every read in units A1 to A3 rests on the ordered axis being ordered. That is now a
+<em>measurement</em>, and it is free: no sampling, no seed, no run-to-run variation, one pass over
+the record.</p>
+<table class="tab"><thead><tr><th>record</th><th>z</th><th>verdict</th></tr></thead><tbody>
+<tr><td>EEG, as recorded</td><td>+41.29</td><td>ordered</td></tr>
+<tr><td>market, price levels</td><td>+9.30</td><td>ordered &mdash; but only because prices drift slowly</td></tr>
+<tr><td>market, monthly change</td><td>+0.127</td><td>nothing found</td></tr>
+<tr><td>EEG, rows shuffled</td><td>-1.05</td><td>nothing found</td></tr>
+</tbody></table>
+<p class="warn">The shuffled EEG row is the one that matters most. It is a <strong>negative
+control</strong>: a case where you already know the answer, run through the same instrument, to
+check the instrument can read zero. A read that returns a number on every input measures
+nothing.</p>
+<p class="note">One shuffle is one draw. The row above is a single permutation, and
+<strong>2000</strong> of them have mean <strong>+0.0335</strong> and never exceed
+<strong>+5.10</strong> &mdash; a null whose shape turns out to matter more than its centre.</p>
+<p class="note">Next: unit A6, where two records meet on one screen &mdash; and the question becomes
+whether they are resolving the same thing.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-null-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-null-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

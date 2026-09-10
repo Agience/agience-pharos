@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Lens Inside a Language Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson twelve &middot; the Jacobian lens</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 7px; text-align:right}
+table.tab th:first-child,table.tab td:first-child{text-align:left}
+table.tab td.hit,table.tab th.hit{color:var(--amber); font-weight:600}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:18px 0}
+ul.pieces{line-height:1.85}
+</style><section class="slide on">
+<h1>The Lens Inside<br>a Language Model</h1>
+<p class="lede">Everything in this programme so far has been an instrument looking at data. This
+unit points it at something else: the inside of a working language model, treated as an
+<em>optical</em> object.</p>
+<p>No new mathematics. The lens from unit A6, the spectrum from unit A2, and one subtraction.</p>
+<p class="note">Measured here on a stored 388 MB transport for a 4-billion-parameter model, on this
+machine, in about a minute.</p>
+</section>
+
+<section class="slide">
+<h2>What is being measured</h2>
+<p>A language model builds its answer in layers. Something enters at layer 1, gets worked on, and
+what comes out the far end is the answer. The natural question is: <strong>if I nudge what is
+happening at layer 12, how does that show up at the end?</strong></p>
+<p>You can answer it with a big square table. Down the side, every direction you could nudge; across
+the top, every direction the nudge could arrive in; and in each cell, how much. Averaged over a lot
+of real text, that table is one number per pair &mdash; here <strong>2,560 &times; 2,560</strong> of
+them.</p>
+<p>That table is the <strong>transport</strong>, and it is exactly the kind of object units A1 to A6
+know how to read. It is a lens: it carries something from one place into another set of
+coordinates.</p>
+<p class="note">Everything below reads that table as geometry. Nothing here trains anything, runs
+the model, or looks at what any direction &ldquo;means&rdquo;.</p>
+</section>
+
+<section class="slide">
+<h2>One number for &ldquo;how many directions&rdquo;</h2>
+<p>Any such table can be summarised as a row of bars, tallest first &mdash; like a graphic
+equaliser. A tall bar is a direction the transport really uses; a short one barely matters.</p>
+<p>Counting the bars that are &ldquo;up&rdquo; needs no cutoff. Instead ask: <strong>if all the
+energy were spread evenly over some number of bars, how many would that be?</strong> That number is
+the <strong>effective rank</strong>.</p>
+<p class="formula">effective rank &nbsp;=&nbsp; (sum of s&sup2;)&sup2; &nbsp;&divide;&nbsp; sum of s&#8308;</p>
+<p>It is honest in the way that matters: for exactly <em>r</em> equal bars it returns exactly
+<em>r</em>, and there is no threshold anywhere in it. One tall bar and a thousand tiny ones gives a
+number near 1, which is what you would want.</p>
+<p class="note">Same idea as counting modes above a noise floor in units A1 and A2, without needing
+a floor.</p>
+</section>
+
+<section class="slide">
+<h2>Something is in the way</h2>
+<p>Before measuring anything, one thing can be predicted. These models carry a
+<strong>running total</strong>: each layer adds its contribution to what came before. So whatever a late layer does, most of what arrives at the end is
+<em>the running total simply being passed along</em>.</p>
+<p>In the transport that shows up as a &ldquo;do nothing&rdquo; component &mdash; and it should grow
+with depth, because there is less left to do above. Measured:</p>
+<table class="tab"><thead><tr><th>layer</th><th>0</th><th>6</th><th>12</th><th>18</th><th>24</th><th>26</th><th>28</th><th>30</th></tr></thead>
+<tbody><tr><td>&ldquo;do nothing&rdquo; share</td><td>0.0080</td><td>0.0261</td><td>0.0703</td><td>0.2357</td><td>0.5832</td><td>0.6294</td><td>0.7059</td><td>0.7896</td></tr></tbody></table>
+<p>From <strong>0.0080</strong> to <strong>0.7896</strong>. By the last layer nearly
+<strong>four-fifths</strong> of the transport is just passing the total along.</p>
+<p class="warn">So it has to come off before anything else can be seen &mdash; and how you remove it
+matters. It is <strong>not fitted</strong>. There is exactly one right amount to subtract, the same
+way there is exactly one right shadow to remove, and taking it out leaves a table whose diagonal
+sums to <strong>1.1e-13</strong> at layer <strong>30</strong> &mdash; zero, to the machine's precision.
+Nothing was tuned. That is one layer; the closing slide reports the same subtraction at every layer
+in the table above, which is what a claim about an <em>operation</em> requires.</p>
+</section>
+
+<section class="slide">
+<h2>The whole finding, in three rows</h2>
+<table class="tab"><thead><tr><th>layer</th><th>0</th><th>6</th><th>12</th><th>18</th><th>24</th><th>26</th><th>28</th><th>30</th></tr></thead><tbody>
+<tr><td>&ldquo;do nothing&rdquo; share</td><td>0.0080</td><td>0.0261</td><td>0.0703</td><td>0.2357</td><td>0.5832</td><td>0.6294</td><td>0.7059</td><td>0.7896</td></tr>
+<tr><td>effective rank of the transport</td><td>12.4</td><td>69.3</td><td>88.7</td><td>240.3</td><td>987.0</td><td>1115.2</td><td>1249.1</td><td>1328.5</td></tr>
+<tr><td class="hit">&hellip;with pass-through removed</td><td class='hit'>12.3</td><td class='hit'>67.8</td><td class='hit'>80.3</td><td class='hit'>163.2</td><td class='hit'>326.1</td><td class='hit'>345.0</td><td class='hit'>262.6</td><td class='hit'>124.4</td></tr>
+</tbody></table>
+<svg class="fig-bars" viewBox="0 0 520 240" width="520" height="240" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">effective rank after the pass-through is removed</text><rect x="27.8" y="28" width="15.3" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="41.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">L0</text><text x="464.0" y="41.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">12.3</text><rect x="27.8" y="54" width="84.5" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="67.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">L6</text><text x="464.0" y="67.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">67.8</text><rect x="27.8" y="80" width="100.1" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="93.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">L12</text><text x="464.0" y="93.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">80.3</text><rect x="27.8" y="106" width="203.5" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="119.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">L18</text><text x="464.0" y="119.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">163.2</text><rect x="27.8" y="132" width="406.7" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="145.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">L24</text><text x="464.0" y="145.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">326.1</text><rect x="27.8" y="158" width="430.2" height="17" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="19.8" y="171.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">L26</text><text x="464.0" y="171.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">345.0</text><rect x="27.8" y="184" width="327.5" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="197.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">L28</text><text x="464.0" y="197.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">262.6</text><rect x="27.8" y="210" width="155.1" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="223.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">L30</text><text x="464.0" y="223.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">124.4</text></svg>
+<p><strong>Row two climbs to 1328.5 and stops there, at the last layer.</strong> Read on its own it
+says only &ldquo;deeper is bigger&rdquo;, which is what the pass-through does. No story.</p>
+<p><strong>Row three rises to 345.0 at layer 26 and then collapses to 124.4.</strong> A band &mdash;
+somewhere around four-fifths of the way up, the transport resolves far more directions than it does
+at either end.</p>
+<p class="warn">This is the rarest thing in a measurement: <strong>the control is inside the
+figure.</strong> Rows two and three are the same read of the same object, differing by one
+subtraction, and row one says exactly what was subtracted and how much. Nobody has to be trusted
+about the method &mdash; the comparison is right there.</p>
+</section>
+
+<section class="slide">
+<h2>A number that could not have been right</h2>
+<p>Two mistakes can be made in building that table, and neither raises an error. Made together,
+they produce this:</p>
+<table class="tab"><thead><tr><th>layer</th><th>&ldquo;do nothing&rdquo;</th>
+<th>effective rank</th></tr></thead><tbody>
+<tr><td>0</td><td>0.0000</td><td>4237.8</td></tr>
+<tr><td>30</td><td>0.0002</td><td>166672.3</td></tr>
+</tbody></table>
+<p>Both columns are wrong, for two different reasons. The share was already a share and was divided
+by the total a second time. The effective-rank function takes <em>a row of bar heights</em> and was
+handed the whole table; it returned a number for that too.</p>
+<p class="warn">The tell is the second column. An effective rank counts directions, so it cannot
+exceed the number of directions there are &mdash; <strong>2,560</strong>. A reading of
+<strong>166,672</strong> is an impossible one, and an impossible
+result is the cheapest kind to catch. A plausible-looking 300 would have passed.</p>
+<p class="note">The habit worth copying: before believing a number, ask what range it is even
+allowed to be in. Most broken measurements announce themselves that way, and only that way.</p>
+</section>
+
+<section class="slide">
+<h2>Two summary statements, measured</h2>
+<p>The work above is published with a summary. Two of that summary's statements were checked
+directly against the same file that produced everything else, and the file reads differently.</p>
+<table class="tab"><thead><tr><th>the claim</th><th>measured here</th></tr></thead><tbody>
+<tr><td>the middle bar height equals the amount removed</td>
+    <td class="hit">1.0523 vs 0.9938 &mdash; <strong>5.9% apart</strong></td></tr>
+<tr><td>the un-corrected effective rank rises steadily</td>
+    <td class="hit">it falls in 2 places</td></tr>
+</tbody></table>
+<table class="tab"><thead><tr><th>where it falls</th><th>from &rarr; to</th></tr></thead><tbody><tr><td>layer 0 &rarr; 1</td><td>12.4 &rarr; 9.5</td></tr><tr><td>layer 11 &rarr; 12</td><td>93.8 &rarr; 88.7</td></tr></tbody></table>
+<p>The finding stands on either reading: the band is there, the peak is at the same layer, and the
+pass-through removal is exact. What moves is the summary's two figures.</p>
+<p class="warn">And one of the two was <strong>already corrected by the project itself</strong>. Its
+own findings file carries the corrected number. The summary, the paper, and three separate places
+in the source carry the earlier one &mdash; a correction made in one place out of five.</p>
+</section>
+
+<section class="slide">
+<h2>A transport is a table, and a table has a spectrum</h2>
+<p>A language model is not usually described as an optical system, and nothing here needed it to be
+one. A transport is a table; a table has a spectrum; a spectrum has an effective rank; and one
+component of the table was predictable from the architecture before anything was measured.</p>
+<ul class="pieces">
+<li><strong>The structure was invisible until something was removed.</strong> Effective rank as
+measured says nothing. With the pass-through taken out it peaks at <strong>345.0</strong> around
+layer 26 and collapses at both ends.</li>
+<li><strong>The removal is exact, not fitted</strong> &mdash; and that is a claim about the
+operation, so it is checked at <em>every</em> layer. The corrected table's
+diagonal sums to <strong>exactly zero</strong> at <strong>5</strong> of the 8 layers; the worst
+of the rest is <strong>2.3e-13</strong>, at layer 24, against the <strong>2654.2373</strong> the removal
+cancelled there &mdash; a relative size of <strong>9e-17</strong>, which is smaller than the
+<strong>2.2e-16</strong> that double-precision arithmetic can resolve at all. The projection is
+exact to the last bit the machine has.</li>
+<li><strong>The control sits inside the figure</strong>, so the method does not have to be trusted
+separately from the result.</li>
+</ul>
+<p class="warn">And the lesson that outlives the numbers: this project lints its own prose and
+records its own corrections, and a corrected number still stands in four other places.
+<strong>A correction travels only as far as something carries it.</strong> Every figure on these
+pages is re-derived from the live code on every build for exactly that reason.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-jlens-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-jlens-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

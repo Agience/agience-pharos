@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Where the Instrument Is Blind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson E2 &middot; the blind spot</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:6px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab th:last-child,table.tab td:last-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+table.tab tr.sep td{border-top:2px solid var(--amber-line)}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:17px; color:var(--amber); text-align:center; margin:20px 0}
+p.formula b{color:var(--teal)}
+</style><section class="slide on">
+<p class="eyebrow">Unit E2 &middot; the capstone</p>
+<h1>Where the Instrument<br>Is <em>Blind</em></h1>
+<p class="lead">Every unit so far has shown what these reads can see. This one is the other half,
+and a course that never wrote it would be a sales brochure.</p>
+<p>Here are two records. The second is a <strong>perfect deterministic function</strong> of the
+first &mdash; no noise, nothing hidden, every value of the second computable exactly from the
+first. Ask the instrument whether they are coupled.</p>
+<p class="formula">B = |A| &nbsp;&rarr;&nbsp; coupling <b>0.000000</b>, nothing resolved</p>
+<p class="warn">That is what <strong>independent noise</strong> reads on the same instrument, on
+<strong>58 of 60</strong> draws. The relationship is total, and the read returns the same number it
+returns for two records with nothing between them at all.</p>
+</section>
+
+<section class="slide">
+<h2>Every one of these is deterministic</h2>
+<p>Same source record, 400&times;4. Every row below computes the second record from the first with
+no randomness whatever:</p>
+<table class="tab"><thead><tr><th>the relationship</th><th>coupling</th><th></th></tr></thead>
+<tbody><tr><td>B = A</td><td>1.000000</td><td class=''>resolved</td></tr><tr><td>B = sign(A)</td><td>0.799267</td><td class=''>resolved</td></tr><tr><td>B = A&sup3;</td><td>0.740276</td><td class=''>resolved</td></tr><tr><td>B = A&#8309;</td><td>0.441528</td><td class=''>resolved</td></tr><tr><td>B = e&#7491;</td><td>0.801507</td><td class=''>resolved</td></tr><tr><td>B = A&sup2;</td><td>-0.064770</td><td class=''>resolved</td></tr><tr><td>B = A&#8308;</td><td>-0.130856</td><td class=''>resolved</td></tr><tr><td>B = |A|</td><td>0.000000</td><td class='hit'>ZERO</td></tr><tr><td>B = sin(3A)</td><td>0.000000</td><td class='hit'>ZERO</td></tr><tr><td>B = cos(3A)</td><td>0.000000</td><td class='hit'>ZERO</td></tr>
+<tr class="sep"><td>independent noise, over 60 draws</td><td>never above 0.055855</td>
+<td class="hit">resolved 2/60</td></tr>
+</tbody></table>
+<p class="note">That last row is a <strong>band, not a draw</strong>. It was one draw until
+2026-08-28, reading an exact 0.000000 &mdash; and the very next draw from the same generator
+resolved at 0.06. Noise is resolved 2 times in 60 here, always small; a single sample of it is a
+coin toss reported as a constant.</p>
+<p><strong>3 of 10</strong> perfect relationships are reported as indistinguishable from noise.
+Not weakly coupled &mdash; <em>exactly zero</em>, with nothing resolved above the
+floor.</p>
+<p class="note">And that zero is the honest result. A read that returned 0.04 here would be
+inviting you to believe in a faint connection between two records that are, in fact, perfectly
+connected. Being wrong quietly in the other direction would be worse.</p>
+</section>
+
+<section class="slide">
+<h2>What decides visibility</h2>
+<p>Measure the <strong>linear part</strong> of each relationship instead &mdash; the plain
+correlation between matched columns, computed outside the library and owing it nothing &mdash; and
+put it beside what the instrument reported:</p>
+<table class="tab"><thead><tr><th>relationship</th><th>linear part</th><th>coupling</th><th></th>
+</tr></thead><tbody><tr><td>B = A</td><td>1.000000</td><td>1.000000</td><td class=''>resolved</td></tr><tr><td>B = sign(A)</td><td>0.799723</td><td>0.799267</td><td class=''>resolved</td></tr><tr><td>B = A&sup3;</td><td>0.755146</td><td>0.740276</td><td class=''>resolved</td></tr><tr><td>B = A&#8309;</td><td>0.495020</td><td>0.441528</td><td class=''>resolved</td></tr><tr><td>B = e&#7491;</td><td>0.818574</td><td>0.801507</td><td class=''>resolved</td></tr><tr><td>B = A&sup2;</td><td>0.143451</td><td>-0.064770</td><td class=''>resolved</td></tr><tr><td>B = A&#8308;</td><td>0.164584</td><td>-0.130856</td><td class=''>resolved</td></tr><tr><td>B = |A|</td><td>0.110100</td><td>0.000000</td><td class='hit'>nothing resolved</td></tr><tr><td>B = sin(3A)</td><td>0.047891</td><td>0.000000</td><td class='hit'>nothing resolved</td></tr><tr><td>B = cos(3A)</td><td>0.033994</td><td>0.000000</td><td class='hit'>nothing resolved</td></tr></tbody></table>
+<p class="formula">correlation between the two columns: <b>r = 0.9832</b></p>
+<p><strong>The reads see the linear part of a relationship</strong>, and read zero when that part falls
+under the floor &mdash; however completely the relationship determines the answer. The correlation
+column above tracks the coupling column across every row.</p>
+<p class="note">This is the instrument's stated scope. These reads are linear-algebraic by
+construction, which is why they carry no trained model, need no fitting, and return in milliseconds.
+<strong>The blindness is what that buys</strong>, and a reader is owed the price alongside the
+goods.</p>
+<svg class="fig-bars" viewBox="0 0 560 292" width="560" height="292" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">the linear part of each relationship</text><rect x="60.8" y="28" width="437.2" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="41.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">A</text><text x="504.0" y="41.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">1.000</text><rect x="60.8" y="54" width="349.6" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="67.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">sign(A)</text><text x="504.0" y="67.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.800</text><rect x="60.8" y="80" width="330.2" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="93.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">A&amp;sup3;</text><text x="504.0" y="93.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.755</text><rect x="60.8" y="106" width="216.4" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="119.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">A&amp;#8309;</text><text x="504.0" y="119.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.495</text><rect x="60.8" y="132" width="357.9" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="145.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">e&amp;#7491;</text><text x="504.0" y="145.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.819</text><rect x="60.8" y="158" width="62.7" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="171.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">A&amp;sup2;</text><text x="504.0" y="171.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.143</text><rect x="60.8" y="184" width="72.0" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="197.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">A&amp;#8308;</text><text x="504.0" y="197.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.165</text><rect x="60.8" y="210" width="48.1" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="223.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">|A|</text><text x="504.0" y="223.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.110</text><rect x="60.8" y="236" width="20.9" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="249.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">sin(3A)</text><text x="504.0" y="249.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.048</text><rect x="60.8" y="262" width="14.9" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="52.8" y="275.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">cos(3A)</text><text x="504.0" y="275.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.034</text></svg>
+</section>
+
+<section class="slide">
+<h2>Can the blind spot be moved?</h2>
+<p>If the reads see the linear part of a relationship, then the one thing that could change what
+they see is the thing that decides <em>what counts as a coordinate</em> &mdash; a lens. This course
+built lenses back in unit B1. So here is the whole table again, with a lens on the A side and
+nothing else altered.</p>
+<p class="note">First, what a reading has to beat. Independent noise was run against a fresh record
+<strong>60 times under every lens</strong>, and the two rows below the rule are what it did: how
+often it was resolved at all, and the largest reading it ever produced. <strong>A cell counts here
+only if it clears that line.</strong></p>
+<table class="tab"><thead><tr><th>relationship &nbsp; &nbsp; lens &rarr;</th><th>identity</th><th>|x|</th><th>x&sup2;</th><th>cos(3x)</th></tr></thead>
+<tbody><tr><td>B = A</td><td class='ok'>1.000000</td><td class='hit'>0.000000</td><td class='ok'>-0.064770</td><td class='hit'>0.000000</td></tr><tr><td>B = sign(A)</td><td class='ok'>0.799267</td><td class='hit'>0.000000</td><td class='hit'>0.000000</td><td class='hit'>0.000000</td></tr><tr><td>B = A&sup3;</td><td class='ok'>0.740276</td><td class='ok'>-0.127567</td><td class='ok'>-0.238559</td><td class='hit'>0.000000</td></tr><tr><td>B = A&#8309;</td><td class='ok'>0.441528</td><td class='ok'>-0.192267</td><td class='ok'>-0.350858</td><td class='hit'>0.000000</td></tr><tr><td>B = e&#7491;</td><td class='ok'>0.801507</td><td class='ok'>0.448817</td><td class='ok'>0.461978</td><td class='hit'>0.000000</td></tr><tr><td>B = A&sup2;</td><td class='ok'>-0.064770</td><td class='ok'>0.928058</td><td class='ok'>1.000000</td><td class='ok'>-0.132802</td></tr><tr><td>B = A&#8308;</td><td class='ok'>-0.130856</td><td class='ok'>0.635414</td><td class='ok'>0.849115</td><td class='hit'>0.000000</td></tr><tr><td>B = |A|</td><td class='hit'>0.000000</td><td class='ok'>1.000000</td><td class='ok'>0.928058</td><td class='ok'>-0.397723</td></tr><tr><td>B = sin(3A)</td><td class='hit'>0.000000</td><td class='hit'>0.000000</td><td class='hit'>0.000000</td><td class='hit'>0.000000</td></tr><tr><td>B = cos(3A)</td><td class='hit'>0.000000</td><td class='ok'>-0.397723</td><td class='ok'>-0.132802</td><td class='ok'>1.000000</td></tr>
+<tr class="sep"><td>noise, resolved in</td><td>2/60</td><td>5/60</td><td>6/60</td><td>3/60</td></tr>
+<tr><td>noise, largest reading</td><td>0.055855</td><td>0.070633</td><td>0.063901</td><td>0.062865</td></tr></tbody></table>
+<p><strong>It works.</strong> B = |A| reads 0.000000 under the plain identity &mdash; nothing &mdash; and
+<strong>1.000000</strong> through the |x| lens, which is more than ten times anything noise reached. The
+relationship was always total; the coordinates were wrong.</p>
+<p class="warn">And <strong>the lens sells as well as buys</strong>. B = A stands at 1.000000 under the
+identity and falls to <strong>0.000000</strong> through the |x| lens, inside the noise band. Choosing a
+lens is choosing what to be blind to, and the choice is not free in one direction only.</p>
+<p>It is also not a universal solvent. B = sin(3A) is below the band under <em>every</em> lens here,
+including the one built for the shape next to it. A lens matched to the wrong nonlinearity buys
+nothing.</p>
+<p class="warn">Every cell in the table either clears its band or reads an <strong>exact
+zero</strong>. The instrument is not handing back small ambiguous numbers here &mdash; with one
+exception. <strong>B = A through the x&sup2; lens reads 0.064770 against a band ceiling of 0.063901</strong>: it
+clears by 1%. That cell is the one place where the verdict and the evidence part company, and
+nothing but a measured band would show it.</p>
+<p class="note cool"><strong>So the blind spot moves; it does not go away.</strong> To choose the
+lens that reveals a relationship you have to suspect its shape already &mdash; which is why the move
+on the next slide is still the one that works: plant the answer, and see whether it comes back.</p>
+</section>
+
+<section class="slide">
+<h2>The whole boundary, in one place</h2>
+<p>Collected from the units that each found one edge of it:</p>
+<table class="tab"><thead><tr><th>it cannot</th><th>established in</th></tr></thead><tbody>
+<tr><td>see a relationship with no linear part <em>in the coordinates it was handed</em>, however
+deterministic &mdash; a lens moves that boundary and does not remove it</td><td>this unit</td></tr>
+<tr><td>read a record with no ordered axis &mdash; a bag of items is not a signal</td><td>E1</td></tr>
+<tr><td>resolve what the record is too narrow to separate &mdash; at any length, and at any
+cleanliness</td><td>A10</td></tr>
+<tr><td>certify a chain of clean links past the depth their own conditioning allows</td><td>B4</td></tr>
+<tr><td>tell you the shape of a file that does not describe itself</td><td>D8</td></tr>
+<tr><td>know that a substitution happened upstream of it</td><td>E1</td></tr>
+</tbody></table>
+<p class="warn">Every one of those is a <strong>silent</strong> limit. None of them raises an error;
+each returns a perfectly well-formed answer to a question slightly different from the one you asked.
+That is what makes the list worth keeping, and what makes an exact zero valuable &mdash;
+it is the case where the instrument <em>can</em> tell.</p>
+<p class="note cool">How to know whether you are inside the blind spot: <strong>plant the answer and
+look for it.</strong> Build a record where you know what the relationship is, hand it to the read,
+and see whether it comes back. It is the same move unit A7 makes with the noise floor and unit A10
+with the shape &mdash; and it is the cheapest check in this course.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-blind-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-blind-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

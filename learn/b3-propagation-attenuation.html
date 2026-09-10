@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Propagation and Attenuation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson seven &middot; what travel costs</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.big{font-family:"IBM Plex Mono",monospace; font-size:19px; color:var(--amber); font-weight:600; margin:6px 0; word-break:break-all}
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:18px 0}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:19px; color:var(--amber); text-align:center; margin:18px 0}
+ul.pieces{line-height:1.9}
+</style><section class="slide on">
+<h1>Propagation<br>and Attenuation</h1>
+<p class="lede">Six units taught the instrument on its own terms. This is where it stops being about
+matrices and becomes the reason the whole system is built the way it is.</p>
+<p>The design canon does not treat these as metaphors. It says: <em>&ldquo;Decay is attenuation;
+forgetting is cooling. These are not policy that merely takes a measured input &mdash; they are the
+physics the instrument measures the constants of.&rdquo;</em></p>
+<p class="warn"><strong>Four different things wear the word &ldquo;attenuation&rdquo; here.</strong>
+They share one ceiling and they are not interchangeable, and the difference between two of them is
+the kind of mistake the code will not catch for you.</p>
+</section>
+
+<section class="slide">
+<h2>Mechanism one &mdash; a rate over a distance</h2>
+<p>Send something across a gap and some fraction of it arrives. The fraction is</p>
+<p class="formula">survival &nbsp;=&nbsp; e<sup>&minus;d&thinsp;/&thinsp;&xi;</sup></p>
+<p><strong>d</strong> is the distance travelled. <strong>&xi;</strong> is the Greek letter
+<strong>xi</strong>, said <em>KSY</em> or <em>ZY</em> &mdash; here it is the
+<strong>correlation length</strong>, the distance over which the record stays like itself.
+<strong>e</strong> is the constant 2.718&hellip;, and a negative power of it is what shrinking
+smoothly toward zero looks like.</p>
+<p class="warn">&xi; is <strong>not chosen</strong>. It is read off the record. Unit A6 put the EEG's
+two halves on one screen; that screen's own read gives <strong>&xi; = 4.467646</strong>, and that is the
+number used everywhere below. The library's own docstring says so: <em>&ldquo;read it from
+correlation_length rather than choosing it.&rdquo;</em></p>
+<svg class="fig-decay" viewBox="0 0 545 220" width="545" height="220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="50.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">survival against distance, at the EEG&#x27;s own correlation length</text><line x1="50" y1="190.0" x2="527" y2="190.0" stroke="var(--rule,#d2d5d0)" stroke-width="1"/><path d="M 50.0 24.0 L 73.8 57.3 L 97.7 83.9 L 169.2 135.8 L 288.5 172.3 L 527.0 188.1" fill="none" stroke="var(--teal,#20635f)" stroke-width="2.1"/><line x1="156.6" y1="24" x2="156.6" y2="190" stroke="var(--amber,#a5620c)" stroke-width="1.3" stroke-dasharray="3 3"/><text x="161.6" y="184.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start">ξ = 4.47</text><text x="42.0" y="28.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end" opacity="0.65">1</text><text x="42.0" y="194.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end" opacity="0.65">0</text><g transform="translate(13,107.0) rotate(-90)"><text x="0.0" y="0.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">fraction that arrives</text></g><text x="288.5" y="212.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">distance d</text></svg>
+<table class="tab"><thead><tr><th>distance</th><th>survival</th><th>arrives</th></tr></thead>
+<tbody><tr><td>0</td><td>1.000000</td><td>&mdash;</td></tr><tr><td>1</td><td>0.799450</td><td>79.9%</td></tr><tr><td>2</td><td>0.639120</td><td>63.9%</td></tr><tr><td>5</td><td>0.326555</td><td>32.7%</td></tr><tr><td>10</td><td>0.106638</td><td>10.7%</td></tr><tr><td>20</td><td>0.011372</td><td>1.1%</td></tr></tbody></table>
+</section>
+
+<section class="slide">
+<h2>Distances add. Survival multiplies.</h2>
+<p>Travel two units, then three more. Does that cost the same as travelling five in one go?</p>
+<p class="formula">att(2) &times; att(3) &nbsp;=&nbsp; att(5)</p>
+<div class="two">
+<div><span class="exA">two hops</span><p class="big">0.32655473746867</p></div>
+<div><span class="exB">one hop of five</span><p class="big">0.32655473746867</p></div>
+</div>
+<p>Equal to the last digit the machine can hold &mdash; which is what the exponential
+<em>is</em>: adding in the exponent is multiplying outside it. <strong>A path's total
+attenuation is the product of its legs</strong>, and it does not matter where you put the joins.</p>
+<p>One more thing falls out of this, and it is the single most quoted line in the design canon.
+Cooling over time uses the same kernel with the same shape:</p>
+<p class="formula">cool(&Delta;t, &tau;) &nbsp;&equiv;&nbsp; attenuate(d, &xi;)</p>
+<p><strong>&tau;</strong> is <strong>tau</strong> and <strong>&Delta;</strong> is
+<strong>delta</strong>, meaning &ldquo;a change in&rdquo;. Checked directly: the two functions
+return <strong>bit-identical</strong> values &mdash; <code>cool(7, tau=&xi;) == attenuate(7,
+length=&xi;)</code> is <strong>True</strong>.</p>
+<p class="note">So <em>forgetting is cooling</em> is not a poetic gloss. Distance through space and
+distance through time are the same arithmetic, and the platform implements them once.</p>
+</section>
+
+<section class="slide">
+<h2>Mechanism two &mdash; an intersection along a path</h2>
+<p>Nothing to do with distance. When authority travels through a system it passes through a chain of
+permissions, and at each step <strong>you keep only what both sides agree on</strong>.</p>
+<p>Nine actions &mdash; <code>create</code>, <code>read</code>, <code>update</code>, <code>delete</code>, <code>evict</code>, <code>invoke</code>, <code>add</code>, <code>share</code>, <code>admin</code> &mdash; are packed into the bits of a single whole number, so the whole
+operation is one instruction: <code>a &amp; b</code>. That matters more than it sounds.
+<strong>&ldquo;No&rdquo; wins by construction, in the operator itself.</strong></p>
+<p>Here is where it bites. An edge records what it passes on as a short piece of text, and the
+decoder tests whether an action's name appears in it:</p>
+<table class="tab"><thead><tr><th>the edge says</th><th>which decodes to</th>
+<th>lets &ldquo;read&rdquo; through?</th></tr></thead><tbody><tr><td><code>[&quot;read&quot;,&quot;invoke&quot;]</code></td><td>Mask(allow:invoke,read)</td><td class='hit'>True</td></tr><tr><td><code>r</code></td><td>Mask(allow:-)</td><td class=''>False</td></tr><tr><td><code>read</code></td><td>Mask(allow:read)</td><td class='hit'>True</td></tr><tr><td><code>no-delete</code></td><td>Mask(allow:delete)</td><td class=''>False</td></tr><tr><td><code>unread</code></td><td>Mask(allow:read)</td><td class='hit'>True</td></tr><tr><td><code>[]</code></td><td>Mask(allow:-)</td><td class=''>False</td></tr></tbody></table>
+<p class="warn"><code>"r"</code> looks like it says <em>read</em>. It says <strong>nothing</strong>
+&mdash; because &ldquo;read&rdquo; is not inside &ldquo;r&rdquo;. And <code>"no-delete"</code> reads
+as <strong>allowing delete</strong>, because &ldquo;delete&rdquo; <em>is</em> inside it.</p>
+<p>The first is safe: it fails toward giving nothing away, and it has been left exactly as it is,
+because &ldquo;fixing&rdquo; it would silently widen every live edge that carries it. The second is
+the reason nothing in the system is allowed to write a phrase like that.</p>
+</section>
+
+<section class="slide">
+<h2>&ldquo;No&rdquo; is absorbing</h2>
+<p>A permission record can carry a <em>deny</em>: the same nine flags, but meaning
+&ldquo;specifically not these&rdquo;. Read such a record by asking it &ldquo;can you read?&rdquo;
+the naive way and you get a dangerous answer:</p>
+<table class="tab"><thead><tr><th>how it is read</th><th>answer</th></tr></thead><tbody>
+<tr><td>ask the record's <code>can_read</code> flag directly</td><td class="hit">True &mdash; a deny read as permission</td></tr>
+<tr><td>build the mask, then ask</td><td>Mask(deny:admin,read) &rarr; <strong>False</strong></td></tr>
+<tr><td>compose it along a path with two full-authority steps</td><td><strong>Mask(deny:admin,read)</strong></td></tr>
+</tbody></table>
+<p>That first row was a real defect. One half of the system knew a deny was absorbing; the path
+that walks the permission graph did not, and would hand out authority a deny had explicitly taken
+away. The fix was not to patch the check &mdash; it was to make the disagreement
+<strong>unrepresentable</strong> by giving both halves one operator.</p>
+<p>The laws, checked over every one of the <strong>1024</strong> possible masks:</p>
+<table class="tab"><thead><tr><th>law</th><th>holds</th></tr></thead><tbody>
+<tr><td>a &amp; a = a &nbsp;<span class="note">(idempotent)</span></td><td>True</td></tr>
+<tr><td>a &amp; b = b &amp; a</td><td>True</td></tr>
+<tr><td>full authority changes nothing</td><td>True</td></tr>
+<tr><td>a deny anywhere empties the path</td><td>True</td></tr>
+<tr><td>the result is never bigger than either side</td><td>True</td></tr>
+</tbody></table>
+</section>
+
+<section class="slide">
+<h2>The one difference that matters</h2>
+<p>Both mechanisms shrink. Both compose along a path. Neither can grow. One test separates
+them cleanly.</p>
+<p><strong>Do it twice. Does anything change?</strong></p>
+<div class="two">
+<div><span class="exA">authority</span>
+<p class="formula" style="text-align:left">a &amp; a &nbsp;=&nbsp; a</p>
+<p>Intersecting a permission with itself changes nothing, ever. Checked across all
+<strong>1024</strong> masks: <strong>True</strong>. Asking the same question twice is asking it once.</p></div>
+<div><span class="exB">propagation</span>
+<p class="formula" style="text-align:left">att(d)&sup2; &nbsp;=&nbsp; att(2d)</p>
+<p>Travelling the same distance twice attenuates <em>twice</em>. It never returns what you started
+with.</p></div>
+</div>
+<table class="tab"><thead><tr><th>d</th><th>att(d)</th><th>att(d)&sup2;</th><th>att(2d)</th>
+<th>att(d)&sup2; = att(d)?</th></tr></thead><tbody><tr><td>1</td><td>0.79944980</td><td>0.63911998</td><td>0.63911998</td><td>no</td></tr><tr><td>2</td><td>0.63911998</td><td>0.40847435</td><td>0.40847435</td><td>no</td></tr><tr><td>5</td><td>0.32655474</td><td>0.10663800</td><td>0.10663800</td><td>no</td></tr><tr><td>10</td><td>0.10663800</td><td>0.01137166</td><td>0.01137166</td><td>no</td></tr></tbody></table>
+<p class="warn">Authority is a <strong>set</strong>, with no distance and no in-between. Propagation
+is a <strong>rate</strong> over a distance. Reach for <code>&amp;</code> on a propagation path, or
+for <code>e<sup>&minus;d/&xi;</sup></code> on a chain of permissions, and <strong>nothing will
+raise</strong> &mdash; you will simply get a wrong answer that looks fine.</p>
+<p class="note">The library records this about itself. Both operations were once importable under the
+same bare name, and one was renamed specifically because <em>&ldquo;that is exactly the shape a
+wrong import takes.&rdquo;</em></p>
+</section>
+
+<section class="slide">
+<h2>The other two, briefly</h2>
+<p><strong>Three &mdash; a crossing attenuates nothing at all.</strong> Unit A6 measured this: the
+energy going into a crossing equals delivered plus reflected plus bystanding, at a residual of
+<strong>exactly zero</strong>. The projection is orthogonal, and orthogonal projections conserve.
+Loss does not belong at the meeting point; it belongs to the <em>travel between</em> meeting points,
+where it is charged against a measured distance.</p>
+<p><strong>Four &mdash; &tau;, the mismatch of apertures.</strong> Also from A6: a beam sent into a
+receiver with less room loses the excess, in exact proportion to the ratio of the two phase spaces.
+There is no distance anywhere in that, and no time. It is purely a matter of what will fit.</p>
+<table class="tab"><thead><tr><th>mechanism</th><th>composes by</th><th>over</th><th>idempotent</th></tr></thead><tbody>
+<tr><td>the optical rate</td><td>multiplication</td><td>distance</td><td>no</td></tr>
+<tr><td>the authority meet</td><td>intersection</td><td>a path of permissions</td><td>yes</td></tr>
+<tr><td>a crossing</td><td>&mdash; nothing is lost &mdash;</td><td>&mdash;</td><td>trivially</td></tr>
+<tr><td>&tau;, aperture mismatch</td><td>a ratio, capped at 1</td><td>phase space</td><td>yes</td></tr>
+</tbody></table>
+<p class="note">Four mechanisms, four different arithmetics, and no error message anywhere between
+them. Telling them apart is the entire content of this unit.</p>
+</section>
+
+<section class="slide">
+<h2>One ceiling over all four</h2>
+<p class="formula">what comes out &nbsp;&le;&nbsp; what went in</p>
+<p><strong>&le;</strong> is <strong>less than or equal to</strong>. Every one of the four obeys it,
+in its own currency:</p>
+<ul class="pieces">
+<li>Survival across a distance is at most 1, and is 1 only at zero distance.</li>
+<li>An intersection is never larger than either side it came from.</li>
+<li>A crossing delivers at most what it was handed, and manufactures no brightness.</li>
+<li>&tau; is capped at 1 &mdash; you cannot gain room by being sent to.</li>
+</ul>
+<p>Stated once, it is the sentence the whole construction is built on: <strong>composition along a
+path is monotone and non-amplifying.</strong> Authority can only be lost, never gained. Energy can
+only be spent, never conjured. A record can only be forgotten, never spontaneously remembered.</p>
+<p class="warn">This is why it is worth being exact about which mechanism you are in. They are not
+four implementations of one rule &mdash; they are four <em>models</em> of one rule, and a model has
+its own arithmetic. Sharing a ceiling does not make them substitutable.</p>
+</section>
+
+<section class="slide">
+<h2>And the constant is measured, not assumed</h2>
+<p>All of the above needs a number from somewhere. It comes from the record. The
+<strong>attenuation constant</strong> is how far the strongest pattern in a record stands above the
+next one &mdash; a separation, read off the record's own spectrum.</p>
+<svg class="fig-bars" viewBox="0 0 520 96" width="520" height="96" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">the measured attenuation constant</text><rect x="153.2" y="28" width="304.8" height="23" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="145.2" y="44.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">EEG halves</text><text x="464.0" y="44.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">0.277159</text><rect x="153.2" y="60" width="1.0" height="23" fill="var(--teal,#20635f)" opacity="0.45"/><text x="145.2" y="76.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">pure noise, same shape</text><text x="464.0" y="76.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.000000</text></svg>
+<table class="tab"><thead><tr><th></th><th class="exA">EEG halves</th><th class="exB">pure noise</th></tr></thead><tbody>
+<tr><td>modes above the floor</td><td>1</td><td>0</td></tr>
+<tr><td>contrast</td><td>1.3194</td><td>0.9126</td></tr>
+<tr><td>attenuation</td><td>0.277159</td><td><strong>0.000000</strong></td></tr>
+<tr><td>correlation length &xi;</td><td>4.4676</td><td>1.0096</td></tr>
+</tbody></table>
+<p class="warn">On noise the constant reads <strong>exactly 0.000000</strong>. Not 0.003. Not
+&ldquo;small&rdquo;. <strong>Exact zero is the result.</strong></p>
+<p>But that column is one noise record, and a claim about what the instrument <em>does</em> is a
+claim about more than one. So the same read was run on <strong>100</strong> fresh noise records:</p>
+<table class="tab"><thead><tr><th>on 100 noise records</th><th>result</th></tr></thead><tbody>
+<tr class="hi"><td>attenuation exactly zero</td><td><strong>100 of 100</strong></td></tr>
+<tr class="hi"><td>modes above the floor = 0</td><td><strong>100 of 100</strong></td></tr>
+<tr><td>contrast, exactly zero</td><td><strong>0 of 100</strong> &mdash; it reads 0.8624 to 0.9547</td></tr>
+</tbody></table>
+<p class="note cool">Two of the three read exact zero every single time. The third returns a
+number on every draw:
+<strong>contrast</strong> always returns a number, and on pure noise that number is not small &mdash;
+it sits in a narrow band from <strong>0.8624</strong> to <strong>0.9547</strong>. The EEG reads
+<strong>1.3194</strong>, which is above the whole band, but only <strong>1.38&times;</strong> its top.
+So contrast <em>separates</em> the record from noise, by a margin. Attenuation and the mode count do
+something different in kind: they go to exact zero and stay there.</p>
+<p>That is the practical reason this unit takes its constant from <strong>attenuation</strong>.
+A read that returns 0.91 on noise gives you a margin to argue about. A read that returns 0.000000 on
+a hundred noise records out of a hundred has answered the question.</p>
+<p class="warn">Which is the moment to be exact about the other exact zeros this course has shown you,
+because they are three different kinds of claim wearing the same zero:</p>
+<table class="tab"><thead><tr><th>where</th><th>what the zero is</th></tr></thead><tbody>
+<tr><td>unit A5, redundancy on the market</td><td>a property of <em>that record</em> &mdash; no
+draw involved, so it is the same every time by construction</td></tr>
+<tr><td>unit A6, coupling strength on a scrambled pair</td><td>a <strong>rate</strong>: exactly
+zero in <strong>192 of 200</strong> shuffles, and the slide there says so</td></tr>
+<tr class="hi"><td>here, attenuation on noise</td><td>held on <strong>every one</strong> of 100
+records tried &mdash; which is a stronger statement than one draw and a weaker one than a proof</td></tr>
+</tbody></table>
+<p class="note">A read that can only return small numbers invites you to believe in weak effects. A
+read that returns exactly zero has told you something. That is a design decision, repeated
+deliberately across the library &mdash; and the habit worth taking from the whole programme is the
+line above it: <strong>find out which kind of zero you have before you quote it.</strong></p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-attenuation-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-attenuation-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One Read, Two Names</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D5j &middot; the translation table</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+.names { font-variant-numeric: tabular-nums; }
+.names td.same { background: rgba(64,200,120,.16); font-weight: 600; }
+.names td.diff { background: rgba(255,140,90,.16); }
+</style>
+<section class="slide on" data-act="names">
+<h1>One Read, Two Names</h1>
+<p class="lede">A physicist and this course have been measuring the same things under different
+names. This page is the list, with the numbers, on one record.</p>
+<p><strong>Reading the letters.</strong> <strong>&mu;</strong>, said <em>mu</em>, and
+<strong>&alpha;</strong>, said <em>alpha</em>, are two ways of asking how much the record's largest
+pattern stands out. <strong>&kappa;</strong>, said <em>kappa</em>, is a counting constant.
+<strong>&Delta;</strong>, said <em>delta</em>, is the gap itself.</p>
+<table class="tab names"><thead><tr><th>what the physics calls it</th><th>what it is here</th>
+<th>on the EEG</th><th>worked out in</th></tr></thead><tbody>
+<tr class="hi"><td>the mass gap &Delta;</td><td>how fast the record's memory falls, per step,
+read at lag 6</td><td class="hit"><strong>0.341689</strong></td><td>B7</td></tr>
+<tr><td>attenuation &alpha;</td><td>the top pattern against the next thing up</td>
+<td class="hit"><strong>0.186377</strong></td><td>this page</td></tr>
+<tr><td>the tension &mu;</td><td>the top pattern against the noise edge</td>
+<td class="hit"><strong>0.224397</strong></td><td>D5g</td></tr>
+<tr><td>the entropy floor &kappa;<sub>0</sub></td><td>a count of paths on a cube</td>
+<td class="hit"><strong>0.274653</strong></td><td>D5a</td></tr>
+<tr><td>the confinement order parameter</td><td>how many patterns clear the edge</td>
+<td class="hit"><strong>2</strong></td><td>A7, D5h</td></tr>
+<tr><td>the resolution limit</td><td>how finely the record can be divided</td>
+<td class="hit"><strong>0.042125</strong></td><td>B5, B6</td></tr>
+</tbody></table>
+<p class="note cool">Every number in the third column comes from the same the EEG, and every one has
+been worked out in an earlier unit of this course. Unit <strong>B7</strong> measures how far along a
+record that first row can be read before it widens, which is why the lag it was taken at is named
+beside it. The names in the first column are what a paper
+about fields calls them.</p>
+</section>
+
+<section class="slide" data-act="names">
+<h2>The comparison the argument makes</h2>
+<p>Two of those rows are meant to be put side by side. The tension <strong>&mu;</strong> is what the
+record measures; the floor <strong>&kappa;<sub>0</sub></strong> is what counting gives. Unit
+<strong>D5g</strong> is that comparison, and here it is on this record:</p>
+<p class="formula">&mu; = 0.224397
+&nbsp;&nbsp;&nbsp;against&nbsp;&nbsp;&nbsp;
+&kappa;<sub>0</sub> = 0.274653</p>
+<table class="tab names"><thead><tr><th>quantity</th><th>value</th><th>where it comes from</th>
+</tr></thead><tbody>
+<tr><td>the top pattern</td><td>38.9170</td><td>measured on the record</td></tr>
+<tr><td>the noise edge</td><td>31.0946</td><td>how large a pattern gets on nothing</td></tr>
+<tr class="hi"><td>&mu;, the log of their ratio</td><td class="hit"><strong>0.224397</strong></td>
+<td>those two numbers</td></tr>
+<tr><td>&kappa;<sub>0</sub>, the floor</td><td class="hit"><strong>0.274653</strong></td>
+<td>counting, with no record involved</td></tr>
+</tbody></table>
+<p><strong>0.224397 sits below 0.274653</strong>, with <strong>0.050256</strong> to spare. That is the whole of
+the comparison, on one record, in numbers a reader can divide and take a logarithm of.</p>
+<p class="note">Unit <strong>D5g</strong> does this on eight records and works the same comparison
+in its other form, as a ratio against the fourth root of three. The two forms agree row by row
+there.</p>
+</section>
+
+<section class="slide" data-act="names">
+<h2>Two attenuations, and when they are one</h2>
+<p>The table's second and third rows both measure how far the top pattern stands above something.
+They differ in what that something is:</p>
+<p class="formula">&mu; = log( top &divide; edge )
+&nbsp;&nbsp;&middot;&nbsp;&nbsp;
+&alpha; = log( top &divide; the larger of: second pattern, edge )</p>
+<table class="tab names"><thead><tr><th>record</th><th>patterns above the edge</th><th>&alpha;</th>
+<th>&mu;</th><th>difference</th></tr></thead><tbody>
+<tr><td>the EEG</td><td>2</td><td>0.186377</td><td>0.224397</td><td class="diff">0.038020</td></tr><tr><td>the terrain grid</td><td>15</td><td>0.473764</td><td>1.949303</td><td class="diff">1.475540</td></tr><tr class="hi"><td>the scan</td><td>1</td><td>0.231767</td><td>0.231767</td><td class="same">0.000000</td></tr><tr class="hi"><td>the market's prices</td><td>1</td><td>0.116789</td><td>0.116789</td><td class="same">0.000000</td></tr><tr><td>the market's monthly changes</td><td>2</td><td>0.694371</td><td>0.864625</td><td class="diff">0.170254</td></tr><tr class="hi"><td>noise, seed 0</td><td>0</td><td>-0.033604</td><td>-0.033604</td><td class="same">0.000000</td></tr><tr class="hi"><td>noise, seed 1</td><td>0</td><td>-0.015068</td><td>-0.015068</td><td class="same">0.000000</td></tr><tr class="hi"><td>noise, seed 2</td><td>0</td><td>-0.054874</td><td>-0.054874</td><td class="same">0.000000</td></tr>
+</tbody></table>
+<p><strong>They come out identical on 5 of the eight records and differ on 3.</strong> The
+highlighted rows are the identical ones, and their difference column reads <strong>0.000000</strong>
+&mdash; not close to zero, exactly zero.</p>
+<p><strong>Look at the second column to see which rows those are.</strong> Every record where the
+two agree has <strong>1</strong> pattern above the edge, or none. Every record where they differ has
+<strong>2</strong> or more.</p>
+</section>
+
+<section class="slide" data-act="names">
+<h2>Why that is exactly the rule</h2>
+<p><strong>&alpha; takes whichever is larger, the second pattern or the edge.</strong> So the
+question is which of those two wins, and the count in the middle column answers it:</p>
+<table class="tab names"><thead><tr><th>patterns above the edge</th><th>where the second pattern
+sits</th><th>what &alpha; divides by</th><th>so &alpha; and &mu; are</th></tr></thead><tbody>
+<tr class="hi"><td>1, or none</td><td>below the edge</td><td>the edge</td>
+<td class="same">one number</td></tr>
+<tr><td>2 or more</td><td>above the edge</td><td>the second pattern</td>
+<td class="diff">two numbers</td></tr>
+</tbody></table>
+<p><strong>With one pattern above the edge, the second one is below it by definition.</strong> That
+is what "one above the edge" means. So &alpha; divides by the edge, which is what &mu; does, and the
+two calculations are the same calculation.</p>
+<p><strong>the terrain grid is the clearest case of the other kind.</strong> It has <strong>15</strong> patterns
+above the edge, its second pattern reads <strong>165.2473</strong> against an edge of
+<strong>37.7847</strong>, and the two attenuations come out <strong>1.475540</strong> apart.</p>
+<p><strong>What each one is good for.</strong> &mu; asks how far the record stands above nothing at
+all, which is the comparison unit <strong>D5g</strong> makes against the counting floor. &alpha;
+asks how far the leading pattern stands above its nearest rival, which is a question about whether
+one pattern dominates. On a record with a single pattern those questions have one answer, and the
+table above is that fact measured.</p>
+<p class="note cool">the scan is one of the agreeing records: <strong>1</strong> above the edge, and both
+attenuations read <strong>0.231767</strong>.</p>
+</section>
+
+<section class="slide" data-act="names">
+<h2>The map</h2>
+<table class="tab names"><thead><tr><th>the physics name</th><th>the unit that works it out</th>
+<th>on the EEG</th></tr></thead><tbody>
+<tr><td>the mass gap &Delta;</td><td><strong>B7</strong> &mdash; a decay's two endings</td>
+<td>0.341689</td></tr>
+<tr><td>the resolution limit</td><td><strong>B5</strong>, and <strong>B6</strong> for the constant
+in front</td><td>0.042125</td></tr>
+<tr><td>the entropy floor &kappa;<sub>0</sub></td><td><strong>D5a</strong> &mdash; counting paths
+on a cube</td><td>0.274653</td></tr>
+<tr class="hi"><td>the tension &mu;, against that floor</td><td><strong>D5g</strong> &mdash; the
+ceiling</td><td>0.224397</td></tr>
+<tr><td>the confinement order parameter</td><td><strong>A7</strong> for the edge,
+<strong>D5h</strong> for whether the count holds</td><td>2</td></tr>
+<tr><td>which theories it applies to</td><td><strong>D5f</strong> &mdash; the window</td>
+<td>&mdash;</td></tr>
+<tr><td>the whole calculation</td><td><strong>D5e</strong> &mdash; in eight lines</td>
+<td>&mdash;</td></tr>
+</tbody></table>
+<p><strong>One row of the paper's table is missing from this page, on purpose.</strong> The fill
+fraction is one of four reads whose published formula this course has been unable to reproduce. A
+translation is worth writing down once it has been checked, and that one has been left where it is
+until it can be.</p>
+<p><strong>What the map is for.</strong> A reader who has worked through the B and D5 units has
+measured every quantity in the first column. This page is where those measurements get their other
+names, so the paper can be read with the arithmetic already in hand.</p>
+<p class="note">Every number in the last column comes from the EEG, a record of 800 readings that unit
+<strong>D8</strong> describes and units A3, A4, B5, D5g and D5h all measure.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-names-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-names-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

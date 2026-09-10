@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Read</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D5c &middot; the instrument</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+pre.src{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7; background:var(--sunk);
+        border-left:2px solid var(--edge); padding:10px 14px; overflow-x:auto}
+</style><section class="slide on" data-act="read">
+<h1>The Read</h1>
+<p class="lede">Two units fixed the inequality: the floor <strong>&kappa;<sub>0</sub></strong> from
+counting, and the tension <strong>&mu;(&beta;)</strong> from bounds. This unit is the instrument
+that takes a lattice field and returns numbers.</p>
+<p class="note">The symbols here, said aloud: <strong>&Delta;</strong> is <em>delta</em>, the gap; <strong>&mu;</strong> is <em>mu</em>, a multiplier per step; <strong>&rho;</strong> is <em>rho</em>; <strong>&phi;</strong> is <em>phi</em>; and <strong>&Sigma;</strong> is a capital <em>sigma</em>, meaning <em>add up what follows</em>. <span class="mono">&plusmn;</span> is <em>plus or minus</em> and <span class="mono">&infin;</span> is <em>infinity</em>.</p>
+<p>The gauge configuration is a four-dimensional field of matrices. What the read takes from it is a
+<strong>screen</strong>: an ordered axis and a set of channels. The reduction is one line of
+physics &mdash; the local gauge-invariant action density at each site:</p>
+<p class="formula">&phi;(x) &nbsp;=&nbsp; &Sigma;<sub>p</sub> (1 &minus; &frac1N; Re tr
+U<sub>p</sub>)</p>
+<p>That is a real number per site, built from the plaquettes <code>U<sub>p</sub></code> touching it,
+and it is gauge-invariant &mdash; the same number whatever gauge the configuration is written in.
+Two reads then run on it, and they answer different questions.</p>
+<table class="tab"><thead><tr><th>read</th><th>what it returns</th><th>the question</th>
+</tr></thead><tbody>
+<tr><td><strong>&Delta;</strong></td><td>&minus;log&nbsp;|&mu;<sub>1</sub>|, the decay rate of the
+slowest fluctuation</td><td>how fast does the screen forget?</td></tr>
+<tr><td><strong>K<sub>signal</sub></strong></td><td>the count of modes above the confined-vacuum
+null</td><td>is there long-range order?</td></tr>
+</tbody></table>
+</section>
+
+<section class="slide" data-act="read">
+<h2>What a rate is</h2>
+<p>The next slide reports six <em>rates</em>, so it is worth fixing what one is. In this argument a
+rate means exactly one thing:</p>
+<p class="formula">a rate of <em>r</em> &nbsp;=&nbsp; multiply by e<sup>&minus;r</sup> every
+step</p>
+<p>A big rate is a fast fall. Translate the six the next slide plants, and walk each one three
+steps:</p>
+<table class="tab"><thead><tr><th>rate r</th><th>factor e<sup>&minus;r</sup></th>
+<th>after 3 steps</th></tr></thead><tbody><tr><td>0.30</td><td class="hit">0.7408</td><td>0.406540</td></tr><tr><td>0.75</td><td class="hit">0.4724</td><td>0.105422</td></tr><tr><td>1.40</td><td class="hit">0.2466</td><td>0.014996</td></tr><tr><td>2.20</td><td class="hit">0.1108</td><td>0.001360</td></tr><tr><td>3.00</td><td class="hit">0.0498</td><td>0.000124</td></tr><tr><td>4.10</td><td class="hit">0.0166</td><td>0.000005</td></tr></tbody></table>
+<p class="note">The third column is the second one cubed, worked from the four places printed beside
+it &mdash; so what you type is what the table shows.</p>
+<p>And back the other way, which is what the instrument does: a factor of <strong>0.7408</strong> per
+step is a rate of <strong>&minus;ln(0.7408) = 0.30</strong>. The two forms carry the same fact, and
+the logarithm is only there because <strong>factors multiply and rates add</strong>.</p>
+<p class="note cool">You have met this curve three times already. Unit <strong>A3</strong> measured
+it along an ordered axis and called it a <em>point-spread</em>. Unit <strong>B3</strong> measured it
+across a distance and called it <em>survival</em>,
+<code>e<sup>&minus;d/&xi;</sup></code>. Unit <strong>C4</strong> used it to decide what a running
+system still treats as current. Here it is on the time axis of a lattice, and the rate has a name:
+the <strong>mass gap</strong>.</p>
+</section>
+
+<section class="slide" data-act="read">
+<h2>The instrument, on a field whose answer is known</h2>
+<p>The decay read identifies a linear propagator from the trajectory and takes the magnitude of its
+slowest eigenvalue. A mode that is multiplied by <code>&mu;</code> each step decays at rate
+<code>&minus;log|&mu;|</code>, so the slowest mode's rate is the gap:</p>
+<p class="formula">&Delta; &nbsp;=&nbsp; &minus;log |&mu;<sub>1</sub>|</p>
+<p>Before pointing that at physics, point it at something with a known answer. A field is built here
+from <strong>6</strong> modes decaying at rates chosen in advance, and handed to the read:</p>
+<table class="tab"><thead><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead><tbody>
+<tr><td>planted rate</td><td>0.3000</td><td>0.7500</td><td>1.4000</td><td>2.2000</td><td>3.0000</td><td>4.1000</td></tr>
+<tr><td class="hit">read back</td><td class="hit">0.3000</td><td class="hit">0.7500</td><td class="hit">1.4000</td><td class="hit">2.2000</td><td class="hit">3.0000</td><td class="hit">4.1000</td></tr>
+</tbody></table>
+<p>Every rate returns, to the digits shown. The slowest of them is what the gap read reports:
+<strong>0.300000</strong> against a planted <strong>0.30</strong>.</p>
+<p class="note cool">The read is an eigenvalue of the record's own dynamics. It works out the operator that carries one step
+into the next, and then asks what that operation <em>multiplies by</em> &mdash; those multipliers
+are its <strong>eigenvalues</strong>, one per mode, and each is a factor per step. The record
+supplies them, and no setting decides how many to keep.</p>
+</section>
+
+<section class="slide" data-act="read">
+<h2>Why the read subtracts the vacuum</h2>
+<p>An equilibrium field sits at a <strong>vacuum expectation</strong> and fluctuates about it. That constant is itself a mode of the
+dynamics, and it is the slowest one there is &mdash; a constant never decays.</p>
+<p>So the slowest mode of the raw dynamics is the vacuum, and a read that takes it reports
+<em>gapless</em> on every equilibrium ensemble it is ever handed. Measured here on stationary fields
+whose fluctuations decay at a rate known in closed form:</p>
+<table class="tab"><thead><tr><th>fluctuation decay planted</th>
+<th>raw: slowest mode</th><th class="hit">connected: slowest fluctuation</th>
+<th>read against planted</th></tr></thead><tbody><tr><td>0.0513</td><td>0.000074</td><td class="hit">0.0422</td><td>-17.7%</td></tr><tr><td>0.1054</td><td>0.000026</td><td class="hit">0.0680</td><td>-35.4%</td></tr><tr><td>0.3011</td><td>0.000014</td><td class="hit">0.2777</td><td>-7.8%</td></tr></tbody></table>
+<p>The raw column is the vacuum, every time. The <strong>connected</strong> read subtracts the mean
+first, so the slowest mode it can find is the slowest <em>fluctuation about</em> the vacuum, which
+is what the gap is.</p>
+<p class="formula">&Delta; &nbsp;=&nbsp; &minus;log |&mu;<sub>1</sub>| &nbsp;&nbsp;on the connected
+dynamics</p>
+<p class="note">The read comes in <strong>low</strong>: 0.2777 against a planted 0.3011 at the fastest
+rate on the table. A slow mode needs a long record to resolve, so a finite record understates the
+rate &mdash; and understating the decay rate understates the gap, which is the conservative
+direction for a claim that the gap is positive.</p>
+</section>
+
+<section class="slide" data-act="read">
+<h2>Calibrated against a field that carries its own gap</h2>
+<p>A free scalar of mass <em>m</em> has a gap by construction: its one-particle energy
+<code>E<sub>0</sub></code> follows from the lattice dispersion, with no measurement involved. So the
+instrument can be scored. The mass-gap repository publishes that scoring, and these are its
+numbers:</p>
+<table class="tab"><thead><tr><th>planted mass m</th><th>E<sub>0</sub> expected</th>
+<th>&Delta; read</th><th>relative error</th></tr></thead><tbody><tr><td>0.20</td><td>0.1997</td><td class="hit">0.1819</td><td>-8.90%</td></tr><tr><td>0.35</td><td>0.3482</td><td class="hit">0.3267</td><td>-6.19%</td></tr><tr><td>0.50</td><td>0.4949</td><td class="hit">0.4706</td><td>-4.92%</td></tr><tr><td>0.70</td><td>0.6864</td><td class="hit">0.6597</td><td>-3.90%</td></tr><tr><td>0.90</td><td>0.8721</td><td class="hit">0.8486</td><td>-2.69%</td></tr><tr><td>1.10</td><td>1.0510</td><td class="hit">1.0488</td><td>-0.21%</td></tr></tbody></table>
+<p>The pattern is the one the planted sweep showed on the previous slide, and it holds here on a
+different field, a different code path and a different author: <strong>the read comes in low, and
+the shortfall shrinks as the gap grows</strong> &mdash; from <strong>-8.90%</strong> at
+m&nbsp;=&nbsp;0.20 to <strong>-0.21%</strong> at m&nbsp;=&nbsp;1.1.</p>
+<p class="note cool">Read on <strong>8x8x64</strong> lattices, 40 configurations each. The figures on
+this slide are parsed from <code>research/data/8_5_dat_gap_calibration.csv</code> when the deck is built. They are the
+repository's measurements, and the deck states them and names the file.</p>
+</section>
+
+<section class="slide" data-act="read">
+<h2>The second read: is there long-range order?</h2>
+<p>The gap read answers <em>how fast</em>, along the time axis. The confinement read answers
+<em>which phase</em>, and it works on the spatial correlation.</p>
+<p>Each <code>L&times;L</code> spatial plane is kept intact and read on its own, and the results are
+averaged over planes. <strong>K<sub>signal</sub></strong> counts the modes standing above a
+<strong>confined-vacuum reference null</strong> &mdash; a floor set by a deeply confined ensemble,
+so the comparison is against the theory's own disorder.</p>
+<p class="warn">The direction takes a moment, and it is the point of the slide.
+K<sub>signal</sub> counts coherent modes, so it reads <strong>order</strong>. Confinement is the
+<strong>disordered</strong> phase: the field is scrambled, its spectrum sits in the random-matrix
+bulk, and nothing resolves. So K<sub>signal</sub> is <em>low</em> exactly where the gap lives, and
+rises when a massless mode appears and resolves above the sea.</p>
+<table class="tab"><thead><tr><th>&beta;</th><th>K<sub>signal</sub></th><th>phase</th>
+</tr></thead><tbody><tr><td>0.40</td><td class="hit">0.0378</td><td>confined</td></tr><tr><td>0.50</td><td class="hit">0.0413</td><td>confined</td></tr><tr><td>0.60</td><td class="hit">0.0319</td><td>confined</td></tr><tr><td>0.70</td><td class="hit">0.0374</td><td>confined</td></tr><tr><td>0.80</td><td class="hit">0.0433</td><td>confined</td></tr><tr><td>0.90</td><td class="hit">0.0492</td><td>confined</td></tr><tr><td>0.95</td><td class="hit">0.0599</td><td>confined</td></tr><tr><td>1.00</td><td class="hit">0.0959</td><td>confined</td></tr><tr class="hi"><td>1.05</td><td class="hit">0.1532</td><td>Coulomb</td></tr><tr class="hi"><td>1.10</td><td class="hit">0.1960</td><td>Coulomb</td></tr><tr class="hi"><td>1.20</td><td class="hit">0.2290</td><td>Coulomb</td></tr><tr class="hi"><td>1.30</td><td class="hit">0.2673</td><td>Coulomb</td></tr><tr class="hi"><td>1.40</td><td class="hit">0.2945</td><td>Coulomb</td></tr><tr class="hi"><td>1.50</td><td class="hit">0.2957</td><td>Coulomb</td></tr><tr class="hi"><td>1.60</td><td class="hit">0.4048</td><td>Coulomb</td></tr><tr class="hi"><td>1.70</td><td class="hit">0.3390</td><td>Coulomb</td></tr></tbody></table>
+<p>The step is the deconfinement. The highest confined reading is <strong>0.0959
+&plusmn;&nbsp;0.0039</strong> at &beta;&nbsp;=&nbsp;1.00, and the lowest Coulomb reading is
+<strong>0.1532 &plusmn;&nbsp;0.0045</strong> at &beta;&nbsp;=&nbsp;1.05: the two bands stay apart by
+more than their intervals.</p>
+</section>
+
+<section class="slide" data-act="read">
+<h2>The no-bump</h2>
+<p>The same read across a coupling range separates the two theories, and the separation is the
+measurement the argument wants.</p>
+<table class="tab"><thead><tr><th>group</th><th>couplings read</th>
+<th>K<sub>signal</sub> range</th><th>what it says</th></tr></thead><tbody>
+<tr><td>SU(2)</td><td>14</td><td class="hit">0.0363 &ndash; 0.0881</td><td>flat and low at every
+coupling</td></tr>
+<tr><td>compact U(1)</td><td>15</td><td class="hit">0.0319 &ndash; 0.3390</td><td>steps up past its
+deconfinement transition</td></tr>
+</tbody></table>
+<p>SU(2) stays confined across the whole range, with no rise anywhere &mdash; that flatness is the
+<strong>no-bump</strong>, and it is the disorder-operator form of the statement the gap argument
+needs. Compact U(1) has a transition, and the same read finds it: that is what makes the flat SU(2)
+line evidence about SU(2).</p>
+<p class="note cool">Same read, same null, same code, two theories. The control for &ldquo;this
+instrument can see a transition&rdquo; is a theory that has one, and U(1) supplies it.</p>
+<p class="note">Parsed from <code>research/data/8_3_dat_nobump.csv</code> at build time.</p>
+</section>
+
+<section class="slide" data-act="read">
+<h2>What the instrument contributes</h2>
+<ul class="pieces">
+<li><strong>One reduction, and it is physics.</strong> The action density
+&phi;(x) = &Sigma;<sub>p</sub>(1 &minus; &frac1N; Re tr U<sub>p</sub>) turns a field of matrices
+into a gauge-invariant screen. Spatial planes stay intact, because the confinement read lives on
+their correlation.</li>
+<li><strong>The gap read is an eigenvalue.</strong> &Delta; = &minus;log
+|&mu;<sub>1</sub>| off a propagator identified from the trajectory. Planted rates come back to the
+digits shown.</li>
+<li><strong>Subtract the vacuum, or measure it.</strong> The slowest mode of an equilibrium field is
+the vacuum, at rate zero. The connected read is what makes the answer a statement about
+fluctuations.</li>
+<li><strong>The read is conservative.</strong> A finite record understates a slow rate, so &Delta;
+comes in low &mdash; the safe direction for a claim that &Delta; is positive.</li>
+<li><strong>K<sub>signal</sub> is low where the gap lives.</strong> It counts order, and confinement
+is disorder. The flat SU(2) line beside the U(1) step is the pair that makes each of them
+readable.</li>
+</ul>
+<p class="note cool">Next: unit <strong>D5d</strong> takes the decay rate to a spectrum &mdash;
+reflection positivity, &rho;'(n) = &rho;'(1)<sup>n</sup>, and how a rate becomes a Hamiltonian with
+spec &sube; {0} &cup; [&Delta;, &infin;).</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-read-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-read-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

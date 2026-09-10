@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Margin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D5b &middot; the tension under the floor</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+</style><section class="slide on" data-act="margin">
+<h1>The Margin</h1>
+<p class="lede">Unit D5a fixed the floor by counting: <strong>&kappa;<sub>0</sub> = &frac14; ln 3 =
+0.274653</strong>, the same number at every coupling. This unit is the other side of the
+inequality.</p>
+<p class="note">The symbols here, said aloud: <strong>&kappa;</strong> is <em>kappa</em>, <strong>&mu;</strong> is <em>mu</em>, <strong>&beta;</strong> is <em>beta</em> and <strong>&theta;</strong> is <em>theta</em>, the angle a screen resolves. <span class="mono">&ge;</span> is <em>greater than or equal</em>, <span class="mono">&le;</span> is <em>less than or equal</em>, <span class="mono">&asymp;</span> is <em>approximately equal</em>, and <span class="mono">&infin;</span> is <em>infinity</em>.</p>
+<p class="formula">&mu;(&beta;) &nbsp;&lt;&nbsp; &kappa;<sub>0</sub> &nbsp;&nbsp;at every
+&beta;</p>
+<p><strong>&mu;</strong> is the centre-vortex tension &mdash; the action cost per unit area of a
+vortex surface. The floor is what those surfaces gain from being numerous. When the tension stays
+under the floor, the surfaces condense, the flux confines, and the gap inherits the surplus:</p>
+<p class="formula">&Delta; &nbsp;&ge;&nbsp; &kappa;<sub>0</sub> &minus; &mu;(&beta;)</p>
+<p><strong>&beta;</strong> is the <strong>coupling</strong>: one dial that sets how strongly the
+field interacts with itself. It is defined as <span class="mono">&beta; = 2N/g&sup2;</span>, with
+<span class="mono">g</span> the interaction strength &mdash; so <strong>&beta; large means
+<em>g</em> small</strong>, and the weak end of the theory sits at the large-&beta; end of every
+table here. Four Greek letters carry this whole argument: <span class="mono">&kappa;</span> the
+floor, <span class="mono">&mu;</span> the cost, <span class="mono">&beta;</span> the coupling,
+<span class="mono">&Delta;</span> the gap.</p>
+<p>The coupling axis is covered in three pieces, and they are three different kinds of statement.
+That is the part worth carrying away.</p>
+<table class="tab"><thead><tr><th>where</th><th>what kind of statement</th></tr></thead><tbody>
+<tr><td>strong coupling, &beta; small</td><td>a cited bound, <em>evaluated</em> here</td></tr>
+<tr><td>weak coupling, &beta; large</td><td>a limit, <em>computed</em></td></tr>
+<tr><td>the interior, in between</td><td>a theorem with one <em>measured</em> input</td></tr>
+</tbody></table>
+</section>
+
+<section class="slide" data-act="margin">
+<h2>Strong coupling: a bound you can evaluate</h2>
+<p>At small &beta; there is a way of writing the theory as a sum that <em>converges</em> &mdash; the
+character expansion &mdash; and it gives the tension directly. This is the
+Osterwalder&ndash;Seiler bound. <code>I<sub>1</sub></code> and <code>I<sub>2</sub></code> are two
+standard functions, the <strong>modified Bessel functions</strong>; a table or a calculator gives
+them, and what matters here is that their ratio is a definite number at each &beta;:</p>
+<p class="formula">&mu;(&beta;) &nbsp;&le;&nbsp; 2&beta; &middot; I<sub>2</sub>(&beta;) &divide;
+I<sub>1</sub>(&beta;)</p>
+<p>A bound written as a formula is a bound you can put numbers into. Doing that is the whole slide:
+evaluate it, and find where it crosses the floor.</p>
+<table class="tab"><thead><tr><th>&beta;</th><th>2&beta; I<sub>2</sub>/I<sub>1</sub></th>
+<th>against &kappa;<sub>0</sub> = 0.274653</th></tr></thead><tbody><tr><td>0.300</td><td class="hit">0.044832</td><td>below the floor</td></tr><tr><td>0.500</td><td class="hit">0.123718</td><td>below the floor</td></tr><tr><td>0.700</td><td class="hit">0.240146</td><td>below the floor</td></tr><tr><td>0.749</td><td class="hit">0.274165</td><td>below the floor</td></tr><tr><td>0.750</td><td class="hit">0.274882</td><td>above the floor</td></tr><tr><td>0.800</td><td class="hit">0.311794</td><td>above the floor</td></tr><tr><td>0.970</td><td class="hit">0.453027</td><td>above the floor</td></tr></tbody></table>
+<p>The crossing is at</p>
+<p class="formula">&beta;<sub>&#8902;</sub> &nbsp;=&nbsp; <strong>0.749681</strong> &nbsp;&nbsp;where
+&nbsp; 2&beta;<sub>&#8902;</sub> I<sub>2</sub>/I<sub>1</sub> = &kappa;<sub>0</sub></p>
+<p class="note">Bracketed by the two rows either side of it: the bound reads <strong>0.274165</strong>
+at &beta;&nbsp;=&nbsp;0.749 and <strong>0.274882</strong> at &beta;&nbsp;=&nbsp;0.750, so the crossing
+lies between them. The repository certifies that bracket in <strong>exact rational
+arithmetic</strong> with proven tail bounds on both series, in <code>research/code/certify/beta_star_enclosure.py</code>. The evaluation here
+is double precision, and it shows a reader where the number comes from.</p>
+<p class="note cool">The expansion is certified convergent out to
+&beta;<sub>KP</sub>&nbsp;&approx;&nbsp;0.97, where the bound still evaluates &mdash; to
+<strong>0.4530</strong>, well above the floor. So the bound is <em>valid</em> to 0.97 and
+<em>below the floor</em> to 0.750: two different numbers, and the argument uses the smaller one,
+with about 0.22 in &beta; to spare.</p>
+</section>
+
+<section class="slide" data-act="margin">
+<h2>Weak coupling: the tension goes to zero</h2>
+<p>At the other end asymptotic freedom does the work. The vortex tension becomes a physical scale
+measured in lattice units, so it carries a factor of the spacing squared and shrinks as the lattice
+is refined. Read at fixed lattice size, the free-field tension falls as
+<code>1&nbsp;/&nbsp;L&sup2;</code>:</p>
+<p class="formula">&mu;<sub>&infin;</sub>(L) &nbsp;&asymp;&nbsp; 2.1 &divide; L&sup2;</p>
+<table class="tab"><thead><tr><th>L</th><th>&mu;<sub>&infin;</sub>(L)</th>
+<th>against the floor</th></tr></thead><tbody><tr><td>8</td><td class="hit">0.0328</td><td>8&times; under</td></tr><tr><td>12</td><td class="hit">0.0146</td><td>19&times; under</td></tr><tr><td>16</td><td class="hit">0.0082</td><td>33&times; under</td></tr><tr><td>28</td><td class="hit">0.0027</td><td>103&times; under</td></tr></tbody></table>
+<p>By <strong>L = 8</strong> the tension is <strong>0.0328</strong>, about <strong>8
+times</strong> under the floor, and it keeps falling. The coefficient is independent of <em>N</em>,
+so the same statement covers SU(2) and SU(3) together.</p>
+<p class="note cool">This end is where the two theories part company. For SU(N) the tension shrinks
+as the coupling weakens and stays under the floor. For compact U(1) the monopole action
+<em>grows</em> with &beta;, crosses the floor at a finite &beta;<sub>c</sub>, and the theory
+deconfines. Same floor, opposite running &mdash; and unit D5c measures both.</p>
+</section>
+
+<section class="slide" data-act="margin">
+<h2>The interior: one inequality, three steps</h2>
+<p>Between the two ends the bound comes from the aperture itself. The tension is read as a
+cosine average over the vortex angle distribution, and the chain has three steps, each an
+inequality in the safe direction.</p>
+<p class="formula">&mu; &nbsp;=&nbsp; &minus;log &#10216;cos &theta;&#10217;</p>
+<p><strong>One &mdash; the aperture fixes the angle scale.</strong> A screen of side <em>L</em>
+resolves angles in steps of <code>2&pi;/(L+1)</code>, so the angular spread inherits the
+correlation moment <code>&#10216;d&sup2;&#10217;</code> at that scale:</p>
+<p class="formula">&#10216;&theta;&sup2;&#10217; &nbsp;=&nbsp; (2&pi; &divide; (L+1))&sup2;
+&middot; &#10216;d&sup2;&#10217;</p>
+<p><strong>Two &mdash; the analytic step.</strong> The cosine is bounded below by a parabola for
+every real <em>x</em>, so an average of cosines is bounded by the average of the parabola:</p>
+<p class="formula">cos x &nbsp;&ge;&nbsp; 1 &minus; x&sup2;/2 &nbsp;&nbsp;&rArr;&nbsp;&nbsp;
+&#10216;cos &theta;&#10217; &nbsp;&ge;&nbsp; 1 &minus; &#10216;&theta;&sup2;&#10217;/2</p>
+<p><strong>Three &mdash; the logarithm carries it through.</strong> <code>&minus;log</code> is
+decreasing, so a lower bound on the cosine average is an upper bound on &mu;:</p>
+<p class="formula">&mu; &nbsp;&le;&nbsp; &minus;log(1 &minus; &#10216;&theta;&sup2;&#10217;/2)</p>
+<p>Which leaves one measured quantity: the correlation moment
+<code>&#10216;d&sup2;&#10217;</code>. Everything else is geometry and calculus.</p>
+</section>
+
+<section class="slide" data-act="margin">
+<h2>What the interior bound gives</h2>
+<p>The proof takes a uniform input, <code>&#10216;d&sup2;&#10217; &le; 1</code>. Put that through
+the three steps at each lattice size:</p>
+<table class="tab"><thead><tr><th>L</th><th>&#10216;&theta;&sup2;&#10217;</th>
+<th>&mu; &le;</th><th>against the floor</th><th>&kappa;<sub>0</sub> &divide; &mu;</th></tr></thead>
+<tbody><tr class="hi"><td>8</td><td>0.48739</td><td class="hit">0.2793</td><td>above the floor</td><td>0.98</td></tr><tr><td>12</td><td>0.23360</td><td class="hit">0.1242</td><td>clears</td><td>2.21</td></tr><tr><td>16</td><td>0.13660</td><td class="hit">0.0707</td><td>clears</td><td>3.88</td></tr><tr><td>28</td><td>0.04694</td><td class="hit">0.0238</td><td>clears</td><td>11.56</td></tr></tbody></table>
+<p class="warn">Read the first row before the others. At <strong>L = 8</strong> the uniform input
+gives <strong>&mu; &le; 0.2793</strong>, which sits <em>above</em> the floor: the bound holds, and at
+this size it leaves the tension room to reach the floor. The uniform input clears from <strong>L = 12</strong> upward, and
+L&nbsp;=&nbsp;12&ndash;28 is the window the forward read is taken across.</p>
+<p>The reason is in the scaling. <code>&#10216;&theta;&sup2;&#10217;</code> falls as
+<code>1/L&sup2;</code>, so &mu; does too, and the factor by which the tension sits under the floor
+<strong>grows as L&sup2;</strong>. From L&nbsp;=&nbsp;12 to L&nbsp;=&nbsp;28 that factor grows
+<strong>5.2&times;</strong>, against a size ratio squared of <strong>5.4</strong>.</p>
+<p class="note cool">The measured moments are far smaller than the uniform input: the runtime read
+finds <code>&#10216;d&sup2;&#10217;</code> between <strong>0.014</strong> and <strong>0.16</strong>
+across the grid. At the top of that range the bound gives <strong>&mu; &le; 0.0398</strong> at
+L&nbsp;=&nbsp;8 &mdash; comfortably under the floor at every size on the table. The uniform input is
+the one the proof carries, and it is deliberately looser than what is measured.</p>
+</section>
+
+<section class="slide" data-act="margin">
+<h2>The interior, worked at one size</h2>
+<p>This is the part of the argument you can carry out yourself. Take
+<strong>L&nbsp;=&nbsp;12</strong> and the proof's input
+<code>&#10216;d&sup2;&#10217; &le; 1</code>, and follow the three steps:</p>
+<table class="tab"><thead><tr><th>step</th><th>what you type</th><th>result</th></tr></thead><tbody>
+<tr><td>the angle a screen of side 12 resolves</td><td>2&pi; &divide; 13</td>
+<td class="hit">0.483322</td></tr>
+<tr><td>square it</td><td>0.483322 &times; 0.483322</td><td class="hit">0.233600</td></tr>
+<tr><td>times the moment</td><td>0.233600 &times; 1</td><td class="hit">0.233600</td></tr>
+<tr class="sep"><td>the parabola step</td><td>1 &minus; 0.233600 &divide; 2</td>
+<td class="hit">0.883200</td></tr>
+<tr><td>as a rate</td><td>&minus;ln(0.883200)</td><td class="hit">0.124204</td></tr>
+<tr class="hi"><td><strong>the margin</strong></td><td>0.274653 &minus; 0.124204</td>
+<td class="hit"><strong>0.150449</strong></td></tr>
+</tbody></table>
+<p>Six lines, and the last one is positive. That is the interior at this lattice size, and it is the
+0.1242 the table on the previous slide reports.</p>
+<p class="note cool">The first step is unit <strong>A9</strong>'s idea in one line: a screen of finite
+side resolves angles in finite steps, and a wider screen resolves finer ones. Everything after it
+follows from that one aperture.</p>
+</section>
+
+<section class="slide" data-act="margin">
+<h2>The one inequality worth checking</h2>
+<p>Step two of that chain replaced a cosine with a parabola:</p>
+<p class="formula">cos x &nbsp;&ge;&nbsp; 1 &minus; x&sup2;&divide;2</p>
+<p>It holds for every real <em>x</em>, and it is the only step in the whole argument a reader has to
+take on trust. So here it is at the angles this unit actually uses &mdash; reproducible on any
+calculator:</p>
+<table class="tab"><thead><tr><th>x</th><th>cos x</th><th>1 &minus; x&sup2;&divide;2</th>
+<th></th></tr></thead><tbody><tr><td>0.1</td><td>0.995004</td><td class="hit">0.995000</td><td>holds</td></tr><tr><td>0.3</td><td>0.955336</td><td class="hit">0.955000</td><td>holds</td></tr><tr><td>0.5</td><td>0.877583</td><td class="hit">0.875000</td><td>holds</td></tr><tr><td>0.7</td><td>0.764842</td><td class="hit">0.755000</td><td>holds</td></tr></tbody></table>
+<p>The parabola sits <em>under</em> the cosine every time, and that direction is what makes the
+chain safe: replacing the cosine with something smaller can only make the bound on &mu;
+<strong>larger</strong>. An upper bound that errs upward is still an upper bound.</p>
+<p class="note">Every inequality in this unit points the same way. The character bound is an upper
+bound on &mu;, the parabola makes it looser, and the conclusion is that even the loosened version
+stays under the floor. A margin that survives being weakened is a margin you can rely on.</p>
+</section>
+
+<section class="slide" data-act="margin">
+<h2>The coupling axis, covered</h2>
+<ul class="pieces">
+<li><strong>Strong coupling is a cited bound, evaluated.</strong> 2&beta;
+I<sub>2</sub>/I<sub>1</sub> stays under the floor for &beta; &lt; <strong>0.7497</strong>, and the
+expansion it comes from is certified convergent to 0.97 &mdash; so the bound is used with room to
+spare.</li>
+<li><strong>Weak coupling is a limit, computed.</strong> The free-field tension falls as
+1/L&sup2; and is 8&times; under the floor by L = 8, independently of <em>N</em>.</li>
+<li><strong>The interior is a theorem with one measured input.</strong> The aperture scaling and
+<code>cos x &ge; 1 &minus; x&sup2;/2</code> turn a bound on
+<code>&#10216;d&sup2;&#10217;</code> into a bound on &mu;, and the margin's factor grows as
+L&sup2;.</li>
+<li><strong>Say which size a uniform bound clears at.</strong> With
+<code>&#10216;d&sup2;&#10217; &le; 1</code> the interior bound clears from L = 12, not from the
+smallest size anyone might read. The measured moments clear everywhere on the table.</li>
+</ul>
+<p class="note">Every figure here was evaluated from the formula beside it. The strong-coupling
+threshold has a rigorous counterpart in <code>research/code/certify/beta_star_enclosure.py</code>, which certifies the same bracket in exact
+rational arithmetic.</p>
+<p class="note cool">Next: unit <strong>D5c</strong> takes these quantities off real gauge
+configurations &mdash; how a lattice field becomes a screen, and what the read returns.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-margin-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-margin-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

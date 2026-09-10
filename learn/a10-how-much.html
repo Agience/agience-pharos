@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How Much Is Enough?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson A10 &middot; how much is enough</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:6px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:700; background:var(--amber-bg)}
+table.tab td.ok{color:var(--teal); font-weight:700; background:var(--teal-bg)}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:17px; color:var(--amber); text-align:center; margin:20px 0}
+p.formula b{color:var(--teal)}
+.teal{color:var(--teal); font-weight:600} .amber{color:var(--amber); font-weight:600}
+</style><section class="slide on">
+<p class="eyebrow">Unit A10 &middot; the instrument</p>
+<h1>How Much<br>Is <em>Enough</em>?</h1>
+<p class="lead">The question nobody asks until a read comes back empty. Every unit so far has shown
+you what the instrument says. This one is about <strong>when it is entitled to say anything</strong>.</p>
+<p>Two units meet it on a single record each. Unit A5, earlier in this track, finds a sequence whose
+entropy falls more steeply than English and carries no structure. The capstone, unit E1, runs a
+control that resolves nothing across twelve rows at three widths &mdash; and the grid below settles
+which of the two explanations that leaves.</p>
+<p class="note">The measurement here plants a signal of <strong>known rank 3</strong> in noise,
+then asks the instrument how many modes it resolves &mdash; across a grid of shapes, with
+<strong>7 seeds in every cell</strong>, so that every cell reports a spread.</p>
+</section>
+
+<section class="slide">
+<h2>The grid</h2>
+<p>Modes resolved from a signal planted with rank <strong>3</strong>. Median over 7 seeds. A
+<span class="teal">green</span> cell found all 3; an <span class="amber">amber</span> cell
+resolved <strong>nothing at all</strong>.</p>
+<table class="tab"><thead><tr><th>rows &darr; &nbsp; columns &rarr;</th><th>4</th><th>8</th><th>16</th><th>64</th><th>256</th></tr></thead>
+<tbody><tr><td>8</td><td class='hit'>0</td><td class=''>1</td><td class=''>1</td><td class=''>2</td><td class=''>2</td></tr><tr><td>20</td><td class=''>1</td><td class=''>1</td><td class=''>2</td><td class='ok'>3</td><td class='ok'>3</td></tr><tr><td>50</td><td class=''>1</td><td class=''>2</td><td class='ok'>3</td><td class='ok'>3</td><td class='ok'>3</td></tr><tr><td>200</td><td class=''>1</td><td class=''>2</td><td class='ok'>3</td><td class='ok'>3</td><td class='ok'>3</td></tr><tr><td>800</td><td class=''>2</td><td class=''>2</td><td class='ok'>3</td><td class='ok'>3</td><td class='ok'>3</td></tr></tbody></table>
+<p class="warn">Read the leftmost column downwards. At <strong>four columns the best any number of
+rows achieves is 2</strong> &mdash; eight hundred rows still misses a mode that twenty rows at
+sixty-four columns finds. <strong>Going down the table is the weaker lever</strong>, and going down
+the table is what most people mean by &ldquo;get more data&rdquo;.</p>
+<p class="note cool">The cell at 20 rows by 64 columns resolves all 3, from <strong>20
+rows</strong>. Width is what sets the ceiling: the modes have to be distinguishable in the space
+they live in, and a narrow record gives them too little room to separate, at any length.</p>
+</section>
+
+<section class="slide">
+<h2>The other lever</h2>
+<p>The grid holds the noise at <strong>0.30</strong> throughout, which leaves one obvious objection
+standing: perhaps four columns fail because the noise is loud for them, and a cleaner signal would
+recover the missing mode. That is a testable claim, so here it is tested &mdash; the same narrow
+shapes, taken down to a noise level <strong>300 times quieter</strong> than the grid's.</p>
+<table class="tab"><thead><tr><th>shape &nbsp; &nbsp; noise &rarr;</th><th>0.001</th><th>0.01</th><th>0.1</th><th>0.3</th></tr></thead>
+<tbody><tr><td>800&times;4</td><td>2</td><td>2</td><td>2</td><td>2</td></tr><tr><td>200&times;4</td><td>1</td><td>1</td><td>1</td><td>1</td></tr><tr><td>200&times;8</td><td>2</td><td>2</td><td>2</td><td>2</td></tr><tr><td>50&times;8</td><td>2</td><td>2</td><td>2</td><td>2</td></tr></tbody></table>
+<p class="warn">Every row is flat. Eight hundred rows by four columns resolves <strong>2</strong> at
+the grid's noise and <strong>2</strong> at a noise 300 times smaller. <strong>A narrow record's
+ceiling is set by its shape, and it holds at every noise level.</strong></p>
+<p>Width buys resolution in exactly the conditions where cleanliness leaves the answer where it was.
+Below: 20 rows &mdash; the short record from the grid &mdash; at four widths, with the noise now
+<em>at or above the scale of the signal itself</em>.</p>
+<table class="tab"><thead><tr><th>width &nbsp; &nbsp; noise &rarr;</th><th>1</th><th>2</th><th>3</th></tr></thead>
+<tbody><tr><td>64 columns</td><td class=''>2</td><td class=''>2</td><td class=''>1</td></tr><tr><td>128 columns</td><td class='ok'>3</td><td class=''>2</td><td class=''>2</td></tr><tr><td>256 columns</td><td class='ok'>3</td><td class='ok'>3</td><td class=''>2</td></tr><tr><td>512 columns</td><td class='ok'>3</td><td class='ok'>3</td><td class='ok'>3</td></tr></tbody></table>
+<p class="warn">At noise <strong>3</strong> &mdash; louder than the thing being measured &mdash;
+64 columns resolve <strong>1</strong> and 512 columns resolve <strong>3</strong>, the full planted
+rank, from the same 20 rows.</p>
+<p class="formula">width &rarr; <b>the ceiling</b> &nbsp; &middot; &nbsp; noise &rarr; <b>how much
+of it you reach</b></p>
+<p class="note cool">Which makes &ldquo;our data is noisy&rdquo; and &ldquo;our data is narrow&rdquo;
+two different problems with two different remedies, and the instrument tells them apart. A record
+that answers the same way however clean it gets is narrow. One that improves the moment it is
+widened was noisy.</p>
+</section>
+
+<section class="slide">
+<h2>And where it reads zero</h2>
+<p>One cell in the grid resolved nothing at all, across every seed: <strong>8&times;4</strong>. Not a small
+count. Zero.</p>
+<p class="formula">too little record &rarr; <b>no answer</b>, not a weak one</p>
+<p>That is the zero doing exactly what it is for. A read that returned &ldquo;0.03 modes&rdquo;
+on a record too small to support the question would invite belief in a structure the record cannot
+evidence. Returning nothing says <em>ask me again with more</em>.</p>
+<p>The same grid answers a question left open two units earlier, about a record that was small in
+one direction and wide in the other.</p>
+<p class="warn"><strong>Twelve rows is enough to carry an answer.</strong> Unit E1's positive
+control ran on a bag of word vectors shaped <strong>12 rows by 512 columns</strong>. Plant a rank-3
+signal at exactly that shape and this measurement resolves
+a median of <strong>3</strong> (2 to 3 across 7 seeds) &mdash; the full planted rank.</p>
+<p>So E1's reading is settled by what its record <em>carries</em>. A record of that shape can hold a
+signal of that rank, which leaves the explanation E1 gave: these reads are about structure along an
+ordered axis, and a bag of words is unordered.</p>
+<p class="note cool">The spread is what makes that a measurement. <strong>7 seeds</strong> at that
+shape return a median of 3, running from 2 to 3. A single draw reports one of those numbers and
+gives no way to tell which one it drew.</p>
+</section>
+
+<section class="slide">
+<h2>When too little record looks like a finding</h2>
+<p>Too little record can also produce an answer that looks like a <em>strong</em> finding, and that
+is the more dangerous direction. Unit A5 met it head on.</p>
+<p>Reduce a company's monthly moves to three symbols &mdash; up, flat, down &mdash; and measure how
+predictable the sequence is as you look at longer and longer blocks. The curve falls
+<strong>more steeply than English</strong>. It looks like a discovery.</p>
+<table class="tab"><thead><tr><th></th><th>what there is</th></tr></thead><tbody>
+<tr><td>symbols in the sequence</td><td>70</td></tr>
+<tr><td>possible blocks of 8, from a 3-symbol alphabet</td><td class="hit">6,561</td></tr>
+<tr><td>ratio</td><td>about 1 observation per <strong>93</strong> possibilities</td></tr>
+</tbody></table>
+<p class="warn">Almost every block the estimator sees is one it has never seen before, so it looks
+perfectly predictable &mdash; each block has, in the data, exactly one continuation. <strong>A
+shortage of data reads exactly like structure.</strong></p>
+<p>The instrument catches it, and A5 shows how: redundancy comes back <strong>exactly
+0.0000</strong>, the surrogate test finds no onset, and the largest z is <strong>+1.12</strong>.
+Two charts sloped downward; one of them meant it.</p>
+<p class="note">The rule that falls out is this: <strong>ask what your estimator needs before you
+read its output</strong>, and prefer a read that lands on zero when the record cannot carry the
+question.</p>
+</section>
+
+<section class="slide">
+<h2>What to take away</h2>
+<table class="tab"><thead><tr><th>instinct</th><th>what the grid says</th></tr></thead><tbody>
+<tr><td>&ldquo;get more data&rdquo;</td><td>usually means more rows, which is the weaker lever
+&mdash; 800 rows at 4 columns resolved 2; <strong>20 rows at 64 resolved 3</strong></td></tr>
+<tr><td>&ldquo;a wide record is expensive&rdquo;</td><td>and a narrow one may make the answer
+unreachable at any length</td></tr>
+<tr><td>&ldquo;an empty result means nothing is there&rdquo;</td><td>or that the record could not
+have shown it. <strong>Those are different, and the shape tells you which</strong></td></tr>
+<tr><td>&ldquo;a steep curve is a finding&rdquo;</td><td>check what the estimator needed first
+&mdash; starvation and structure look alike</td></tr>
+</tbody></table>
+<p class="warn">And the scope of it. The noise level was swept and the ceiling held; what stays
+fixed here is the construction &mdash; a low-rank signal in additive noise, read at one instrument
+setting. On another construction the boundary sits somewhere else. <strong>What transfers is the
+method</strong>: plant something you know the answer to, sweep the shape, and find out where your
+own reads stop working <em>before</em> you rely on one.</p>
+<p class="note cool">Which is the same discipline unit A7 applied to the noise floor, and the same
+one behind the exact zero. <strong>Calibrate the instrument on a case whose answer you already know.</strong>
+It is the cheapest check in this entire course and the one most often skipped.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-howmuch-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-howmuch-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

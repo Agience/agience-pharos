@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Same Instrument, Elsewhere</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson thirteen &middot; elsewhere</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+blockquote{margin:14px 0; padding:2px 0 2px 15px; border-left:3px solid var(--amber-line); color:var(--ink2)}
+ul.pieces{line-height:1.85}
+</style><section class="slide on">
+<h1>The Same Instrument,<br>Elsewhere</h1>
+<p class="lede">Every unit before this one, and one set of reads: a screen, a spectrum, a floor,
+a count of what stands above it. All of them have been applied to a table of numbers.</p>
+<p>This unit is about three places that are not tables of numbers &mdash; deciding what to retrieve,
+receiving a radio transmission, and a question in theoretical physics &mdash; where the same reads
+turn up doing the work.</p>
+<p class="warn">Two of the three are measured here end to end. The third belongs to
+<strong>unit D5</strong>, which gives a claim about physical reality a unit of its own.</p>
+</section>
+
+<section class="slide">
+<h2>One &mdash; how many to keep</h2>
+<p>Every search system faces the same question: given a pile of candidates ranked by relevance,
+<strong>how many do you actually take?</strong> The usual answers are a fixed number, or a
+threshold, both tuned against a collection that then changes.</p>
+<p>The reads in this curriculum already answer that question &mdash; it is the same
+&ldquo;how many of these are signal&rdquo; used in units A1, A2 and C4. Here is what happens when
+relevance is spread across several distinct aspects of a query:</p>
+<table class="tab"><thead><tr><th>aspects</th><th>ranking by similarity</th><th>the cut</th>
+<th>difference</th><th>95% confidence</th></tr></thead><tbody><tr><td>1</td><td>1.000</td><td class='hit'>1.000</td><td>+0.000</td><td>[+0.000, +0.000]</td></tr><tr><td>2</td><td>1.000</td><td class='hit'>1.000</td><td>+0.000</td><td>[+0.000, +0.000]</td></tr><tr><td>3</td><td>1.000</td><td class='hit'>1.000</td><td>+0.000</td><td>[+0.000, +0.000]</td></tr><tr><td>4</td><td>0.806</td><td class='hit'>1.000</td><td>+0.194</td><td>[+0.099, +0.301]</td></tr><tr><td>5</td><td>0.000</td><td class='hit'>1.000</td><td>+1.000</td><td>[+1.000, +1.000]</td></tr><tr><td>6</td><td>0.000</td><td class='hit'>1.000</td><td>+1.000</td><td>[+1.000, +1.000]</td></tr></tbody></table>
+<p>Read the top three rows first. <strong>They tie</strong>, and a tie there is the correct answer,
+not a weak one &mdash; with a single coherent aspect the ordinary similarity score <em>is</em> the
+right thing to compute, and a method claiming to beat it would be suspect.</p>
+<p class="warn">Then it separates. At <strong>4</strong> aspects, 0.806 against
+<strong>1.000</strong>. At <strong>5 and 6</strong>, similarity ranking collapses to
+<strong>0.000</strong> &mdash; it finds nothing at all &mdash; while the cut is still perfect.</p>
+<p class="note">The reason is worth a sentence. A genuinely relevant item matches <em>one</em>
+aspect strongly and the others not at all, so as aspects multiply its overall score sinks toward the
+mediocre-at-everything items. One number cannot avoid that. Its <em>pattern</em>, though, is intact
+the whole time.</p>
+</section>
+
+<section class="slide">
+<h2>Why that table is believable</h2>
+<p>A benchmark where the author's method wins is worth exactly as much as its fairness, so it is
+worth saying how this one is built. <strong>Both sides get the same input and the same
+stopping rule.</strong> The identical screen is handed to each; similarity takes its row sum, the
+cut takes its coherent-mode energy; and the same parameter-free lock decides how many to keep on
+both sides. The only thing under test is whether the screen comes before the lock.</p>
+<p>That precision was not free. The benchmark's own notes record an earlier version of this same
+result that did <em>not</em> do it:</p>
+<blockquote>&ldquo;the cosine side ran a crippled lock, it kept ~1.2 items where the cut kept ~3.6,
+and the reported &lsquo;+0.038 win&rsquo; was the lock rather than the screen. That is the single
+most important methodological note in this repository.&rdquo;</blockquote>
+<p class="note">A comparison is a claim about two things being alike in every way but one. Almost
+every disappointing benchmark result is really a difference nobody controlled for.</p>
+</section>
+
+<section class="slide">
+<h2>Two &mdash; a radio with no radio in it</h2>
+<p>A receiver normally has to be told a great deal in advance: the frequency, the timing, the
+symbol rate, the frame layout. Every one of those is a parameter two parties must agree on before
+anything can be sent.</p>
+<p>Here the receiver is told <strong>a key, and nothing else</strong> &mdash; and for an open
+broadcast, not even that. Everything else it <em>measures</em> off the signal, using the reads from
+units A1 and A2. There is no frequency transform anywhere in the path.</p>
+<table class="tab"><thead><tr><th>signal quality</th><th>bits sent</th><th>bit errors</th>
+<th>lock margin</th><th>closure</th></tr></thead><tbody><tr><td>30 dB</td><td>2048</td><td class='hit'>0</td><td>283.3</td><td>0.999</td></tr><tr><td>20 dB</td><td>2048</td><td class='hit'>0</td><td>25.64</td><td>0.991</td></tr><tr><td>10 dB</td><td>2048</td><td class='hit'>0</td><td>2.662</td><td>0.909</td></tr><tr><td>5 dB</td><td>2048</td><td class='hit'>0</td><td>1.107</td><td>0.731</td></tr></tbody></table>
+<p><strong>Zero errors at every level, down to 5 dB.</strong> Not a low rate &mdash; none. And
+the transmission carries 8 modes with a 4-symbol alphabet in a 64-sample aperture, all of which
+the receiver worked out for itself.</p>
+<p class="note">The last two columns are the ones to watch. The receiver's own confidence
+falls honestly from a margin of <strong>283</strong> to <strong>1.11</strong> as conditions worsen,
+while the answer stays perfect. It is telling you how close it is to the edge <em>before</em> it
+gets there.</p>
+<h3>And the control</h3>
+<p>&ldquo;Told a key and nothing else&rdquo; is only worth something if the <em>key</em> is what did
+the work. A table of zero-error rows cannot show that: a receiver that locked onto the signal
+regardless of its key would print exactly the same table. So the same transmission was handed to
+<strong>20</strong> receivers holding the <em>wrong</em> key, at the strongest signal level in the
+table &mdash; the condition most favourable to a wrong key, and so the hardest place for this to
+hold.</p>
+<table class="tab"><thead><tr><th>20 wrong keys, at 30 dB</th><th></th></tr></thead><tbody>
+<tr><td>produced no bits at all</td><td>0</td></tr>
+<tr class="hi"><td>bit error rate</td><td><strong>0.4854</strong> to <strong>0.5197</strong>, median
+<strong>0.5017</strong></td></tr>
+<tr><td>that got within 10% of the message</td><td><strong>0 of 20</strong></td></tr>
+<tr class="hi"><td>lock margin</td><td>1.03 to 2.59, against <strong>283</strong> for the right key</td></tr>
+</tbody></table>
+<p><strong>A wrong key returns a coin.</strong> The median error rate is 0.5017 &mdash; half the bits
+wrong, which is what you get by guessing &mdash; and not one of the 20 came close to the message.
+The key is carrying the whole load.</p>
+<p class="note cool">The second row is the one to take away, and it is the same point as the
+paragraph above. <strong>Every one of them produced bits.</strong> Every wrong key produced a full payload
+of confident-looking bits. The <code>margin</code> is what separates them from the real one &mdash;
+<strong>283</strong> against at most <strong>2.59</strong>, two orders of magnitude. A caller who read the bits and ignored the margin would be handed noise that looks
+exactly like data. The instrument says which it is; you have to read the part where it says so.</p>
+</section>
+
+<section class="slide">
+<h2>And it reports the same reads</h2>
+<svg viewBox="0 0 680 58" width="680" height="58" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><defs><marker id="fa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--rule,#d2d5d0)"/></marker></defs><rect x="1" y="1" width="120" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="61.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">share prices</text><text x="61.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">unit A2</text><line x1="121" y1="24" x2="143" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="147" y="1" width="192" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="243.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">an ordered record</text><text x="243.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">more than one channel</text><line x1="339" y1="24" x2="361" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="365" y="1" width="96" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="413.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">a screen</text><text x="413.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">one basis</text><line x1="461" y1="24" x2="483" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="487" y="1" width="192" height="46" rx="2" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber-line,#d99a34)"/><text x="583.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="600" fill="var(--amber,#a5620c)" text-anchor="middle">the same reads</text><text x="583.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">fill, etendue, strehl</text></svg><svg viewBox="0 0 736 58" width="736" height="58" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><defs><marker id="fa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--rule,#d2d5d0)"/></marker></defs><rect x="1" y="1" width="176" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="89.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">a handwritten digit</text><text x="89.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">unit A1</text><line x1="177" y1="24" x2="199" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="203" y="1" width="192" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="299.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">an ordered record</text><text x="299.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">more than one channel</text><line x1="395" y1="24" x2="417" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="421" y="1" width="96" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="469.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">a screen</text><text x="469.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">one basis</text><line x1="517" y1="24" x2="539" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="543" y="1" width="192" height="46" rx="2" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber-line,#d99a34)"/><text x="639.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="600" fill="var(--amber,#a5620c)" text-anchor="middle">the same reads</text><text x="639.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">fill, etendue, strehl</text></svg><svg viewBox="0 0 696 58" width="696" height="58" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><defs><marker id="fa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--rule,#d2d5d0)"/></marker></defs><rect x="1" y="1" width="136" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="69.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">a radio signal</text><text x="69.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">this unit</text><line x1="137" y1="24" x2="159" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="163" y="1" width="192" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="259.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">an ordered record</text><text x="259.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">more than one channel</text><line x1="355" y1="24" x2="377" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="381" y="1" width="96" height="46" rx="2" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)"/><text x="429.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">a screen</text><text x="429.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">one basis</text><line x1="477" y1="24" x2="499" y2="24" stroke="var(--rule,#d2d5d0)" stroke-width="1.5" marker-end="url(#fa)"/><rect x="503" y="1" width="192" height="46" rx="2" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber-line,#d99a34)"/><text x="599.0" y="27.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="12" font-weight="600" fill="var(--amber,#a5620c)" text-anchor="middle">the same reads</text><text x="599.0" y="39.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.62">fill, etendue, strehl</text></svg>
+<p>This is the part that makes the unit worth having. After decoding, the receiver describes what it
+just received &mdash; and the description is in <em>exactly the vocabulary of unit A2</em>:</p>
+<table class="tab"><thead><tr><th>read</th><th>value</th></tr></thead><tbody><tr><td>L</td><td>64</td></tr><tr><td>T</td><td>129</td></tr><tr><td>fill</td><td>0.2870</td></tr><tr><td>reach</td><td>3.5890</td></tr><tr><td>etendue</td><td>0.0395</td></tr><tr><td>capacity</td><td>8256.0000</td></tr><tr><td>occupied</td><td>326.1976</td></tr><tr><td>strehl</td><td>0.1407</td></tr><tr><td>dominance</td><td>0.1257</td></tr></tbody></table>
+<p><strong>Fill. Etendue. Strehl. Dominance.</strong> Unit A2 measured those on a spreadsheet of
+share prices and a scan of a handwritten digit. Here they are describing a radio transmission, and
+they are not analogies &mdash; the same functions produced them.</p>
+<p class="warn">Which is the point of this whole programme, stated as plainly as it can be. The
+reads were never <em>about</em> spreadsheets, or images, or radio. They are about an ordered record
+with more than one channel, and that shape turns up in places that share no subject matter at
+all.</p>
+<p class="note">A Strehl of 0.1407 says most of the received energy is not in one dominant mode
+&mdash; which is correct here, and is what carrying 8 modes at once looks like.</p>
+</section>
+
+<section class="slide">
+<h2>What the whole programme was about</h2>
+<p>One instrument, every unit up to this one. It read a scan and a spreadsheet, found out whether a record was
+ordered at all, read a record made of letters, put two records on one screen, priced what travel
+costs, turned words into coordinates, kept them, decided what to forget, looked inside a language
+model &mdash; and then decoded a radio signal and reported <strong>fill</strong> and
+<strong>&Eacute;tendue</strong>.</p>
+<ul class="pieces">
+<li><strong>Derive it, do not choose it.</strong> How many to keep, when now ends, how wide the
+frame &mdash; every one measured from the data.</li>
+<li><strong>An unanswerable question gets an exact zero.</strong> Exact zero, silence,
+<em>unmeasured</em>: six separate reads across the programme land on one of those.</li>
+<li><strong>Put the control inside the figure.</strong> The shuffled record, the scrambled pair, the
+subtraction that reveals a band &mdash; a result you can check without trusting the method.</li>
+<li><strong>Say where the evidence stops.</strong> Two claims in unit D1, and the whole third of
+this unit.</li>
+</ul>
+<p class="warn">And the one that cost the most to learn, three separate times while building this:
+<strong>a wrong measurement usually looks fine.</strong> An impossible effective rank, a benchmark
+rigged by accident, a distance computed against the wrong tree &mdash; none of them raised an error.
+Only checking against something already known caught any of them.</p>
+<p class="note">Which is why every figure in every one of these units is re-derived from the live
+code each time the page is built, and the build fails if a single one has moved.</p>
+<p class="note">The third destination &mdash; a question in theoretical physics, read as an
+aperture effect &mdash; is deliberately not summarised here. It gets the treatment it is owed in
+<strong>unit D5</strong>: what it takes to check a claim about physical reality with this
+instrument, and what the checking actually found.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-elsewhere-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-elsewhere-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

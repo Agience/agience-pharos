@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Claim About the World</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson twenty-two &middot; the mass gap</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 8px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab th:last-child,table.tab td:last-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:17px; color:var(--amber); text-align:center; margin:18px 0}
+pre.rec{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.8; background:var(--sunk);
+  border:1px solid var(--rule); padding:11px 14px; margin:14px 0; white-space:pre-wrap}
+blockquote{margin:14px 0; padding:2px 0 2px 15px; border-left:3px solid var(--amber-line); color:var(--ink2)}
+ul.pieces{line-height:1.85}
+</style><section class="slide on">
+<h1>A Claim<br>About the World</h1>
+<p class="lede">Every other unit measures data. This one is about a claim concerning <em>physical
+reality</em> &mdash; and about what happened when the people making it built machinery to check
+themselves.</p>
+<p class="note">The symbols on these slides, said aloud: <strong>&kappa;</strong> is <em>kappa</em>, the floor; <strong>&mu;</strong> is <em>mu</em>, the cost; <strong>&Delta;</strong> is <em>delta</em>, the gap. <span class="mono">&ge;</span> is <em>greater than or equal</em> and <span class="mono">&le;</span> is <em>less than or equal</em>; <span class="mono">&infin;</span> is <em>infinity</em>, and <span class="mono">&radic;</span> is the <em>square root</em>.</p>
+<p>The subject is the <strong>shape of the checking</strong>, which transfers to anything: what it
+caught, what it is still catching, and one finding that reversed an earlier one.</p>
+<p class="warn">Unit D2 carried this subject as a pointer with &ldquo;not checked&rdquo; against
+every row. This unit checks what can be checked from the repository as it stands, and is exact
+about what it still does not check.</p>
+</section>
+
+<section class="slide">
+<h2>The claim, in one sentence</h2>
+<p>Some particles have mass, and for one family of forces it has never been shown from first
+principles <em>why</em>. The claim here is that the answer is an <strong>aperture</strong> effect
+&mdash; the same idea unit A9 measured on a wide field.</p>
+<p>An observer with a finite window can only resolve so much. A finite window band-limits what gets
+through. And a band-limited thing has its predictive excess fall away at some positive rate. That
+positive rate <em>is</em> the gap.</p>
+<p class="formula">finite aperture &rarr; band-limited &rarr; a positive decay rate</p>
+
+<h3 style="margin-top:24px">Where the number comes from</h3>
+<p>The claim puts a floor under the rate: it is at least a particular size, and that size comes from
+<strong>counting</strong>. Counting what: at each step a
+closed surface has <strong>three</strong> ways to continue, and the choice is spread across
+<strong>four</strong> faces. Three equally likely options carry <strong>ln&nbsp;3</strong> of
+entropy; sharing that across four faces gives a quarter of it per face:</p>
+<p class="formula">&kappa;<sub>0</sub> &nbsp;=&nbsp; &frac14; &times; ln&nbsp;3 &nbsp;=&nbsp; 0.274653</p>
+<p><strong>&kappa;</strong> is the Greek letter <strong>kappa</strong>, said <em>KAP-uh</em>.
+<strong>ln</strong> is the natural logarithm &mdash; <code>ln&nbsp;3</code> is the entropy of a
+three-way choice. Nothing was measured to obtain that value; it is arithmetic, and it is checked
+here. Every other number on the following slides is read out of the repository.</p>
+<p>So the claim takes its sharp form: <strong>the decay rate is at least &kappa;<sub>0</sub></strong>.</p>
+
+<h3 style="margin-top:24px">The same statement, written as a magnitude</h3>
+<p>The table on the next slide reports a <strong>magnitude</strong> per step, written
+<strong>m<sub>hi</sub></strong>. A magnitude and a rate are the same statement in different
+clothes. A quantity decaying at rate &kappa; is multiplied by <code>e<sup>&minus;&kappa;</sup></code>
+at every step, so a <em>bigger</em> rate is a <em>smaller</em> multiplier:</p>
+<p class="formula">rate &ge; &kappa;<sub>0</sub> &nbsp;&hArr;&nbsp; magnitude &le; e<sup>&minus;&kappa;<sub>0</sub></sup> &nbsp;=&nbsp; 3<sup>&minus;&frac14;</sup> &nbsp;=&nbsp; 0.7598</p>
+<p>That is one number in two forms. A <strong>floor</strong> on the rate is a <strong>ceiling</strong>
+on the magnitude, and the ceiling is what the table's last column tests. Reading a row as
+<em>under the ceiling</em> is reading it as <em>above the floor</em>; there is nothing else to
+remember about the arithmetic of this unit.</p>
+</section>
+
+<section class="slide">
+<h2>The chain, and where each link is walked</h2>
+<p>The argument reaches the gap through one inequality. Everything else is establishing its two
+sides and carrying the result to a spectrum:</p>
+<p class="formula">&Delta; &nbsp;&ge;&nbsp; &kappa;<sub>0</sub> &minus; &mu;(&beta;)
+&nbsp;&gt;&nbsp; 0</p>
+<p><strong>&kappa;<sub>0</sub></strong> is what vortex surfaces gain from being numerous, and
+<strong>&mu;(&beta;)</strong> is what one costs. When the cost stays under the gain the surfaces
+condense, the flux confines to a tube, and the screen's excess decays at a rate the margin bounds
+from below.</p>
+<table class="tab"><thead><tr><th>link</th><th>what establishes it</th><th>unit</th>
+</tr></thead><tbody>
+<tr><td>&kappa;<sub>0</sub> = &frac14; ln 3 = 0.274653</td><td>a counting theorem: directed cube-paths,
+three continuations across four plaquettes</td><td><strong>D5a</strong></td></tr>
+<tr><td>&mu;(&beta;) &lt; &kappa;<sub>0</sub> everywhere</td><td>a cited bound at strong coupling, a
+computed limit at weak coupling, a theorem in between</td><td><strong>D5b</strong></td></tr>
+<tr><td>both read off real fields</td><td>one reduction to a screen; an eigenvalue for the rate, a
+mode count for the phase</td><td><strong>D5c</strong></td></tr>
+<tr><td>spec H &sube; {0} &cup; [&Delta;, &infin;)</td><td>reflection positivity, the single-cut
+ceiling 0.7598, and &minus;log</td><td><strong>D5d</strong></td></tr>
+</tbody></table>
+<p class="note">This unit is the fifth thing: what happened when the people making the claim built
+machinery to check themselves. The slides that follow are that story, and the four units above are
+the mathematics it is checking.</p>
+</section>
+
+<section class="slide">
+<h2>Why this is an optics argument</h2>
+<p>The paper's own title calls the mass gap a <strong>finite-aperture effect</strong>. That is the
+A-track's subject, and the correspondence is exact &mdash; every idea on the left was measured in an
+earlier unit.</p>
+<table class="tab"><thead><tr><th>what you already read</th><th>what it is here</th></tr></thead>
+<tbody>
+<tr><td>the <strong>aperture</strong>: the finite window a read looks through
+<span class="note">(A2, A9)</span></td><td>the screen a local observer reads the vacuum
+through</td></tr>
+<tr><td>a finite aperture <strong>cannot resolve arbitrarily fine detail</strong>
+<span class="note">(A9)</span></td><td>a <strong>band-limit</strong>: there is a finest mode the
+screen can carry</td></tr>
+<tr><td>the <strong>point-spread</strong>: how influence falls off along an ordered axis
+<span class="note">(A3, C4)</span></td><td>the correlation falling off per step along the time
+axis</td></tr>
+<tr><td><strong>modes above a floor</strong>, counted <span class="note">(A1, A2, A7)</span></td>
+<td>how many directions the transport actually uses, against the confined-vacuum floor</td></tr>
+<tr><td><strong>too little record to answer</strong> <span class="note">(A10)</span></td>
+<td>the lattice too small to resolve the rate &mdash; the L&nbsp;=&nbsp;8 row in
+<strong>D5d</strong></td></tr>
+</tbody></table>
+<p class="warn">And the argument itself, in three lines:</p>
+<ul class="pieces">
+<li><strong>A theory with no gap needs a mode of unlimited reach</strong> &mdash; something that
+stays correlated however far apart you look.</li>
+<li><strong>A finite aperture has nowhere to put one.</strong> A window of finite size carries
+finitely many modes, and none of them reaches forever.</li>
+<li><strong>So what the screen has left over decays</strong>, and the rate it decays at is the
+gap.</li>
+</ul>
+<p class="note cool">Which is why the counting in <strong>D5a</strong> matters at all. It fixes how
+fast that decay must be for the picture to hold, and the four units after this one establish the
+floor, bound the cost against it, measure both on real fields, and turn the surviving rate into a
+statement about energies.</p>
+</section>
+
+<section class="slide">
+<h2>What the published table says</h2>
+<p>The result rests on reads taken over simulated ensembles at several couplings and box sizes. The
+repository publishes the table, so every row here can be read at its source. The error column uses
+<strong>&plusmn;</strong>, the <strong>plus or minus</strong> sign: a value of 1.5&nbsp;&plusmn;&nbsp;0.1
+means the measurement puts the answer somewhere between 1.4 and 1.6.</p>
+<table class="tab"><thead><tr><th>&beta;</th><th>L</th><th>configs</th><th>&Delta;</th>
+<th>error</th><th>m<sub>hi</sub></th><th>under the ceiling?</th></tr></thead><tbody><tr><td>2.0</td><td>12</td><td>128</td><td>1.5253</td><td class=''>&plusmn;0.1154</td><td>0.2176</td><td>yes</td></tr><tr><td>2.0</td><td>16</td><td>128</td><td>1.4591</td><td class=''>&plusmn;0.0574</td><td>0.2324</td><td>yes</td></tr><tr><td>2.3</td><td>8</td><td>128</td><td>0.2330</td><td class='hit'>&plusmn;1.0759</td><td>0.7922</td><td><strong>no</strong></td></tr><tr><td>2.3</td><td>12</td><td>128</td><td>1.1869</td><td class=''>&plusmn;0.2552</td><td>0.3052</td><td>yes</td></tr><tr><td>2.3</td><td>16</td><td>120</td><td>1.1027</td><td class=''>&plusmn;0.1387</td><td>0.3320</td><td>yes</td></tr><tr><td>2.5</td><td>12</td><td>64</td><td>1.2937</td><td class=''>&plusmn;0.1637</td><td>0.2742</td><td>yes</td></tr><tr><td>2.5</td><td>16</td><td>128</td><td>0.9156</td><td class='hit'>&plusmn;0.4592</td><td>0.4003</td><td>yes</td></tr></tbody></table>
+<p><strong>6 of 7</strong> rows read under the aperture ceiling of 0.7598 &mdash; the direction the
+claim needs.</p>
+<p class="warn">Now read the error column. At &beta;&nbsp;=&nbsp;2.3, L&nbsp;=&nbsp;8 the value is
+<strong>0.2330</strong> and the error is <strong>&plusmn;1.0759</strong> &mdash; <strong>4.6 times the
+value itself</strong>. An error that size leaves the row open in both directions, and it is the one
+row that reads <em>above</em> the ceiling. A published table holds results and open questions
+together, and this row is one of the open ones.</p>
+</section>
+
+<section class="slide">
+<h2>The error bar that grew</h2>
+<p>Here is the finding, and it is the best sentence in the whole repository. Someone regenerated one
+row with more data &mdash; and the uncertainty got <em>bigger</em>:</p>
+<table class="tab"><thead><tr><th>at &beta;=2.50, L=16</th><th>&Delta;</th><th>error</th></tr></thead>
+<tbody>
+<tr><td>96 configurations</td><td>1.230905</td><td>&plusmn;0.082</td></tr>
+<tr><td class="hit">128 configurations</td><td class="hit">0.915605</td><td class="hit">&plusmn;0.459181</td></tr>
+</tbody></table>
+<blockquote>&ldquo;adding 32 configurations made an error bar <strong>six times larger</strong>&hellip;
+<strong>More data does not do that. Mixed data does.</strong>&rdquo;</blockquote>
+<p>That is a complete diagnosis in eight words. Adding samples of the same thing narrows an
+estimate. An estimate that <em>widens</em> has been fed samples of <strong>two different
+things</strong>.</p>
+
+<h3 style="margin-top:24px">Why widening means mixture</h3>
+<p>Take many measurements of <em>one</em> quantity. They scatter around its value, and the average
+of <em>n</em> of them scatters less &mdash; by a factor of <code>1&nbsp;&divide;&nbsp;&radic;n</code>.
+Every extra configuration buys a little more certainty. The error bar can only shrink.</p>
+<p>Now take measurements of <em>two</em> quantities that sit apart, and label them all as one. The
+scatter now reports <strong>the distance between them</strong>, which is a property of the two
+populations and holds however many samples are drawn. Adding more of the second one widens the
+mixture: it moves the sample toward a two-humped shape whose spread is set by the gap between the
+humps.</p>
+<p class="warn">So the direction of the change is the whole signal. <strong>Narrowing is
+uninformative</strong> &mdash; it is what both cases can do early on. <strong>Widening has only one
+cause</strong>, and it is not a shortage of data.</p>
+<p class="warn">And so it proved. The stored configurations came from three collections. Two pairs
+of them, at the same box size and the same coupling, sit <strong>21.0 and 57.6 standard
+deviations</strong> apart &mdash; written <strong>&sigma;</strong>, the Greek letter
+<strong>sigma</strong>, said <em>SIG-muh</em>, the usual shorthand for how much a measurement
+ordinarily wobbles &mdash; about ten times the spread within either one, so the separation is
+systematic. <strong>Nothing recorded distinguishes them</strong>: same shapes, same data type,
+same nominal coupling, and the generation notes describe all three identically.</p>
+</section>
+
+<section class="slide">
+<h2>Pooling dilutes the anomaly</h2>
+<p>One coupling in the ensemble reads anomalously. Pooling the collections together moves the
+average toward the ordinary ones and the anomaly stops showing.</p>
+<p class="formula">24 anomalous configurations among 96 ordinary ones</p>
+<p>That is dilution: the anomalous configurations are still there and still anomalous, and the
+pooled average is dominated by the majority. <strong>The size of the
+minority is what decides whether an average can carry the question</strong> &mdash; the same
+arithmetic that makes a uniform sample across unequal groups report the majority's answer.</p>
+
+<h3 style="margin-top:24px">How much of the anomaly survives pooling</h3>
+<p>Work it out. The anomalous configurations are <strong>24 of 120</strong> &mdash; a share of
+<strong>0.20</strong>. An average is the share-weighted sum of what it averages, so if the anomalous
+group sits a distance <em>d</em> away from the ordinary one, the pooled average sits
+<strong>0.20 &times; <em>d</em></strong> away:</p>
+<p class="formula">24 &divide; (24 + 96) &nbsp;=&nbsp; 0.20 &nbsp;&mdash;&nbsp;
+an anomaly of size <em>d</em> reads as 0.20&thinsp;<em>d</em></p>
+<p>So the pool reports <strong>20&percnt; of what the minority actually shows</strong>, and reports it
+against the full sample's error bar. The measurement was made on a population where the property
+being looked for sits in the minority, and the pooled average reports it at that weight.</p>
+<p class="warn">This is why the share is the number to ask for, not the count. <strong>24 anomalous
+configurations</strong> sounds like a substantial finding. <strong>20&percnt; of the sample</strong>
+tells you the weight that finding carries in an average of that sample.</p>
+<p>Of <strong>8</strong> recorded findings against the paper, <strong>4 are still open</strong>:</p>
+<table class="tab"><thead><tr><th>#</th><th>still open</th></tr></thead><tbody><tr><td>4</td><td>The two §9 grid certificates are documented as one, and read different dat</td></tr><tr><td>5</td><td>Two certifications ask for su3 volumes the release store does not contain</td></tr><tr><td>6</td><td>The release's reproducibility tuple omits the backend</td></tr><tr><td>7</td><td>Two collections disagree at the same (L, β) by 21–58σ</td></tr></tbody></table>
+<p class="note">The first three were found by <em>&ldquo;making certifications derive their verdicts
+from their measured tables instead of printing fixed text&rdquo;</em>. A check that prints its
+conclusion is a caption; a check that derives it from a table is a check.</p>
+</section>
+
+<section class="slide">
+<h2>What &ldquo;machine-checked&rdquo; buys you</h2>
+<p>The mathematics is written out in a language a computer verifies line by line &mdash;
+<strong>43</strong> files, <strong>10,552</strong> lines. Checked here: it contains
+<strong>0</strong> unfinished proof steps.</p>
+<p>But a machine-checked proof is only checked <em>relative to what it assumes</em>, and that is
+where the physics enters. The development declares <strong>6</strong> assumptions outright:</p>
+<pre class="rec">WightmanTheory
+d2_le_bound
+os_reconstruction
+wilson_reflection_positive
+ym_asymfree
+ym_character</pre>
+<p>Each one is an established result from elsewhere in physics, named so that a reader can see
+exactly what is being leaned on. The claim is therefore: <em>given these, the rest
+follows, and a machine has checked that it does.</em></p>
+<p class="warn"><strong>What this unit establishes is what the files say.</strong> They were read
+and counted; running the toolchain is a separate act, and judging whether the assumptions are the
+right ones is a physics question. Both sit outside this measurement.</p>
+<p class="note">The count above distinguishes an unfinished step from the word for one. All
+<strong>4</strong> occurrences in this development sit inside a <em>comment stating there are
+none</em>, and the search removes comments before it counts.</p>
+<p class="warn"><strong>How that search is written decides what it can miss</strong>, and it was
+written the wrong way round until 2026-08-28. It matched each line against a whitelist of three
+shapes &mdash; a bare <code>sorry</code>, a <code>sorry,</code>, or <code>:= sorry</code> &mdash;
+and filed everything else as prose. A whitelist enumerates forms, so it misses the ones nobody
+thought of: <code>exact sorry</code>, <code>&middot; sorry</code>, <code>by sorry</code>, or a
+<code>sorry</code> indented on the line after <code>:=</code> would each have been dismissed as a
+comment. It now strips comments and reads <em>every line that remains</em>, over the vocabulary
+<code>sorry, sorryAx, admit</code>, so every occurrence of those words reaches the count.</p>
+<p class="note cool">Both rules give the same answer here, and that is the point worth taking. The
+finding did not change; what changed is whether it was <strong>established</strong> or merely
+<strong>consistent with a rule that could have looked past it</strong>. And the claim is now stated
+as what was actually done: not &ldquo;no unfinished proof steps&rdquo;, which nothing short of the
+compiler can settle, but <em>none of those three words appears outside a comment in 43 files</em>.</p>
+</section>
+
+<section class="slide">
+<h2>What was checked here</h2>
+<p>This unit shows the <strong>machinery of checking</strong>, applied to a claim where the stakes
+are as high as they get. The scope of that checking is worth setting out exactly:</p>
+<table class="tab"><thead><tr><th>checked here</th><th>the next act, and whose</th></tr></thead><tbody>
+<tr><td>the counting floor, 0.274653</td><td>compile the proofs &mdash; a toolchain</td></tr>
+<tr><td>the published table, 7 rows</td><td>read the ensembles &mdash; a lattice run</td></tr>
+<tr><td>the rows whose errors are too large</td><td>review the four inputs &mdash; a physicist</td></tr>
+<tr><td>43 files of proof, 0 unfinished steps</td><td>judge whether it is <em>true</em> &mdash; the field</td></tr>
+</tbody></table>
+<ul class="pieces">
+<li><strong>An error bar that grows when you add data diagnoses two populations.</strong> It named
+the problem in eight words.</li>
+<li><strong>Two quantities carried one label</strong> and sat 21 and 58 standard deviations apart
+under it.</li>
+<li><strong>Pooling dilutes an anomaly</strong>: the minority's share of the sample decides whether
+the average can carry the question.</li>
+<li><strong>Machine-checked is relative to what is assumed</strong>, so the assumptions are named.</li>
+</ul>
+<p class="warn">And the one that recurs: <strong>a check derives its verdict from a measured
+table.</strong> The first three findings here appeared the moment verdicts were derived that way,
+which is why every figure in this course is recomputed at build time.</p>
+<p class="note cool">The mathematics this unit checks is walked through in four units:
+<strong>D5a</strong> derives the floor by counting, <strong>D5b</strong> shows the tension stays
+under it, <strong>D5c</strong> is the instrument that reads both off a lattice field, and
+<strong>D5d</strong> carries the measured rate to a spectrum.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-massgap-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-massgap-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

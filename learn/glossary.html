@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entroptics: The Words</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#eeefec;--surface:#f8f9f7;--sunk:#e5e7e3;--ink:#1b1d22;--ink2:#565a63;--ink3:#8b909a;
+  --rule:#d2d5d0;--rule2:#bcc0ba;--amber:#a5620c;--amber-bg:#f6e7ca;--amber-line:#d99a34;
+  --teal:#20635f;--teal-bg:#dbeae7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#131519;--surface:#1a1d23;
+  --sunk:#0f1115;--ink:#e8eaed;--ink2:#a4a9b2;--ink3:#767c87;--rule:#2b2f37;--rule2:#3c414b;
+  --amber:#f0a63e;--amber-bg:#392b12;--amber-line:#a9741f;--teal:#6bbdb5;--teal-bg:#12312e}}
+:root[data-theme="dark"]{--bg:#131519;--surface:#1a1d23;--sunk:#0f1115;--ink:#e8eaed;--ink2:#a4a9b2;
+  --ink3:#767c87;--rule:#2b2f37;--rule2:#3c414b;--amber:#f0a63e;--amber-bg:#392b12;
+  --amber-line:#a9741f;--teal:#6bbdb5;--teal-bg:#12312e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:900px;margin:0 auto;padding:52px 20px 90px}
+h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(38px,6.4vw,62px);
+  line-height:1.03;margin:0 0 10px}
+h1 em{font-style:italic;color:var(--amber)}
+p{color:var(--ink2);max-width:66ch}
+a.back{color:var(--amber);text-decoration:none;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:28px 0 0;font-size:14.5px}
+th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink3);text-align:left;border-bottom:1px solid var(--rule2);
+  padding:6px 9px}
+td{border-bottom:1px solid var(--rule);padding:10px 9px;vertical-align:top;color:var(--ink2)}
+td:first-child{width:15%}
+td:last-child,th:last-child{text-align:right;font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;width:8%}
+td:nth-child(3){width:9%;font-family:"IBM Plex Mono",monospace;color:var(--amber)}
+dfn{font-style:normal;font-weight:600;color:var(--ink);font-size:15.5px}
+.early{display:block;margin-top:5px;font-size:12.5px;color:var(--amber)}
+.note{border-left:3px solid var(--amber-line);background:var(--amber-bg);padding:14px 17px;
+  margin:26px 0 0;color:var(--ink)}
+.note p{color:var(--ink);margin:0}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);color:var(--ink3);
+  font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html">&larr; the course</a>
+<h1>The <em>words</em></h1>
+<p>27 terms the course uses as if you already know them. The <strong>owner</strong> is the unit that
+introduces the word and is the place to read it properly; the last column is how many of the 50
+units use it in prose, so you can see which words are load-bearing and which are local.</p>
+<p>The one-line meanings are written by hand. Everything else on this page is measured when it is
+built, and <strong>the build fails if a unit named as an owner never actually says its word</strong>
+&mdash; a glossary pointing at the wrong lesson is worse than no glossary.</p>
+<table><thead><tr><th>word</th><th>what it means here</th><th>owner</th><th>units</th></tr></thead>
+<tbody><tr><td><dfn>aperture</dfn></td><td>The instrument's front door: the object that answers every question about the shape of a signal.</td><td><a href='#' class='u'>A2</a></td><td>13</td></tr><tr><td><dfn>attenuation</dfn></td><td>What a signal loses on the way. Four different mechanisms wear the word here and they are not interchangeable.<span class='early'>first seen in A3</span></td><td><a href='#' class='u'>B3</a></td><td>9</td></tr><tr><td><dfn>basis</dfn></td><td>The shared set of directions a screen puts every surface onto, so that two records placed on it can be compared at all.<span class='early'>first seen in A7</span></td><td><a href='#' class='u'>B1</a></td><td>3</td></tr><tr><td><dfn>coherence</dfn></td><td>Whether an ordered record carries any order at all, scored against a closed-form null, so the answer is a decision.<span class='early'>first seen in A3</span></td><td><a href='#' class='u'>A4</a></td><td>14</td></tr><tr><td><dfn>coupling</dfn></td><td>How much two records on one screen have to do with each other. It reads exactly zero when they have nothing in common.</td><td><a href='#' class='u'>A6</a></td><td>11</td></tr><tr><td><dfn>diffraction limit</dfn></td><td>How close two things can be and still arrive as two. One over it counts the separable spots a reading can hold.<span class='early'>first seen in A2</span></td><td><a href='#' class='u'>B5</a></td><td>3</td></tr><tr><td><dfn>etendue</dfn></td><td>How much of the available space a signal actually occupies — a beam's spread, borrowed from optics and meaning the same thing here.</td><td><a href='#' class='u'>A2</a></td><td>2</td></tr><tr><td><dfn>exact zero</dfn></td><td>The result when a read finds nothing above the floor. It is a measured value, and the reads here return it in place of a small number so that a reader cannot mistake it for a faint effect.</td><td><a href='#' class='u'>A10</a></td><td>11</td></tr><tr><td><dfn>fill</dfn></td><td>The share of the screen a signal actually uses, as opposed to the share it was given.<span class='early'>first seen in A1</span></td><td><a href='#' class='u'>A2</a></td><td>9</td></tr><tr><td><dfn>floor</dfn></td><td>The level a pattern has to stand above to be counted. Derived from the record's own shape, never chosen.<span class='early'>first seen in A1</span></td><td><a href='#' class='u'>A7</a></td><td>35</td></tr><tr><td><dfn>instrument</dfn></td><td>The library, and the reads it publishes. It has no model in it and nothing to fit, so what it returns is a property of the record and of the reading.</td><td><a href='#' class='u'>A1</a></td><td>38</td></tr><tr><td><dfn>lens</dfn></td><td>A name and two conversions — one that puts a surface onto the screen, one that takes it back off. Everything else about it is certified, not declared.<span class='early'>first seen in A1</span></td><td><a href='#' class='u'>B1</a></td><td>8</td></tr><tr><td><dfn>mass gap</dfn></td><td>The distance between a vacuum and the next energy level. Positive means correlations die at a definite rate, and a rate is what a mass is.</td><td><a href='#' class='u'>D5</a></td><td>4</td></tr><tr><td><dfn>mode</dfn></td><td>One independent pattern in a record. The count of them above the floor is the single number most of this course turns on.</td><td><a href='#' class='u'>A2</a></td><td>29</td></tr><tr><td><dfn>noise floor</dfn></td><td>Where a read stops finding anything. Modes above it are counted and modes below it are not, and where exactly it falls is a choice somebody makes.<span class='early'>first seen in A1</span></td><td><a href='#' class='u'>A4</a></td><td>9</td></tr><tr><td><dfn>null</dfn></td><td>A way of destroying exactly the structure you claim to be measuring, so that what a read returns on it is what 'nothing' looks like.<span class='early'>first seen in A3</span></td><td><a href='#' class='u'>A7</a></td><td>15</td></tr><tr><td><dfn>plaquette</dfn></td><td>One square face of one cube on a lattice — the unit area is counted in, the way a floor is counted in tiles.<span class='early'>first seen in D5</span></td><td><a href='#' class='u'>D5a</a></td><td>5</td></tr><tr><td><dfn>point-spread</dfn></td><td>How far influence reaches along an ordered axis before it fades — the same arithmetic as survival over a distance, read along a different axis.<span class='early'>first seen in A2</span></td><td><a href='#' class='u'>A3</a></td><td>6</td></tr><tr><td><dfn>projection</dfn></td><td>Reading a record against a direction, and asking how much of it lies along that direction.</td><td><a href='#' class='u'>A1</a></td><td>7</td></tr><tr><td><dfn>record</dfn></td><td>The thing being read: numbers in rows and columns, where the rows have an order and the columns are channels. What it is a record OF sits outside every read.</td><td><a href='#' class='u'>A1</a></td><td>46</td></tr><tr><td><dfn>scatter</dfn></td><td>The part of a read that is its own channels disagreeing. It costs nothing to measure, because the channels are repeats of one measurement.</td><td><a href='#' class='u'>A13</a></td><td>6</td></tr><tr><td><dfn>screen</dfn></td><td>Where a record is put so it can be read: rows in an order, columns as channels, everything on one shared basis.</td><td><a href='#' class='u'>A1</a></td><td>25</td></tr><tr><td><dfn>spots</dfn></td><td>How many things a reading can tell apart: one over the diffraction limit. A count of separable places, not of anything found in them.<span class='early'>first seen in A2</span></td><td><a href='#' class='u'>B5</a></td><td>6</td></tr><tr><td><dfn>strehl</dfn></td><td>How concentrated a signal is into its strongest single mode. Near 1 is one dominant pattern; near 0 is energy spread thin.</td><td><a href='#' class='u'>A2</a></td><td>2</td></tr><tr><td><dfn>transfer</dfn></td><td>What actually crosses from one side of a screen to the other, bounded by the two beams' phase space and by nothing else.<span class='early'>first seen in A10</span></td><td><a href='#' class='u'>B2</a></td><td>5</td></tr><tr><td><dfn>verdict</dfn></td><td>The part of an answer that survives being asked again: whether a read clears the line, as against the magnitude it clears it by. The magnitude belongs to the read and the record together.<span class='early'>first seen in A1</span></td><td><a href='#' class='u'>A4</a></td><td>15</td></tr><tr><td><dfn>vortex</dfn></td><td>A closed sheet made of plaquettes, carrying a twist in the field. Closed means it has no edge, like the surface of a balloon.<span class='early'>first seen in D5</span></td><td><a href='#' class='u'>D5a</a></td><td>4</td></tr></tbody></table>
+<div class="note"><p><strong>15 of these appear before the unit that explains them.</strong> Each is
+marked, because a course has one order and a reader has another, and this page is where the two
+are reconciled.</p></div>
+<p style="margin-top:22px">The 3 most widely used: <strong>record</strong> (46), <strong>instrument</strong> (38), <strong>floor</strong> (35). A word in most of the units is doing
+structural work; a word in one is a local tool.</p>
+<footer>Generated by <code>shared/glossary_build.py</code>. Counts are measured over deck prose with
+figures and markup stripped. That stripping is what makes them counts of words a reader met:
+<code>fill</code> appears in 5 units as prose and in all 50 as an SVG attribute on a generated
+diagram.</footer>
+</div>
+</body>
+</html>

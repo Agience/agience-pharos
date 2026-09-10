@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What Is This Number Measuring?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson A11 &middot; three tests on any read</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+table.tab td.dim{opacity:0.62}
+</style><section class="slide on" data-act="measuring">
+<h1>What Is This Number Measuring?</h1>
+<p class="lede">Every read on this course returns a number. This unit is the three questions that
+establish what one of them measures, and all three are answered the same way:
+<strong>vary something that should not matter, and read again.</strong></p>
+<table class="tab"><thead><tr><th>test</th><th>what you vary</th><th>what it catches</th>
+</tr></thead><tbody>
+<tr><td><strong>one</strong></td><td>the amount of record</td><td>a number that is reporting how
+much you had</td></tr>
+<tr><td><strong>two</strong></td><td>the null</td><td>a null that leaves untouched the thing the
+read measures</td></tr>
+<tr><td><strong>three</strong></td><td>the other side of a comparison</td><td>a margin that came
+from a difference nobody matched</td></tr>
+</tbody></table>
+<p>The course's front page names three readings that were correct, repeated on every run, and
+measured a different quantity from the one they were read as: a shortage of data in
+<strong>A5</strong>, a stopping rule in <strong>D2</strong>, a choice of null in
+<strong>A7</strong>. One of these three tests finds each of them.</p>
+<p class="note cool">All three run on the two records this course has carried the whole way down,
+and every figure on these slides was measured here. The arithmetic in each case was already
+right &mdash; which is why these tests exist at all.</p>
+</section>
+
+<section class="slide" data-act="measuring">
+<h2>Test one: halve the record</h2>
+<p>The EEG, read the way every unit in this course reads it &mdash; 4 columns, same instrument,
+same settings. The only thing that changes down this table is <strong>how many rows the read is
+given</strong>.</p>
+<table class="tab"><thead><tr><th>rows</th><th>K<sub>signal</sub></th><th>contrast</th>
+<th>attenuation</th><th>what the read says</th></tr></thead><tbody>
+<tr><td>100</td><td class="dim">0</td><td>0.9151</td><td>0.000000</td><td>nothing stands up</td></tr><tr><td>200</td><td class="dim">0</td><td>0.9642</td><td>0.000000</td><td>nothing stands up</td></tr><tr><td>400</td><td class="hit">1</td><td>1.1260</td><td>0.118664</td><td>one mode stands up</td></tr><tr class="hi"><td>800</td><td class="hit">1</td><td>1.3194</td><td>0.277159</td><td>one mode stands up</td></tr>
+</tbody></table>
+<p>At <strong>200</strong> rows the read returns <strong>0</strong>, and at <strong>400</strong> it
+returns <strong>1</strong>. Both are correct arithmetic on the record they were given. The zero is
+a measurement of <em>how much record there was</em>.</p>
+<p>Attenuation says the same thing along its own scale: <strong>0.000000</strong> at the two short
+lengths, then <strong>0.277159</strong> at 800 rows. A read that returns exact zero has found nothing to
+measure, and at 200 rows there was nothing it could resolve.</p>
+<p class="note cool">This is unit <strong>A10</strong>'s question &mdash; how much record does a
+read need before its answer means anything &mdash; as a test each read answers for itself. Halve
+the record. If the answer changes, the answer was partly about the length.</p>
+</section>
+
+<section class="slide" data-act="measuring">
+<h2>What survives the halving</h2>
+<p>Run the same test on the ordered-axis read, on both records at once. The EEG on the left, the
+market's month-to-month changes on the right, each at a quarter, a half and all of its own rows:</p>
+<table class="tab"><thead><tr><th>EEG rows</th><th>z</th><th>verdict</th><th>market rows</th>
+<th>z</th><th>verdict</th></tr></thead><tbody>
+<tr><td>100</td><td>+21.034</td><td>above 2</td><td>16</td><td>-0.427</td><td>under 2</td></tr><tr><td>200</td><td>+32.907</td><td>above 2</td><td>18</td><td>+0.566</td><td>under 2</td></tr><tr><td>400</td><td>+46.058</td><td>above 2</td><td>35</td><td>+0.647</td><td>under 2</td></tr><tr class="hi"><td>800</td><td>+41.287</td><td>above 2</td><td>70</td><td>+0.127</td><td>under 2</td></tr>
+</tbody></table>
+<p><strong>The verdict holds at every length. The magnitude does not.</strong> The EEG's z runs from
++21.034 to +46.058 across these four reads &mdash; it more than doubles &mdash; and it is far above 2 in
+all of them. The market's changes stay near zero in all of them.</p>
+<p class="formula">the verdict is the answer &middot; the magnitude is the read and the record
+together</p>
+<p>So a reader who says <em>"the EEG scores +41.287"</em> is quoting a number that was +46.058 on half
+the record. A reader who says <em>"the EEG is far above the line and the market's changes are not"</em>
+is saying something that held on every one of these eight reads.</p>
+<p class="note">Which is what the test is for. It does not tell you a number is wrong. It tells you
+<strong>which part of the number to carry away</strong>, and that part is the part that survived.</p>
+</section>
+
+<section class="slide" data-act="measuring">
+<h2>Test two: check the null destroys what the read measures</h2>
+<p>A <strong>null</strong> is a version of the record with the thing you are looking for taken out,
+so the read has something to be compared against. Take the standard one &mdash; shuffle the rows
+into a random order. Every number survives; only the sequence is destroyed.</p>
+<p>Now run <em>two</em> reads against that one null, on the same record, at 5 seeds:</p>
+<table class="tab"><thead><tr><th>read</th><th>on the record</th><th>on a row shuffle,
+5 seeds</th><th></th></tr></thead><tbody>
+<tr class="hi"><td>coherence z &mdash; the ordered axis</td><td>+41.2872</td>
+<td class="hit">-1.0462 to +0.3724</td><td>destroyed</td></tr>
+<tr><td>K<sub>signal</sub> &mdash; the columns</td><td>1</td><td>1 at every seed</td>
+<td>untouched</td></tr>
+<tr><td>contrast &mdash; the columns</td><td>1.319376</td><td>1.319376 at every seed</td>
+<td>untouched</td></tr>
+</tbody></table>
+<p><strong>The same six digits at all 5 seeds</strong>, and the agreement runs far past six: the
+widest any shuffle departs from the record is <strong>9e-16</strong>, which is the last bit of a
+double and comes from adding the same numbers in a different order. A row permutation reorders the
+rows and changes no column's relationship to any other, so the column covariance comes back
+numerically identical &mdash; checked here, and it does: <strong>identical</strong>.</p>
+<p>So one null does two different jobs. For the ordered read it removes exactly what the read
+measures, which is what makes it a null. For the column read it removes nothing the read can see,
+so comparing against it establishes what a reader already knew.</p>
+<p class="note cool">The test in one line: <strong>apply your null and read again. The number should
+collapse.</strong> If it comes back unchanged, the null and the read are measuring different things,
+and the comparison between them is a comparison of the record with itself.</p>
+</section>
+
+<section class="slide" data-act="measuring">
+<h2>Test three: match the other side</h2>
+<p>Two records, one read, and a margin between them. The EEG is read at 4 columns because that is
+its natural shape; the market is read at 8 because there are 8 companies. Both choices are
+reasonable, and the comparison between them is not:</p>
+<table class="tab"><thead><tr><th>read at its own width</th><th>rows &times; columns</th>
+<th>contrast</th></tr></thead><tbody>
+<tr><td>the market's monthly changes</td><td>70 &times; 8</td><td>2.2202</td></tr>
+<tr><td>the EEG</td><td>800 &times; 4</td><td>1.3194</td></tr>
+<tr class="hi"><td><strong>the margin</strong></td><td></td>
+<td class="hit"><strong>0.9009</strong></td></tr>
+</tbody></table>
+<p>Now read the EEG at the market's width. Same bytes, same instrument, one difference removed:</p>
+<table class="tab"><thead><tr><th>read at one width</th><th>rows &times; columns</th>
+<th>contrast</th></tr></thead><tbody>
+<tr><td>the market's monthly changes</td><td>70 &times; 8</td><td>2.2202</td></tr>
+<tr><td>the EEG</td><td>400 &times; 8</td><td>2.1609</td></tr>
+<tr class="hi"><td><strong>the margin</strong></td><td></td>
+<td class="hit"><strong>0.0594</strong></td></tr>
+</tbody></table>
+<p>The margin falls from <strong>0.9009</strong> to <strong>0.0594</strong>. Most of what looked like a
+difference between two records was a difference between <strong>4 columns and 8</strong>, and unit
+<strong>D8</strong> is where the same bytes at different widths are read side by side.</p>
+<p class="note cool">This is the shape of the benchmark result in unit <strong>D2</strong>, recorded
+in that benchmark's own notes: one side kept about 1.2 items where the other kept about 3.6, and
+the reported margin was the difference in how many were kept. <strong>A comparison is a claim about
+two things alike in every way but one.</strong> Test three is how you find out how many ways there
+actually were.</p>
+</section>
+
+<section class="slide" data-act="measuring">
+<h2>The three tests, on one card</h2>
+<table class="tab"><thead><tr><th>test</th><th>what you do</th><th>what it looks like here</th>
+</tr></thead><tbody>
+<tr><td><strong>one</strong></td><td>halve the record and read again</td>
+<td>K<sub>signal</sub> 1 at 800 rows, <strong>0</strong> at 200</td></tr>
+<tr><td><strong>two</strong></td><td>apply your null and read again</td>
+<td>contrast <strong>1.319376</strong> both times, at every seed</td></tr>
+<tr><td><strong>three</strong></td><td>match the other side and read again</td>
+<td>a margin of 0.9009 becomes <strong>0.0594</strong></td></tr>
+</tbody></table>
+<ul class="pieces">
+<li><strong>Every number on this page is correct.</strong> None of these three cases is an
+arithmetic error, and none would be caught by checking the arithmetic. Each is a correct
+measurement of a quantity a reader was not asking about.</li>
+<li><strong>The verdict is what survives.</strong> The EEG reads far above the line at 800 rows and
+at 200; its z is +41.287 at one and +32.907 at the other. Carry the verdict away and the magnitude stays
+attached to the read that produced it.</li>
+<li><strong>A null is a null for one read.</strong> A row shuffle is exactly right for the ordered
+axis and leaves the column reads numerically identical &mdash; the column covariance is provably
+unchanged, so nothing about the comparison could have gone the other way.</li>
+<li><strong>Match one thing at a time.</strong> The width was the whole margin here. Whatever else
+two records differ in, each difference is a candidate for what the margin measured.</li>
+</ul>
+<p class="note">Run these three on your own read before quoting it. They cost three lines each, and
+every one of the three findings the course's front page carries would have been caught by one of
+them &mdash; <strong>A5</strong> by test one, <strong>A7</strong> by test two,
+<strong>D2</strong> by test three.</p>
+<p class="note cool">And when the read is one you have never used, unit <strong>A16</strong> is the
+question to ask first: how far is its answer from what a record with nothing in it would give?</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-measuring-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-measuring-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

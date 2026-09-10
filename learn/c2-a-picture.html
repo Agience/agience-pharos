@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Record That Is a Picture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson C2 &middot; the instrument on a photograph</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+table.tab td.dim{opacity:0.62}
+</style><section class="slide on" data-act="picture">
+<h1>A Record That Is a Picture</h1>
+<p class="lede">Track C is about records that arrive as something other than a table. A photograph
+is the case where <strong>a reader already knows what the record is</strong>, so every number the
+instrument returns can be checked against something they can see.</p>
+<table class="tab"><thead><tr><th>the record</th><th></th></tr></thead><tbody>
+<tr><td>what it is</td><td>a photograph &mdash; Grace Hopper, shipped with the plotting
+library</td></tr>
+<tr class="hi"><td>shape</td><td>600 rows &times; 512 columns of pixels, averaged to grey</td></tr>
+<tr><td>values</td><td>whole numbers, 0 to 255</td></tr>
+</tbody></table>
+<p>Read it the way unit <strong>A1</strong> reads anything, and then ask unit
+<strong>A4</strong>'s question about the answer:</p>
+<table class="tab"><thead><tr><th>read</th><th>the picture</th><th>its rows shuffled</th>
+<th>noise of the same shape</th></tr></thead><tbody>
+<tr class="hi"><td>coherence z</td><td class="hit">+74.1215</td><td>-1.4948 to +0.8269</td>
+<td>+0.5743</td></tr>
+<tr><td>K<sub>signal</sub></td><td>16</td><td>&mdash;</td><td>0</td></tr>
+<tr><td>spots</td><td>87.80</td><td>&mdash;</td><td>1.0192</td></tr>
+</tbody></table>
+<p class="note cool">The structure is the picture's. Shuffling the rows destroys it and a record
+built to contain nothing has none of it &mdash; which is worth establishing before reading three
+findings off a page of large numbers.</p>
+</section>
+
+<section class="slide" data-act="picture">
+<h2>Three colours, one mode</h2>
+<p>A photograph has three colour channels. Take each image row's average colour and you have a
+record 600 rows tall and three columns wide &mdash; red, green, blue.</p>
+<p>Now ask the two questions units <strong>A12</strong> and <strong>A15</strong> separate:</p>
+<table class="tab"><thead><tr><th>question</th><th>read</th><th>answer</th></tr></thead><tbody>
+<tr class="hi"><td>how many columns are carrying the record?</td><td>2<sup>H</sup> of the power
+share</td><td class="hit"><strong>2.9681</strong> of 3</td></tr>
+<tr class="hi"><td>how many modes stand above the floor?</td><td>K<sub>signal</sub></td>
+<td class="hit"><strong>1</strong></td></tr>
+</tbody></table>
+<p>The shares are 0.3549, 0.2669, 0.3782 &mdash; near enough a third each, so all three channels are carrying. And one
+mode stands up.</p>
+<p><strong>Both are right, and a reader who has looked at a colour photograph knows why.</strong>
+Red, green and blue each hold about a third of the energy, and they are near-copies of one another:
+where the picture is bright all three are bright. Three columns working; one thing being said.</p>
+<p class="note cool">This is the clearest case in the course for why the two counts are published
+separately. On the EEG or the market you would have to take it on trust that a count of columns and
+a count of modes answer different questions. Here you can see it.</p>
+</section>
+
+<section class="slide" data-act="picture">
+<h2>Blur it, and watch the resolution</h2>
+<p>Average the pixels in <span class="mono">k &times; k</span> blocks. That is a blur, and everyone
+knows what it does to a photograph: it takes away the fine detail and leaves the shape. Unit
+<strong>B5</strong>'s spot count says how much:</p>
+<table class="tab"><thead><tr><th>blur k</th><th>shape</th><th>K<sub>signal</sub></th>
+<th>spots</th><th></th></tr></thead><tbody>
+<tr class="hi"><td>1</td><td>600 &times; 512</td><td>16</td><td class="hit"><strong>87.8037</strong></td><td>&mdash;</td></tr><tr><td>2</td><td>300 &times; 256</td><td>10</td><td class="hit"><strong>43.6731</strong></td><td>2.010&times; fewer</td></tr><tr><td>4</td><td>150 &times; 128</td><td>6</td><td class="hit"><strong>21.8445</strong></td><td>1.999&times; fewer</td></tr><tr><td>8</td><td>75 &times; 64</td><td>5</td><td class="hit"><strong>11.2519</strong></td><td>1.941&times; fewer</td></tr>
+</tbody></table>
+<p class="formula">87.8037&nbsp;&middot;&nbsp;43.6731&nbsp;&middot;&nbsp;21.8445&nbsp;&middot;&nbsp;11.2519</p>
+<p><strong>Each doubling of the blur halves the spots.</strong> The three ratios are 2.010, 1.999, 1.941, against a
+doubling of k every row. That is what the word <em>resolution</em> means, arrived at by
+measurement.</p>
+<p class="note cool">Which is the point of doing this on a picture. The spot count is defined from
+the entropy of a record's own decay &mdash; nothing in that definition mentions blurring, pixels or
+photographs. Put it against a manipulation whose effect a reader can see, and it returns the answer
+they would have predicted.</p>
+</section>
+
+<section class="slide" data-act="picture">
+<h2>Turned on its side</h2>
+<p>Unit <strong>E3</strong> read a terrain grid in two directions and got two answers. A photograph
+makes the reason plain: up-and-down and left-and-right are different things in a picture of a
+person standing up.</p>
+<table class="tab"><thead><tr><th>read down</th><th>shape</th><th>K<sub>signal</sub></th>
+<th>contrast</th><th>spots</th><th>z</th></tr></thead><tbody>
+<tr class="hi"><td>the rows, as stored</td><td>600 &times; 512</td><td class="hit">16</td>
+<td>52.7089</td><td>87.80</td><td>+74.121</td></tr>
+<tr><td>the columns, turned</td><td>512 &times; 600</td><td class="hit">16</td><td>32.6172</td>
+<td>61.53</td><td>+46.307</td></tr>
+</tbody></table>
+<p><strong>The mode count agrees and everything else moves.</strong> Both readings find 16 modes;
+the spot count runs 87.80 against 61.53 and the coherence +74.121 against +46.307.</p>
+<p>Neither is the correct reading. They answer <em>how does the picture change as you go down</em>
+and <em>as you go across</em>, and in a portrait those are different questions &mdash; a face has
+more going on vertically than a shoulder does horizontally.</p>
+<p class="note">So a spot count quoted without the direction it was read in is an answer with the
+question thrown away, which is unit <strong>A11</strong>'s rule and unit <strong>E3</strong>'s
+finding on a record where the reason is visible.</p>
+</section>
+
+<section class="slide" data-act="picture">
+<h2>What a picture is for</h2>
+<ul class="pieces">
+<li><strong>Three columns working, one mode standing.</strong> 2.9681 of the three colour channels
+carry the record and K<sub>signal</sub> is 1. Both counts are right, and the reason is something a
+reader can see: red, green and blue are near-copies of each other.</li>
+<li><strong>Blur halves the resolution.</strong> 87.8037 spots becomes 43.6731, 21.8445, 11.2519 as the blur
+doubles. Nothing in the spot count's definition mentions pixels, and it returns the answer a reader
+would have predicted.</li>
+<li><strong>Direction is part of the question.</strong> 87.80 spots down the rows, 61.53 down the
+columns, on the same picture.</li>
+<li><strong>The structure is the record's.</strong> Shuffled rows read -1.4948 to +0.8269 and noise of
+the same shape reads K<sub>signal</sub> 0.</li>
+</ul>
+<p class="note">Every read in this unit is one an earlier unit built on the EEG or on eight
+companies' share prices, where a reader has to take the meaning on trust. A photograph is the
+control for the whole A-track: <strong>put the instrument on a record whose structure you already
+know, and see whether it agrees with you.</strong></p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-picture-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-picture-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

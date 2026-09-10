@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Telling Things Apart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson B5 &middot; the diffraction limit</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+table.tab td.dim{opacity:0.62}
+</style><section class="slide on" data-act="apart">
+<h1>Telling Things Apart</h1>
+<p class="lede">The oldest number in optics is the one that says how close two things can be and
+still arrive as two. Closer than that and they arrive as one, and no amount of care afterwards
+separates them again. This unit measures it on a record.</p>
+<p class="formula">a<sub>&delta;</sub> = 1 &divide; 2<sup>H</sup>
+&nbsp;&nbsp;&middot;&nbsp;&nbsp; spots = 1 &divide; a<sub>&delta;</sub> = 2<sup>H</sup></p>
+<p><strong>You have already built this.</strong> Unit <strong>A12</strong> took the power share
+across the columns, measured its entropy in bits, and raised two to it to get the number of columns
+carrying the record. This is the same three steps on a different subject: the entropy is of the
+record's own <em>decay</em>, and 2<sup>H</sup> counts <strong>how many things along it can be told
+apart</strong>.</p>
+<table class="tab"><thead><tr><th>record</th><th>H bits</th><th>2<sup>H</sup></th>
+<th>a<sub>&delta;</sub></th></tr></thead><tbody>
+<tr class="hi"><td>the EEG</td><td>4.569185</td><td class="hit"><strong>23.738960</strong></td>
+<td>0.042125</td></tr>
+<tr><td>the terrain grid of unit E3</td><td>6.061199</td><td class="hit"><strong>66.773266</strong></td>
+<td>0.014976</td></tr>
+</tbody></table>
+<p class="note cool">The instrument publishes this as <code>diffraction_limit</code>, and the two
+numbers it carries are <code>a_delta</code> and the shape factor <code>xi</code>. Unit
+<strong>B3</strong> measured how fast influence falls off; this asks what that decay <em>costs</em> you in
+resolution, which is the same measurement read as a limit.</p>
+</section>
+
+<section class="slide" data-act="apart">
+<h2>What it separates</h2>
+<p>Eight records: four this course has found order in, three draws of pure noise, and the market's
+monthly changes, which every read in this course has put with the noise. The last column is unit
+<strong>A4</strong>'s verdict, and it is here so the two can be compared:</p>
+<table class="tab"><thead><tr><th>record</th><th>a<sub>&delta;</sub></th><th>spots</th>
+<th>coherence z</th><th>A4's verdict</th></tr></thead><tbody>
+<tr class="hi"><td>the terrain grid, 344&times;403</td><td>0.014976</td><td class="hit"><strong>66.77</strong></td><td>+43.390</td><td>order</td></tr><tr class="hi"><td>the market's prices</td><td>0.033609</td><td class="hit"><strong>29.75</strong></td><td>+9.304</td><td>order</td></tr><tr class="hi"><td>the EEG</td><td>0.042125</td><td class="hit"><strong>23.74</strong></td><td>+41.287</td><td>order</td></tr><tr class="hi"><td>the EEG read as 8 columns</td><td>0.092534</td><td class="hit"><strong>10.81</strong></td><td>+19.543</td><td>order</td></tr><tr><td>noise, seed 0, 800&times;4</td><td>0.353752</td><td class="hit"><strong>2.83</strong></td><td>+1.026</td><td>nothing there</td></tr><tr><td>noise, seed 1, 800&times;4</td><td>0.341441</td><td class="hit"><strong>2.93</strong></td><td>-0.047</td><td>nothing there</td></tr><tr><td>noise, seed 2, 70&times;8</td><td>0.701600</td><td class="hit"><strong>1.43</strong></td><td>+0.288</td><td>nothing there</td></tr><tr><td>the market's monthly changes</td><td>0.484929</td><td class="hit"><strong>2.06</strong></td><td>+0.127</td><td>nothing there</td></tr>
+</tbody></table>
+<p><strong>The split is not gradual.</strong> Every record with order in it resolves at least
+<strong>10.81</strong> spots. Every record with nothing in it resolves under <strong>2.93</strong>.
+There is nothing between 2.93 and 10.81 on this table.</p>
+<p>And the two columns agree without being connected. The coherence read looks along the ordered
+axis and asks whether the row order matters; the spot count looks at the decay spectrum and asks how
+finely the record can be divided. <strong>They are different measurements and they sort the eight
+records the same way.</strong></p>
+<p class="note cool">The market's monthly changes resolve <strong>2.06</strong> spots, which puts
+them <strong>inside</strong> the noise band. That is the same answer units A3, A4 and A5 reach by
+three other routes, and this is a fourth.</p>
+</section>
+
+<section class="slide" data-act="apart">
+<h2>The floor, and the four records that establish it</h2>
+<p>The limit carries a second number, the shape factor <span class="mono">&xi;</span>, and it is
+<strong>bounded below by 1</strong>. A record with nothing to resolve sits on that floor:</p>
+<table class="tab"><thead><tr><th>record with nothing in it</th><th>&xi;</th><th>spots</th>
+</tr></thead><tbody>
+<tr class="hi"><td>noise, seed 0, 800&times;4</td><td class="hit"><strong>1</strong></td><td>2.83</td></tr><tr><td>noise, seed 1, 800&times;4</td><td class="hit"><strong>1.0089274970520561</strong></td><td>2.93</td></tr><tr class="hi"><td>noise, seed 2, 70&times;8</td><td class="hit"><strong>1</strong></td><td>1.43</td></tr><tr class="hi"><td>the market's monthly changes</td><td class="hit"><strong>1</strong></td><td>2.06</td></tr>
+</tbody></table>
+<p><strong>3 of the 4 sit at exactly 1</strong> &mdash; not near it, but 1 to every digit a double
+carries. The remaining one reads <strong>1.0089</strong>.</p>
+<p>Which is what the fourth draw establishes. With only the market's changes and a
+single noise draw, every unstructured record on the table would have read exactly 1, and the honest
+description of that is <em>a constant</em>. A fourth draw shows it is a <strong>floor</strong>, and
+the difference matters: a constant that turns out to vary is a broken instrument, and a floor that
+is reached is an instrument saying there is nothing here.</p>
+<table class="tab"><thead><tr><th>record with order in it</th><th>&xi;</th><th>spots</th>
+</tr></thead><tbody>
+<tr><td>the terrain grid, 344&times;403</td><td>23.3998</td><td>66.77</td></tr><tr><td>the market's prices</td><td>10.6789</td><td>29.75</td></tr><tr><td>the EEG</td><td>4.4676</td><td>23.74</td></tr><tr><td>the EEG read as 8 columns</td><td>2.4873</td><td>10.81</td></tr>
+</tbody></table>
+<p class="note">Unit <strong>A7</strong> asked what nothing looks like, and found exact zeros. This
+is the same shape of answer on a scale whose bottom is one: <strong>an exact value,
+reached</strong>, on records built to contain nothing.</p>
+</section>
+
+<section class="slide" data-act="apart">
+<h2>The same bytes, told apart twice</h2>
+<p>The EEG file is 3,200 numbers with nothing in it saying how they are laid out. Read them as 4
+columns and as 8 &mdash; the same bytes, no value changed:</p>
+<table class="tab"><thead><tr><th>shape</th><th>H bits</th><th>a<sub>&delta;</sub></th>
+<th>spots</th></tr></thead><tbody>
+<tr class="hi"><td>800 &times; 4</td><td>4.569185</td><td>0.042125</td>
+<td class="hit"><strong>23.74</strong></td></tr>
+<tr><td>400 &times; 8</td><td>3.433872</td><td>0.092534</td><td class="hit"><strong>10.81</strong></td></tr>
+</tbody></table>
+<p>Reading them eight at a time <strong>more than halves</strong> what can be told apart: 23.74 spots
+becomes 10.81. Both readings are correct arithmetic on the record they were given, and they answer
+different questions &mdash; unit <strong>D8</strong> reads the same file at six shapes and unit
+<strong>E3</strong> reads a terrain grid in two directions, both reaching this from their own side.</p>
+<p><strong>So the resolution belongs to the reading, not to the file.</strong> A spot count quoted
+without the shape it was read at is a number with its question removed, which is the same rule unit
+<strong>A11</strong> arrives at for every read in this course.</p>
+<p class="note cool">This is the practical use of the limit. Before asking whether two things in a
+record are distinguishable, count the spots the reading resolves. If the answer is 23.74, then
+23.74 is how many separable things the record can hold, and looking for more of them is looking for
+something the reading cannot carry.</p>
+</section>
+
+<section class="slide" data-act="apart">
+<h2>The limit, on one card</h2>
+<p class="formula">H of the decay &nbsp;&rarr;&nbsp; 2<sup>H</sup> spots
+&nbsp;&rarr;&nbsp; a<sub>&delta;</sub> = 1 &divide; 2<sup>H</sup></p>
+<table class="tab"><thead><tr><th></th><th>spots</th><th>&xi;</th></tr></thead><tbody>
+<tr class="hi"><td>the terrain grid</td><td class="hit"><strong>66.77</strong></td><td>23.40</td></tr>
+<tr><td>the market's prices</td><td>29.75</td><td>10.68</td></tr>
+<tr><td>the EEG</td><td>23.74</td><td>4.47</td></tr>
+<tr><td>the EEG as 8 columns</td><td>10.81</td><td>2.49</td></tr>
+<tr><td>the market's monthly changes</td><td>2.06</td><td>1</td></tr>
+</tbody></table>
+<ul class="pieces">
+<li><strong>It is A12's arithmetic on a different subject.</strong> Entropy of a share, then two to
+the power of it. A12 counts columns carrying the record; this counts things that can be told
+apart.</li>
+<li><strong>The split is clean.</strong> Order resolves 10.81 spots or more; nothing resolves under
+2.93. Two measurements built on different quantities sort eight records the same way.</li>
+<li><strong>&xi; is a floor at 1, and it is reached.</strong> 3 of 4 records with nothing in them
+sit exactly on it, and the fourth reads 1.0089 &mdash; which is why the slide says floor.</li>
+<li><strong>The reading owns the resolution.</strong> The same bytes resolve 23.74 spots at four
+columns and 10.81 at eight.</li>
+</ul>
+<p class="note">Three relations the instrument documents were checked before this deck was written
+and all three hold: <span class="mono">a<sub>&delta;</sub> = 1/2<sup>H</sup></span>,
+<span class="mono">shape_factor = a<sub>&delta;</sub>/&phi;<sub>F</sub></span> &mdash; where
+<span class="mono">&phi;</span> is the Greek letter <strong>phi</strong>, unit A12's fill fraction
+&mdash; and
+<span class="mono">rayleigh_shape_factor = &xi;&middot;a<sub>&delta;</sub></span>. The audit re-checks them on
+every build, because a formula in a docstring is a claim and the value beside it is the
+measurement.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-apart-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-apart-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Third Axis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson twenty &middot; more than two axes</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 9px; text-align:left}
+table.tab td:last-child,table.tab th:last-child{text-align:right}
+table.tab td.hit{color:var(--amber); font-weight:600}
+ul.pieces{line-height:1.85}
+</style><section class="slide on">
+<h1>The Third Axis</h1>
+<p class="lede">Every unit so far has read a flat grid &mdash; rows going down, features going
+across. That is what a screen is, and it is only ever two axes.</p>
+<p>Most real records are not flat. A video has height, width and time. A scan has three spatial
+axes. A trial-based experiment has trials, steps and channels. <strong>The moment a third axis
+appears, there is no longer one reading.</strong></p>
+<p class="note">This unit is about what to do then, and about how easily the obvious answer is
+wrong.</p>
+</section>
+
+<section class="slide">
+<h2>A field, and a decision nobody records</h2>
+<p>The EEG carried through units A3, A4, A6 and B3 is stored as <strong>800 &times; 4</strong>
+&mdash; 800 readings, one after another, from 4 electrodes. Flat.</p>
+<p>But readings usually come in <em>runs</em>. So it can equally be read as
+<strong>100 trials &times; 8 steps &times; 4 electrodes</strong>, and every unit below does exactly
+that.</p>
+<p class="warn"><strong>Nothing in the file says that is true.</strong> The trial length was chosen
+&mdash; here, so the numbers divide neatly. A different choice gives a different field, and
+the instrument will answer just as confidently either way.</p>
+<p>That decision is the subject here. <strong>Where the third axis comes from is settled outside
+the data</strong>, and it usually goes unrecorded, because it is made by whoever wrote the loading
+code and it looks like plumbing.</p>
+</section>
+
+<section class="slide">
+<h2>One field, many screens</h2>
+<p>A screen takes two axes. A field has three. So the first question is which two &mdash; and each
+answer gives a different <em>number</em> of screens, of a different size:</p>
+<table class="tab"><thead><tr><th>screen made from axes</th><th>how many</th><th>each</th></tr></thead>
+<tbody><tr><td>1 and 2</td><td>100</td><td>8 &times; 4</td></tr><tr><td>0 and 1</td><td>4</td><td>100 &times; 8</td></tr><tr><td>0 and 2</td><td>8</td><td>100 &times; 4</td></tr></tbody></table>
+<p>These are not three views of one thing. They are three genuinely different objects. Reading one
+trial as a picture of <em>steps against electrodes</em> asks how the electrodes move together within
+a run. Reading one electrode as <em>trials against steps</em> asks whether the runs resemble each
+other.</p>
+<p class="note">Both are reasonable questions. Neither is <em>the</em> question, and the data does
+not prefer one.</p>
+</section>
+
+<section class="slide">
+<h2>Seven answers to one question</h2>
+<p>Take the simplest read in the whole curriculum &mdash; the fill fraction, <strong>&phi;</strong>
+(the Greek letter <strong>phi</strong>, said <em>FYE</em>), which unit A2 used to say how much of a
+screen a signal occupies. Ask it of this one field, seven ways:</p>
+<svg class="fig-bars" viewBox="0 0 560 200" width="560" height="200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">one read, one field, seven reductions</text><rect x="265.4" y="28" width="122.8" height="15" fill="var(--teal,#20635f)" opacity="0.45"/><text x="257.4" y="40.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">over planes: each trial is a plane of s</text><text x="504.0" y="40.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.5009</text><rect x="265.4" y="52" width="82.4" height="15" fill="var(--teal,#20635f)" opacity="0.45"/><text x="257.4" y="64.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">over planes: each electrode is a plane </text><text x="504.0" y="64.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.3362</text><rect x="265.4" y="76" width="74.2" height="15" fill="var(--teal,#20635f)" opacity="0.45"/><text x="257.4" y="88.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">pool: ordered axis 0</text><text x="504.0" y="88.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.3027</text><rect x="265.4" y="100" width="97.2" height="15" fill="var(--teal,#20635f)" opacity="0.45"/><text x="257.4" y="112.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">pool: ordered axis 1</text><text x="504.0" y="112.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.3967</text><rect x="265.4" y="124" width="176.3" height="15" fill="var(--teal,#20635f)" opacity="0.45"/><text x="257.4" y="136.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">pool: ordered axis 2</text><text x="504.0" y="136.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.7192</text><rect x="265.4" y="148" width="74.2" height="15" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="257.4" y="160.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">bare reshape: flatten to 100 &amp;times; 32</text><text x="504.0" y="160.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">0.3027</text><rect x="265.4" y="172" width="232.6" height="15" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="257.4" y="184.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">bare reshape: flatten to 800 &amp;times; 4</text><text x="504.0" y="184.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">0.9490</text></svg>
+<table class="tab"><thead><tr><th>reduction</th><th></th><th>screen</th><th>&phi;</th></tr></thead>
+<tbody><tr><td>over planes</td><td>each trial is a plane of steps &times; electrodes</td><td>&mdash;</td><td class=''>0.500898</td></tr><tr><td>over planes</td><td>each electrode is a plane of trials &times; steps</td><td>&mdash;</td><td class=''>0.336184</td></tr><tr><td>pool</td><td>ordered axis 0 (trials)</td><td>100 &times; 32</td><td class=''>0.302704</td></tr><tr><td>pool</td><td>ordered axis 1 (steps)</td><td>8 &times; 400</td><td class=''>0.396682</td></tr><tr><td>pool</td><td>ordered axis 2 (electrodes)</td><td>4 &times; 800</td><td class=''>0.719235</td></tr><tr><td class='hit'>bare reshape</td><td>flatten to 100 &times; 32</td><td>100 &times; 32</td><td class='hit'>0.302704</td></tr><tr><td class='hit'>bare reshape</td><td>flatten to 800 &times; 4</td><td>800 &times; 4</td><td class='hit'>0.949016</td></tr></tbody></table>
+<p>The principled reductions land between <strong>0.3027</strong> and <strong>0.7192</strong>. The last
+row &mdash; a plain reshape back to the shape the file was stored in &mdash; reads
+<strong>0.9490</strong>, well above all of them.</p>
+<p class="warn">Every number in that column is the same function, applied to the same bytes. The
+only thing that changed is how three axes were folded into two.</p>
+</section>
+
+<section class="slide">
+<h2>Two reductions, and which read takes which</h2>
+<p>The library does not leave this to the caller's instinct. It provides exactly two ways down to a
+screen, and states which reads each one is correct for:</p>
+<table class="tab"><thead><tr><th>reduction</th><th>what it does</th><th>correct for</th></tr></thead><tbody>
+<tr><td>over planes</td><td>keep each plane whole, read every one, combine the answers</td>
+    <td>reads about <em>features</em> &mdash; how much of a plane is occupied, how concentrated it is</td></tr>
+<tr><td>pool</td><td>flatten every other axis into the feature axis, so each off-axis position becomes another sample of the same ordered process</td>
+    <td>reads about the <em>ordered axis</em> &mdash; decay, rates, how fast things fade</td></tr>
+</tbody></table>
+<p>The reasoning is short. A feature read asks about structure <em>within</em> a plane, so the plane
+must stay intact. An ordered read asks how a quantity evolves along one axis, and every other
+position is another independent witness of that same evolution &mdash; so pooling them gathers
+information.</p>
+<p class="warn">The module's own words: getting these backwards <strong>changes the answer</strong>,
+and a naive flatten <em>&ldquo;destroys the within-plane correlation and can silently invert a
+read&rdquo;</em>. The module's word is <strong>invert</strong>, and it means what it says: the
+answer can come back pointing the other way.</p>
+</section>
+
+<section class="slide">
+<h2>Why the plain reshape is the dangerous one</h2>
+<p>Look at those last two rows again, because they do not fail in the same way.</p>
+<table class="tab"><thead><tr><th>bare reshape</th><th>&phi;</th><th>what happened</th></tr></thead><tbody>
+<tr><td>flatten to 100 &times; 32</td><td>0.302704</td><td class="hit">the same array as pool on ordered axis 0 &mdash; the file's own ordering</td></tr>
+<tr><td>flatten to 800 &times; 4</td><td>0.949016</td><td class="hit">no principled reduction gives this</td></tr>
+</tbody></table>
+<p>One of them <strong>is</strong> a correct reduction, element for element: the file already
+stores the numbers in that order, so flattening to that shape and pooling that axis produce the same
+array. The other has a shape no pooling produces &mdash; pooling the electrode axis gives
+4&nbsp;&times;&nbsp;800, and the reshape gives 800&nbsp;&times;&nbsp;4, transposed.</p>
+<p class="warn">So a bare reshape is not reliably wrong. <strong>It is unpredictably right</strong>,
+which is worse: it works, you stop checking, and then the field's shape changes by one axis and it
+silently stops working with no error and no visible difference in the code.</p>
+<p class="note">A method
+that is correct on the cases you happened to try is indistinguishable, from the inside, from a
+method that is correct.</p>
+</section>
+
+<section class="slide">
+<h2>The fold is a choice as well</h2>
+<p>Everything so far varies the <em>reduction</em> and holds the field fixed at
+<strong>100 &times; 8 &times; 4</strong>. But nothing in the file says that fold is the right one.
+The record is 3,200 numbers; 800 rows divide several ways, and each one is as legal as the one this
+unit picked. So: the same reductions, every legal fold, nothing else changed.</p>
+<table class="tab"><thead><tr><th>fold</th><th>planes, by trial</th><th>planes, by electrode</th><th>pool axis 0</th><th>pool axis 1</th></tr></thead><tbody><tr class='hi'><td>100 &times; 8 &times; 4</td><td>0.5009</td><td>0.3362</td><td>0.3027</td><td>0.3967</td></tr><tr><td>200 &times; 4 &times; 4</td><td>0.4031</td><td>0.4331</td><td>0.4029</td><td>0.4792</td></tr><tr><td>50 &times; 16 &times; 4</td><td>0.5766</td><td>0.2905</td><td>0.2834</td><td>0.3192</td></tr><tr><td>400 &times; 2 &times; 4</td><td>0.5000</td><td>0.6225</td><td>0.5882</td><td>0.5000</td></tr><tr><td>25 &times; 32 &times; 4</td><td>0.6568</td><td>0.2794</td><td>0.5878</td><td>0.2609</td></tr>
+<tr class="sep"><td><strong>widest spread</strong></td><td>0.2537</td><td>0.3431</td><td>0.3048</td><td>0.2391</td></tr></tbody></table>
+<p class="warn">Reading down any column: choosing the fold moves the answer by up to
+<strong>0.3431</strong>. Reading across the earlier table, choosing the reduction moves it by
+<strong>0.4165</strong>. <strong>The two choices cost about the same</strong>, and the reader makes
+both.</p>
+<p>Neither is recorded in the number that comes out. A figure like &ldquo;0.5009&rdquo; is the answer
+to <em>this reduction of this fold</em>, and a reader handed the figure alone cannot recover either.
+</p>
+<p class="note cool">Which is why the honest form of a three-axis read is not a number but a number
+<em>with its two choices attached</em>. Unit D8 reaches the same place from the other end: there the
+question was which rows a filter kept, here it is which shape the rows were poured into, and both
+are decisions a reader makes and a figure forgets.</p>
+</section>
+
+<section class="slide">
+<h2>And it runs the other way</h2>
+<p>If a third axis makes a record harder to read, it also makes one <em>richer</em> &mdash; and a
+flat record can be given one deliberately.</p>
+<p>Take each moment together with the few that follow it. That stack of short windows is a third
+axis, built out of the record's own history: <strong>800 &times; 4</strong> becomes
+<strong>797 &times; 4 &times; 4</strong>, with the new axis being <em>how far back</em>.</p>
+<p>Now all three can be read at once, giving one set of directions per axis:</p>
+<table class="tab"><thead><tr><th>directions</th><th>strengths (largest first)</th></tr></thead>
+<tbody><tr><td>along time</td><td>69.170 &middot; 59.811 &middot; 51.839 &middot; 42.922</td></tr><tr><td>across electrodes</td><td>77.812 &middot; 64.555 &middot; 55.914 &middot; 47.519</td></tr><tr><td>across lags</td><td>113.261 &middot; 46.944 &middot; 21.142 &middot; 11.300</td></tr></tbody></table>
+<p>The whole record compresses into a core of <strong>8 &times; 4 &times; 4</strong> numbers plus
+those three sets of directions &mdash; and rebuilding from it recovers the original to
+<strong>0.9608</strong> of itself, returning to exactly its original <strong>800 &times; 4</strong>.</p>
+<p class="note">Which is unit A1's idea &mdash; a few strong patterns carry most of a record &mdash;
+running in three directions at once.</p>
+</section>
+
+<section class="slide">
+<h2>The third axis is a decision, usually undocumented</h2>
+<p>A screen has two axes. Give it a record with three and something has to give &mdash; and what
+gives is the uniqueness of the answer.</p>
+<ul class="pieces">
+<li><strong>The third axis is a decision, usually undocumented.</strong> This field's trial length
+was chosen so the numbers divided neatly. Nothing in the file mentions trials.</li>
+<li><strong>One read, seven reductions, values from 0.3027 to 0.7192.</strong> Same function, same
+bytes, different fold.</li>
+<li><strong>There are two correct reductions and they are for different questions</strong> &mdash;
+one keeps planes whole, one pools them &mdash; and the library says which is which.</li>
+<li><strong>A bare reshape is unpredictably right.</strong> Sometimes it matches a correct
+reduction exactly, by accident of memory layout.</li>
+</ul>
+<p class="warn">The same dependence shows up wherever the instrument is pointed. Unit A7: the answer
+depends on what you call nothing. Unit A10: on how much record you have. Here: on how you fold the
+axes. <strong>The arithmetic is exact in every case, and the number carries the choice that produced
+it.</strong></p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-thirdaxis-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-thirdaxis-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

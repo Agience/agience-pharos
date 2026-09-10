@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What We Are Teaching On</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D8 &middot; the records</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 8px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab th:last-child,table.tab td:last-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+table.tab tr.hi td{background:var(--amber-bg); color:var(--ink)}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:17px; color:var(--amber); text-align:center; margin:20px 0}
+p.formula b{color:var(--teal)}
+</style><section class="slide on">
+<p class="eyebrow">Unit D8 &middot; how it holds</p>
+<h1>What We Are<br>Teaching <em>On</em></h1>
+<p class="lead">Across this course, almost every measured number comes from two files.
+This unit is about those two files &mdash; what they say about themselves, and what the course's
+claims are therefore worth.</p>
+<table class="tab"><thead><tr><th>record</th><th>size</th><th>what it is</th></tr></thead><tbody>
+<tr><td><code>eeg.dat</code></td><td>25,600 bytes</td><td>3,200 float64 values, no header</td></tr>
+<tr><td><code>Stocks.csv</code></td><td>67,924 bytes</td><td>524 rows, 10 columns, one comment line</td></tr>
+</tbody></table>
+<p class="warn">Both of them live <strong>inside the matplotlib package</strong> &mdash; demo data
+shipped with a plotting library. Not chosen for their scientific properties. Chosen because they are
+already on the machine of anyone who can run the code.</p>
+</section>
+
+<section class="slide">
+<h2>Why that was the right choice</h2>
+<p>It looks like a shortcut and it is defensible, for one reason that outweighs the rest:
+<strong>every figure in this course can be re-derived by anyone</strong>, on any machine, with no
+download, no credentials and no dataset that might move or disappear.</p>
+<p>That is not a small property. A curriculum whose numbers rest on a file only its author can
+reach is a curriculum nobody can check &mdash; and this whole programme is built on the claim that
+its numbers are checkable.</p>
+<table class="tab"><thead><tr><th>what it buys</th><th>what it costs</th></tr></thead><tbody>
+<tr><td>anyone can re-run every audit</td><td>the records were selected for availability</td></tr>
+<tr><td>no dataset can vanish underneath the course</td><td>and nothing about their provenance is
+established</td></tr>
+<tr><td>a reader can disagree by re-measuring</td><td>the reads describe <em>these arrays</em>, not
+their subject matter</td></tr>
+</tbody></table>
+<p class="note cool">The distinction in that last row is the one this unit exists to make explicit.
+The course teaches <strong>reads</strong> &mdash; how to ask a record whether it carries
+structure. Conclusions about brains or markets belong to whoever owns the subject matter, and the
+next two slides show where the line falls.</p>
+</section>
+
+<section class="slide">
+<h2>The first record does not say what shape it is</h2>
+<p><code>eeg.dat</code> has <strong>no header, no units, no sampling rate and no channel
+names</strong>. It is 3,200 numbers in a row. Every unit in this course reads it as 800 rows of
+4 &mdash; and 3,200 divides five ways the instrument will read without complaint:</p>
+<table class="tab"><thead><tr><th>read as</th><th>K signal</th><th>contrast</th><th>coherence</th>
+<th>attenuation</th></tr></thead><tbody><tr><td>(1,600, 2)</td><td>0</td><td>0.956870</td><td>3.456529</td><td class='hit'>0.000000</td></tr><tr class='hi'><td>(800, 4)</td><td>1</td><td>1.319376</td><td>45.937007</td><td class=''>0.277159</td></tr><tr><td>(400, 8)</td><td>3</td><td>2.160879</td><td>22.203340</td><td class=''>0.484397</td></tr><tr><td>(200, 16)</td><td>4</td><td>3.047455</td><td>11.339871</td><td class=''>0.497889</td></tr><tr><td>(160, 20)</td><td>4</td><td>3.056174</td><td>8.557256</td><td class=''>0.473947</td></tr></tbody></table>
+<p class="warn">At <strong>(1,600, 2)</strong> the instrument reports <strong>nothing there</strong>
+&mdash; no modes above the floor, attenuation exactly zero. That zero is the result. At <strong>(200, 16)</strong> it resolves <strong>4 modes</strong>. Same
+bytes. Same instrument. <strong>Nothing in the file says which is right.</strong></p>
+<p class="note">The highlighted row is the one every other unit uses. It is a reasonable choice
+&mdash; four channels is what an EEG file of this vintage usually holds &mdash; and it remains a
+<em>choice</em>, made by a reader, not a fact read out of the data.</p>
+<p class="note cool">Unit A8 goes one level further, folding that same reading into 100 trials of 8
+steps across 4 electrodes, and says on its own slide that this is <em>&ldquo;a fold nothing in the
+file says is true&rdquo;</em>. This slide is that sentence one level lower down: <strong>the
+two-dimensional shape is an assumption too.</strong></p>
+</section>
+
+<section class="slide">
+<h2>And the second says more than it is asked</h2>
+<p><code>Stocks.csv</code> is better behaved: it has column names, dates, and a single comment line
+naming where it came from &mdash; <code>Data source: https://finance.yahoo.com</code>. That one line is more provenance than the first
+record carries in total.</p>
+<table class="tab"><thead><tr><th></th><th>in the file</th><th>as the course uses it</th></tr></thead>
+<tbody>
+<tr><td>rows</td><td>524</td><td class="hit">71</td></tr>
+<tr><td>columns</td><td>10</td><td>8</td></tr>
+<tr><td>span</td><td>1990-01-01 &rarr; 2022-06-28</td><td>2016-09-01 &rarr; 2022-06-28</td></tr>
+</tbody></table>
+<p>The course's <strong>71 &times; 8</strong> is what survives dropping every row where any one of
+the eight companies is missing. That is a defensible rule and it is also a <em>filter</em>: it
+selects the window in which all eight happen to be listed, which is the most recent
+<strong>2016</strong> of a file that starts in <strong>1990</strong>.</p>
+<p class="warn">Two of the file's 10 columns are not companies at all &mdash; <code>^GSPC, ^IXIC</code> are
+market <em>indices</em>. They are not among the eight used, and a reader who took &ldquo;all the
+columns&rdquo; would be mixing two different kinds of thing on one screen without noticing.</p>
+<p class="note">None of that is a defect in the file. It is what happens when a record is used for
+something other than what it was published for, which is the normal case.</p>
+</section>
+
+<section class="slide">
+<h2>The second record's rule is a choice too</h2>
+<p>The shape table above asks the first record a hard question. The second deserves the same one.
+The course keeps every row where all 8 companies have a price &mdash; defensible, and a
+<em>filter</em>. Leave each company out in turn and watch what the filter keeps:</p>
+<table class="tab"><thead><tr><th>the same rule, minus one company</th><th>rows that survive</th>
+</tr></thead><tbody><tr><td>without IBM</td><td>71</td></tr><tr><td>without AAPL</td><td>71</td></tr><tr><td>without MSFT</td><td>71</td></tr><tr><td>without XRX</td><td>71</td></tr><tr><td>without AMZN</td><td>71</td></tr><tr><td class='hit'>without DELL</td><td class='hit'>215</td></tr><tr><td>without GOOGL</td><td>71</td></tr><tr><td>without ADBE</td><td>71</td></tr></tbody></table>
+<p class="warn">Seven of the eight change nothing at all &mdash; the window stays at <strong>71</strong>
+rows whichever of them is dropped. <strong>Removing DELL alone takes it to 215</strong>, 3.0 times the
+record, out of a file with 524 rows in it. The course's window is a property of <em>one</em>
+company, and the number 71 carries no record of that.</p>
+<p>So the same file, read four defensible ways:</p>
+<table class="tab"><thead><tr><th>reading</th><th>rows</th><th>cols</th><th>K signal</th>
+<th>coherence</th><th>attenuation</th></tr></thead><tbody><tr class='hi'><td>the course &mdash; 8 tickers, drop any row with a gap</td><td>71</td><td>8</td><td>1</td><td>8.1579</td><td>1.142563</td></tr><tr><td>every column, indices included</td><td>71</td><td>10</td><td>1</td><td>8.0532</td><td>1.372023</td></tr><tr><td>carry the last price forward, then drop</td><td>95</td><td>8</td><td>1</td><td>9.5494</td><td>1.220446</td></tr><tr><td>4 of the 8 tickers</td><td>391</td><td>4</td><td>1</td><td>20.2370</td><td>0.685292</td></tr></tbody></table>
+<p><strong>The structural answer does not move.</strong> Every reading resolves
+<strong>1</strong> mode. Whatever else the choice of columns does, it does not change the count of
+things the instrument finds in this record.</p>
+<p class="warn"><strong>The quantities do move, and by a lot.</strong> Attenuation runs from
+0.685292 to 1.372023 across those four rows &mdash; a factor of 2.0, on one file, with no row of it
+altered. A figure carried out of here without the reading that produced it is a number without a
+population.</p>
+<p class="note cool">Which is the first record's lesson arriving by a different road. There it was
+the <em>shape</em> that nothing in the file settled; here the shape is given and it is the
+<em>selection</em> that is not. Both are choices made by the reader, both are defensible, and
+neither is visible in the number that comes out the other end unless someone writes it down.</p>
+</section>
+
+<section class="slide">
+<h2>What the course's numbers are worth</h2>
+<p>Every figure in every one of these units is <strong>reproducible</strong>: re-derived from the
+running code each time a page is built, checked against the rendered page by a script that ships
+beside it, on data that anyone reading this already has.</p>
+<p class="formula">reproducible &nbsp;&ne;&nbsp; a claim about the <b>world</b></p>
+<p>The reads say what they say about <em>these arrays of numbers</em>. That the first record
+resolves 1 mode at (800,&nbsp;4) is a fact about a file. It is not a finding about brain activity,
+and this course has never asked it to be &mdash; which is why every unit teaches a
+<strong>read</strong> and none teaches a conclusion.</p>
+<table class="tab"><thead><tr><th>claim</th><th>standing</th></tr></thead><tbody>
+<tr><td>the arithmetic on these slides</td><td>checked, and re-checked on every build</td></tr>
+<tr><td>that these reads behave this way on these records</td><td>measured</td></tr>
+<tr><td>that they behave this way on <em>your</em> record</td><td><strong>not established</strong>
+&mdash; run them and find out</td></tr>
+<tr><td>anything about electroencephalography, or markets</td><td><strong>not claimed</strong></td></tr>
+</tbody></table>
+<p class="note">Which is the honest end of a course that spent every unit insisting on the
+difference between a measurement and a claim. <strong>The records were chosen so you could
+disagree.</strong> Reading as at 2026-08-30 12:53 Eastern Daylight Time.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-records-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-records-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

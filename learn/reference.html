@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entroptics: Every Read</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#eeefec;--surface:#f8f9f7;--sunk:#e5e7e3;--ink:#1b1d22;--ink2:#565a63;--ink3:#8b909a;
+  --rule:#d2d5d0;--rule2:#bcc0ba;--amber:#a5620c;--amber-bg:#f6e7ca;--amber-line:#d99a34;
+  --teal:#20635f;--teal-bg:#dbeae7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#131519;--surface:#1a1d23;
+  --sunk:#0f1115;--ink:#e8eaed;--ink2:#a4a9b2;--ink3:#767c87;--rule:#2b2f37;--rule2:#3c414b;
+  --amber:#f0a63e;--amber-bg:#392b12;--amber-line:#a9741f;--teal:#6bbdb5;--teal-bg:#12312e}}
+:root[data-theme="dark"]{--bg:#131519;--surface:#1a1d23;--sunk:#0f1115;--ink:#e8eaed;--ink2:#a4a9b2;
+  --ink3:#767c87;--rule:#2b2f37;--rule2:#3c414b;--amber:#f0a63e;--amber-bg:#392b12;
+  --amber-line:#a9741f;--teal:#6bbdb5;--teal-bg:#12312e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding:52px 20px 90px}
+h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(36px,6vw,58px);
+  line-height:1.04;margin:0 0 8px}
+h1 em{font-style:italic;color:var(--amber)}
+p{max-width:70ch;color:var(--ink2)}
+.stats{display:flex;gap:24px;flex-wrap:wrap;border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);padding:14px 0;margin:22px 0 10px}
+.stat b{font-family:"IBM Plex Mono",monospace;font-size:23px;color:var(--amber);font-weight:500;
+  display:block;line-height:1.2}
+.stat span{font-size:11.5px;color:var(--ink3)}
+.scroll{overflow-x:auto;margin:22px 0 0;border:1px solid var(--rule)}
+table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surface)}
+th{position:sticky;top:0;background:var(--sunk);text-align:left;padding:9px 10px;
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);
+  border-bottom:1px solid var(--rule2);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--rule);color:var(--ink2);vertical-align:top}
+td:nth-child(3),td:nth-child(4),th:nth-child(3),th:nth-child(4){text-align:right;
+  font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap;
+  color:var(--ink)}
+code{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--amber);
+  background:var(--sunk);padding:.1em .35em;border-radius:2px;white-space:nowrap}
+td.u{white-space:nowrap;font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+td.u a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--teal-bg)}
+td.u a:hover{border-bottom-color:var(--teal)}
+.none{color:var(--ink3)}
+.note{border-left:3px solid var(--amber-line);background:var(--amber-bg);padding:13px 16px;
+  margin:26px 0 0;color:var(--ink)}
+.note p{color:var(--ink);margin:0 0 8px}.note p:last-child{margin:0}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);color:var(--ink3);
+  font-size:13px}
+a.back{color:var(--amber);text-decoration:none;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html">&larr; the course</a>
+<h1>Every read,<br><em>in one place</em></h1>
+<p>Each row is a property of the instrument's front door, discovered by reflection, so the list
+maintains itself as the library changes. The description is the first line of that read's own
+documentation. The two value
+columns are measured, just now, on the two records the course carries throughout &mdash; an EEG of
+800&thinsp;&times;&thinsp;4 and 70&thinsp;&times;&thinsp;8 of monthly market changes.</p>
+<div class="stats">
+<div class="stat"><b>49</b><span>reads</span></div>
+<div class="stat"><b>34</b><span>scalar on both records</span></div>
+<div class="stat"><b>15</b><span>return a value that is not a single number</span></div>
+</div>
+<p><strong>The lessons and the library name these reads in two different vocabularies</strong>,
+and the gap is measurable. Matching a name as ordinary English finds <code>focus</code> in
+<strong>28 of 28</strong> decks, because &ldquo;focus&rdquo; is a word. Requiring the exact
+identifier or a code-set name finds <strong>7 of 49</strong> reads, because the lessons teach
+under human names &mdash; &ldquo;&eacute;tendue&rdquo;, &ldquo;Strehl ratio&rdquo;,
+&ldquo;fill fraction&rdquo; &mdash; while the library uses identifiers. The two rules land on
+opposite sides of the same question, so this page carries reads and the lessons carry teaching,
+and neither reports the other's coverage.</p>
+<div class="scroll"><table>
+<thead><tr><th>read</th><th>what it answers</th><th>EEG</th><th>market</th></tr></thead>
+<tbody><tr><td><code>F</code></td><td>The FEATURE axis: AxisRead(H, n, delta, phi, sigma).</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>H_F</code></td><td>Feature-axis power-marginal entropy (bits).</td><td>2.0000</td><td>2.8569</td></tr>
+<tr><td><code>H_T</code></td><td>Ordered-axis power-marginal entropy (bits).</td><td>9.1023</td><td>5.6125</td></tr>
+<tr><td><code>T</code></td><td>The ORDERED axis: AxisRead(H, n, delta, phi, sigma).</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>W</code></td><td>The current data window in its NATIVE backend (numpy or torch) -- the</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>a_delta</code></td><td>The (entropy-width) diffraction limit a_delta = 1/2^{H}, H = entropy of</td><td>0.0421</td><td>0.4849</td></tr>
+<tr><td><code>at_diffraction_limit</code></td><td></td><td>0</td><td>0</td></tr>
+<tr><td><code>attenuation</code></td><td>The attenuation constant alpha (Re gamma) of the dominant mode.</td><td>0.2772</td><td>0.7976</td></tr>
+<tr><td><code>concentration</code></td><td>Focus of the rows on their dominant axis (Fisher-information</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>connected_decay_rate</code></td><td>The decay rate of the DOMINANT (slowest) mode, alpha_1 = -log|mu_1|, from the exact</td><td>0.0985</td><td>1.1255</td></tr>
+<tr><td><code>contrast</code></td><td>Peak feature-correlation eigenvalue over the noise-floor edge, lambda1/edge (>1 => structure).</td><td>1.3194</td><td>2.2202</td></tr>
+<tr><td><code>correlation_length</code></td><td>xi -- the integral correlation length (reciprocal of the Abbe limit).</td><td>4.4676</td><td>1</td></tr>
+<tr><td><code>decay</code></td><td>The signal's OWN ordered-axis autocorrelation C(tau) -- its OTF</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>decay_scatter</code></td><td>How much of :attr:`decay` is this record's own sampling scatter (see</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>delta_F</code></td><td>Feature-axis matched cell scale, L_F/2^{H_F} (noise-guarded).</td><td>1</td><td>1</td></tr>
+<tr><td><code>delta_T</code></td><td>Ordered-axis matched cell scale (always 1; the ordered axis never folds).</td><td>1</td><td>1</td></tr>
+<tr><td><code>diffraction_limit</code></td><td>The diffraction limit a_delta from the signal's own decay -- the entropy</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>dispersion</code></td><td>Standard deviation of the per-mode attenuation across the resolved modes.</td><td>0</td><td>0</td></tr>
+<tr><td><code>dominance</code></td><td>(lambda1 - 1)/(N - 1) in [0,1]: the leading feature mode's normalized excess.</td><td>0.1835</td><td>0.4575</td></tr>
+<tr><td><code>dominant_decay_rate</code></td><td>The decay rate of the DOMINANT (slowest, |mu|-largest) mode, alpha_1 = -log|mu_1|, from</td><td>0.0985</td><td>1.1364</td></tr>
+<tr><td><code>duality</code></td><td>{phi, magnification, at_diffraction_limit} -- both faces of the scale</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>etendue</code></td><td>phi_F * phi_T: the conserved 2-D aperture area.</td><td>0.0035</td><td>0.0501</td></tr>
+<tr><td><code>focus</code></td><td>Axial concentration sigma1^2/M of the rows on their leading principal axis.</td><td>0.3361</td><td>0.4153</td></tr>
+<tr><td><code>footprints</code></td><td>Per-mode localization fingerprints of the resolved screen modes (see</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>geometry</code></td><td>The matched scale read from the signal's own Shannon entropy</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>intensity</code></td><td>Top eigenvalue sigma1^2 of the row second-moment matrix.</td><td>268.8712</td><td>29.0715</td></tr>
+<tr><td><code>magnification</code></td><td>1/phi in [1, inf): the reciprocal magnification (reuses the cached phi).</td><td>1.0537</td><td>1.7433</td></tr>
+<tr><td><code>margin</code></td><td>The aperture-FORGETTING margin ``max_k|mu_k|`` from the operator spectrum</td><td>0.9062</td><td>0.3245</td></tr>
+<tr><td><code>mask</code></td><td>The absence mask for :attr:`W` -- ``True`` marks a cell that was NOT observed, either</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>mercer</code></td><td>The Mercer certificate: a_delta read the temporal way (decay entropy)</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>n_F</code></td><td>Feature-axis effective mode count, round(2^{H_F}) (noise-guarded).</td><td>4</td><td>8</td></tr>
+<tr><td><code>n_T</code></td><td>Ordered-axis effective mode count, round(2^{H_T}).</td><td>800</td><td>70</td></tr>
+<tr><td><code>noise_floor</code></td><td>Finite-size Tracy-Widom (Johnstone) correlation edge.</td><td>1.1752</td><td>1.8927</td></tr>
+<tr><td><code>phase</code></td><td>The phase constant beta (Im gamma) of the dominant mode.</td><td>3.1416</td><td>0</td></tr>
+<tr><td><code>phi</code></td><td>phi in (0,1]: the screen fill fraction (2^{H_sv}/N over the whole block).</td><td>0.9490</td><td>0.5736</td></tr>
+<tr><td><code>phi_F</code></td><td>Feature-axis fill fraction ``phi_F = 2^H / F`` of THIS FRAME's feature power marginal.</td><td>0.9490</td><td>0.5881</td></tr>
+<tr><td><code>phi_T</code></td><td>Ordered-axis fill fraction phi_T.</td><td>0.0037</td><td>0.0851</td></tr>
+<tr><td><code>principal_directions</code></td><td>The ``(N, k)`` feature-space DIRECTIONS of the resolved correlation modes -- WHICH</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>rayleigh_shape_factor</code></td><td>xi * a_delta -- the Rayleigh shape factor g (a dimensionless shape</td><td>0.1882</td><td>0.4849</td></tr>
+<tr><td><code>resolved_modes</code></td><td>Count of feature-correlation eigenvalues above the noise floor.</td><td>1</td><td>1</td></tr>
+<tr><td><code>resolved_power</code></td><td>Summed eigenvalue excess (lambda_k - edge) above the noise floor -- the resolved-mode power.</td><td>0.3753</td><td>2.3096</td></tr>
+<tr><td><code>shape_factor</code></td><td>a_delta / phi_F (Rayleigh / Abbe shape factor).</td><td>0.0444</td><td>0.8245</td></tr>
+<tr><td><code>sigma_F</code></td><td>Feature-axis leading correlation singular value, sqrt(lambda_1).</td><td>1.2452</td><td>2.0500</td></tr>
+<tr><td><code>sigma_T</code></td><td>Ordered-axis leading correlation singular value, sqrt(lambda_1).</td><td>18.2040</td><td>4.4126</td></tr>
+<tr><td><code>significance</code></td><td>Per-mode evidence against the noise null (see :class:`projection.ModeSignificance`):</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>space_bandwidth</code></td><td>n_F * n_T: the number of resolvable spots.</td><td>3,200</td><td>560</td></tr>
+<tr><td><code>spectral</code></td><td>The optics of the feature-correlation eigenspectrum: contrast,</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>strehl</code></td><td>Strehl ratio: coherence of the dominant ordered-axis mode (reuses the</td><td>0.4142</td><td>0.2782</td></tr>
+<tr><td><code>top_share</code></td><td>Dominant-mode power fraction, lambda1/sum(lambda) (Strehl-like).</td><td>0.3876</td><td>0.5253</td></tr></tbody></table></div>
+<div class="note">
+<p><strong>A dash means the read does not return a single number</strong> on that record &mdash; a
+direction, a curve, a whole matrix. The value is there; it does not fit in a cell.</p>
+<p>Two records is two records. A read's value here tells you its <em>scale</em> and the range to
+expect; what it does on your own data is a measurement you take. Several reads in this table differ
+by more than an order of magnitude between these two columns, which is the honest advertisement for
+looking at your own.</p>
+</div>
+<footer>Generated 2026-08-30 from the installed library and the rendered lessons. Nothing on this page is
+maintained by hand.</footer>
+</div>
+</body>
+</html>

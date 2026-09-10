@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How a Lens Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson B1 &middot; how a lens works</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 8px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab th:last-child,table.tab td:last-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:18px 0}
+ol{color:var(--ink2); max-width:64ch; line-height:1.7}
+</style><section class="slide on">
+<p class="eyebrow">Unit B1 &middot; the physics between</p>
+<h1>How a <em>Lens</em><br>Works</h1>
+<p class="lead">Track A taught what a screen reads. This is about the thing that does the reading
+&mdash; and about how little the library is willing to take on faith about it.</p>
+<p>A lens is a <strong>name and two conversions</strong>. <code>entry</code> takes a surface onto
+the shared basis and is required. <code>inverse</code> brings a frame back out, and is needed only
+to render through that side or to certify it.</p>
+<p class="note">Everything else a lens carries is <strong>its own physics</strong>: where it
+balances (<code>zero</code>), how it counts energy (<code>energy</code>), and what it considers
+noise (<code>null</code>). Each defaults to a derived read and each may be declared. The library's
+own words: <em>&ldquo;the system owns the law, the library owns the measurement.&rdquo;</em></p>
+<p class="note cool">Measured on the record that has run through A3, A6 and B3 &mdash;
+<code>eeg.dat</code>, 800&times;4, delay-embedded to 796&times;16 where a beam of several modes is
+needed.</p>
+</section>
+
+<section class="slide">
+<h2>A lens is certified, and the certificate can fail</h2>
+<p>Registering a conversion does not declare it good. The library hands you <strong>two
+certificates</strong>, and both can come back
+negative on a conversion you just registered.</p>
+<table class="tab"><thead><tr><th>certificate</th><th>the question</th><th>fails when</th>
+</tr></thead><tbody>
+<tr><td><code>linear</code></td><td>does the conversion pass a beam's modes independently?</td>
+<td>splitting a mode off, converting it, and recombining stops agreeing with converting the beam
+whole</td></tr>
+<tr><td><code>certify</code></td><td>is <code>inverse(entry(x))</code> the surface again?</td>
+<td>something the instrument could see did not survive the round trip</td></tr>
+</tbody></table>
+<p>Neither is a tolerance you choose. Both decide with the <strong>same instrument every other unit
+uses</strong> &mdash; does the leftover resolve any structure above this screen's own noise floor
+&mdash; so a lens is judged by the reader that will be reading through it.</p>
+<p class="note cool">That is the whole design in one line: <strong>the residual is put back on a
+screen and read.</strong> If the instrument cannot see what was lost, nothing was lost as far as
+anything downstream is concerned.</p>
+</section>
+
+<section class="slide">
+<h2>What a lens must preserve, one: linearity</h2>
+<p>Two departures, both measured <em>in balance</em>. <strong>Additivity</strong> converts the
+modes together and compares against converting them one at a time.
+<strong>Homogeneity</strong> converts a scaled frame and compares against scaling the conversion.</p>
+<table class="tab"><thead><tr><th>lens</th><th>additivity</th><th>homogeneity</th><th>modes</th>
+<th></th></tr></thead><tbody><tr><td>identity</td><td>0</td><td>0</td><td>4</td><td class=''>linear</td></tr><tr><td>squaring</td><td>0.674851</td><td>1</td><td>4</td><td class='hit'>NOT linear</td></tr><tr><td>affine, +1000</td><td>2.32671e-13</td><td>3.98654e-14</td><td>4</td><td class=''>linear</td></tr><tr><td>a matrix that mixes every mode</td><td>2.17007e-16</td><td>0</td><td>4</td><td class=''>linear</td></tr></tbody></table>
+<p>Squaring departs on both and is caught: additivity <strong>0.6749</strong>. The other two rows are
+the ones worth sitting with.</p>
+<p class="note"><strong>Affine reads as linear</strong> (2.33e-13). Adding a constant is not a linear map
+&mdash; but the side's zero absorbs a constant offset, and the screen never sees it. What is
+certified is linearity <em>as the reader experiences it</em>.</p>
+<p class="note cool"><strong>A matrix that mixes every mode also reads as linear</strong>
+(2.17e-16) &mdash; and it should. &ldquo;Passes modes independently&rdquo; does not mean
+&ldquo;leaves modes alone&rdquo;; it means the conversion of a sum is the sum of the conversions.
+This row is the control on that reading.</p>
+</section>
+
+<section class="slide">
+<h2>A lens that reads <em>linear</em> without being tested</h2>
+<p>Read linearity on a lens that has not been <em>placed</em> and it comes back
+<code>additivity = nan</code>, <code>modes = 0</code> &mdash; at 2, 4 and 16 columns. The identity lens reads
+<strong>linear</strong>, and that verdict is worth nothing.</p>
+<table class="tab"><thead><tr><th>columns in the record</th><th>modes</th><th>additivity</th>
+<th>verdict</th></tr></thead><tbody><tr><td>2</td><td>0</td><td>nan</td><td><strong>linear</strong></td></tr><tr><td>4</td><td>0</td><td>nan</td><td><strong>linear</strong></td></tr><tr><td>16</td><td>0</td><td>nan</td><td><strong>linear</strong></td></tr></tbody></table>
+<table class="tab"><thead><tr><th>lens</th><th>modes, unplaced</th><th>additivity</th>
+<th>modes, placed</th><th>additivity</th></tr></thead><tbody><tr><td>identity</td><td>0</td><td>nan</td><td>4</td><td>0</td></tr><tr><td>squaring</td><td>0</td><td>nan</td><td>4</td><td>0.674851</td></tr><tr><td>affine, +1000</td><td>0</td><td>nan</td><td>4</td><td>2.32671e-13</td></tr><tr><td>a matrix that mixes every mode</td><td>0</td><td>nan</td><td>4</td><td>2.17007e-16</td></tr></tbody></table>
+<p>The additivity check splits the surface into <strong>as many modes as the beam carries</strong>,
+and it gets that number from the beam &mdash; so a lens that has never been <code>place</code>d has
+no beam, gets zero, and the check <strong>silently does not run</strong>. What is left is
+homogeneity alone.</p>
+<p class="warn">The library states the condition. <code>modes</code> is a field on the result
+<em>for this reason</em>, and its docstring says the check &ldquo;needs 2&rdquo;. It sits one line
+above <code>linear: True</code>.</p>
+<p class="note cool">The tell is the <strong>uniformity</strong>. The same answer at every width,
+for conversions that should differ, is a property of the harness: a real property varies with what
+it is measured on. Three widths returning
+<code>nan</code> three times is that signature.</p>
+</section>
+
+<section class="slide">
+<h2>What a lens must preserve, two: the round trip</h2>
+<p><code>certify</code> asks whether <code>inverse(entry(x))</code> is the surface again. The
+decision is a <strong>conjunction of two derived checks</strong>, and the interesting part is why
+one of them is not enough.</p>
+<ol>
+<li><strong>the residual resolves nothing</strong> &mdash; put the leftover on its own screen and
+read it: <code>K_signal == 0</code> means no structure survived that the instrument could see. The
+table below reports that screen's largest singular value, written <strong>&sigma;</strong> (sigma),
+against the noise floor it is judged by &mdash; and where a residual is exactly zero there is no
+screen to read, so the floor is <strong>&infin;</strong> (infinity);</li>
+<li><strong>the round trip beats returning nothing</strong> &mdash; <code>residual &lt; 1</code>,
+where 1 is the residual of the trivial inverse that hands back nothing at all.</li>
+</ol>
+<table class="tab"><thead><tr><th>lens</th><th>residual</th><th>&sigma; top</th><th>floor</th>
+<th>K signal</th><th>lossless</th></tr></thead><tbody><tr><td>identity</td><td>0</td><td>0</td><td>&infin;</td><td>0</td><td class=''>yes</td></tr><tr><td>drops a mode, keeps the energy</td><td>0.729452</td><td>39.73</td><td>26.81</td><td>1</td><td class='hit'>NO</td></tr><tr><td>returns unstructured noise</td><td>1.40319</td><td>31.37</td><td>30.75</td><td>1</td><td class='hit'>NO</td></tr></tbody></table>
+<p class="note">Row two is built to defeat check 2 alone: <strong>every joule comes back</strong>
+&mdash; it is renormalised to the original energy &mdash; and the residual is
+<strong>0.7295</strong>, comfortably under 1. Only check 1 catches it, because the direction it threw
+away is structure and shows up at &sigma; <strong>39.7</strong> against a floor of
+<strong>26.8</strong>.</p>
+<p class="note">Row three is built to defeat check 1 alone: the surface is discarded and replaced
+with noise. Its residual is <strong>1.4032</strong> &mdash; worse than returning nothing &mdash; and
+that is check 2's entire job.</p>
+</section>
+
+<section class="slide">
+<h2>And the louder the noise, the better it hides</h2>
+<p>The docstring claims check 1 alone would pass a noise replacement <em>of any amplitude</em>. That
+is a claim about a population, so one draw cannot settle it. 1000 draws at each of three amplitudes:</p>
+<svg class="fig-bars" viewBox="0 0 560 110" width="560" height="110" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">share of draws where check 1 alone would have passed a noise replacement</text><rect x="27.8" y="28" width="279.0" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="41.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">x1</text><text x="504.0" y="41.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.57</text><rect x="27.8" y="54" width="465.3" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="67.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">x5</text><text x="504.0" y="67.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.94</text><rect x="27.8" y="80" width="470.2" height="17" fill="var(--teal,#20635f)" opacity="0.45"/><text x="19.8" y="93.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">x50</text><text x="504.0" y="93.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.95</text></svg>
+<table class="tab"><thead><tr><th>noise amplitude</th><th>check 1 alone would pass</th>
+<th>check 2 catches it</th></tr></thead><tbody><tr><td>&times;1</td><td>566 / 1000</td><td>1000 / 1000</td></tr><tr><td>&times;5</td><td>944 / 1000</td><td>1000 / 1000</td></tr><tr><td>&times;50</td><td>954 / 1000</td><td>1000 / 1000</td></tr></tbody></table>
+<p>At &times;1 it is a coin flip &mdash; <strong>566 of 1000</strong>, 0.566 &mdash; because noise at
+the signal's own scale sometimes throws up a bump the instrument calls a mode. At <strong>&times;50
+the noise slips past check 1 in 954 draws out of 1000</strong>, 0.954.</p>
+<p class="warn">That is the direction nobody expects. <strong>Louder damage is easier to miss</strong>
+by the structural check, because loudness is not structure. Check 2 &mdash; the dull one, a single
+comparison against returning nothing &mdash; catches it <strong>1000 out of 1000 at every
+amplitude</strong>.</p>
+<p class="warn"><strong>And the rise stops.</strong> &times;5 reads 0.944 and &times;50 reads
+0.954 &mdash; a difference of 0.010, which is nothing. The lesson is <em>at the signal's own scale the
+structural check is a coin flip, and above it the check is simply blind</em>; it is not a slope that
+keeps climbing.</p>
+<p class="note">This slide rested on <strong>20</strong> draws until 2026-08-28 and 20 draws told
+three stories the population does not support. &times;1 read 8/20 &mdash; 0.400, which nobody would
+call a coin flip &mdash; while the prose beside it called it one. &times;50 read 20 of 20 and the
+prose called it <em>unanimous</em>. And 19/20 against 20/20 looked like a rise continuing to a
+ceiling. A draw here is <strong>milliseconds</strong>: 20 was never the affordable choice, it was
+the unexamined one.</p>
+<p class="note cool">A conjunction is not belt-and-braces here. Each check has a family of failures
+only the other one sees, and both families are easy to build by accident.</p>
+</section>
+
+<section class="slide">
+<h2>And what it is allowed to drop</h2>
+<p>Not everything that fails to cross is a fault. <code>Transfer</code> answers what
+<em>can</em> cross &mdash; a bound set by the two beams' phase space, <strong>with no conversion in
+it</strong>. <code>realise</code> then asks what the receiving lens's own conversion actually
+delivers against that bound.</p>
+<p class="formula">realised &nbsp;=&nbsp; ideal &times; efficiency</p>
+<table class="tab"><thead><tr><th>receiving lens</th><th>ideal</th><th>realised</th>
+<th>efficiency</th><th>shortfall</th></tr></thead><tbody><tr><td>a faithful inverse</td><td>727.3968</td><td>727.3968</td><td class='hit'>1.0000</td><td>0.0000</td></tr><tr><td>an inverse that halves the surface</td><td>727.3968</td><td>181.8492</td><td class='hit'>0.2500</td><td>545.5476</td></tr></tbody></table>
+<p>A faithful inverse reaches the bound exactly &mdash; efficiency <strong>1.0000</strong>. Halving
+the surface on the way back gives <strong>0.25</strong>, and the missing <strong>545.5</strong>
+<em>belongs to the lens</em>, not to the geometry.</p>
+<p class="note">That split is the whole reason the two reads are separate. Energy that cannot cross
+because the phase space forbids it is physics and no design will recover it. Energy lost in the
+conversion is <strong>engineering</strong>, and the library names the nonimaging methods that exist
+to remove it &mdash; CPC, flow-line, SMS.</p>
+<p class="note cool">Efficiency above 1 is not an error condition. It is reported as measured, and
+it means the registered conversion is <strong>active</strong> &mdash; it put out more than it took
+in.</p>
+</section>
+
+<section class="slide">
+<h2>The check that passes for free</h2>
+<p><code>balance</code> asks whether each side actually settles at the zero it declared. It reports
+a residual and a p-value, and <code>closed</code> where the remainder is what a balanced side would
+show anyway.</p>
+<table class="tab"><thead><tr><th>the left side's zero</th><th>total</th><th>residual</th>
+<th>p</th><th></th></tr></thead><tbody><tr><td>the derived zero (the column mean)</td><td>7.17204e-14</td><td>9.08326e-17</td><td>1</td><td>closed</td></tr><tr><td>a side that DECLARES its zero is 0</td><td>0.374264</td><td>0.000467831</td><td>0.999908</td><td>closed</td></tr></tbody></table>
+<p class="warn">Read the first row carefully. Under the <strong>derived</strong> zero &mdash; the
+column mean &mdash; the residual is <strong>9.1e-17</strong> and the side reads closed. It could not
+have read anything else. <em>The column mean is defined as the point where the column mean is
+zero</em>, so the check is comparing a quantity against its own definition, and the answer is
+arithmetic.</p>
+<p>The library says so plainly: under the default zero the residual is <strong>0 by
+construction</strong> and every side reads closed; <em>&ldquo;a side that declares its OWN zero is
+genuinely tested.&rdquo;</em> Only the second row is a measurement.</p>
+<p class="note cool">Both rows say <code>closed</code>. One of them means something. A green result
+whose mechanism cannot produce a red one is <strong>arithmetic wearing a check's clothes</strong>,
+and the only defence is knowing which kind you are looking at.</p>
+</section>
+
+<section class="slide">
+<h2>What a lens is, at the end</h2>
+<p>A name, an <code>entry</code>, and optionally an <code>inverse</code>. Everything that makes it
+trustworthy is <strong>measured, not declared</strong>:</p>
+<table class="tab"><thead><tr><th>read</th><th>answers</th></tr></thead><tbody>
+<tr><td><code>linear</code></td><td>modes convert independently &mdash; which is what lets one lens
+serve a beam of any width</td></tr>
+<tr><td><code>certify</code></td><td>the round trip loses nothing the instrument could see</td></tr>
+<tr><td><code>balance</code></td><td>the side settles where it says it does</td></tr>
+<tr><td><code>realise</code></td><td>the conversion reaches the bound the phase space permits</td></tr>
+</tbody></table>
+<p>None of the four is a threshold anyone typed. Each puts a leftover back on a screen and reads it
+with the same instrument the rest of the course has been using &mdash; which is why a lens is
+judged, in the end, <strong>by the reader that will read through it</strong>.</p>
+<p class="note">Three things on these slides are worth carrying forward, and none of them is a
+number. A certificate can pass <em>vacuously</em> (the derived zero). A certificate can pass
+<em>partially</em> and say so in a field beside the verdict (<code>modes</code>). And a check that
+looks redundant can be load-bearing, because <strong>each half catches a family the other cannot
+see</strong>.</p>
+<p class="note">Where this goes next. <strong>Unit B2</strong> separates three reads that all sound
+like &ldquo;how well does this survive the lens?&rdquo; and are not the same question &mdash;
+projection, comparison, transfer. <strong>Unit B4</strong> puts two lenses in series and asks which
+of the four certificates above survive being chained and which compound, which is the first thing
+you need if a lens is ever going to sit behind another one.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-lens-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-lens-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Two Screens Meeting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson six &middot; the crossing</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.big{font-family:"IBM Plex Mono",monospace; font-size:28px; color:var(--amber); font-weight:600; margin:6px 0}
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:22px; margin:18px 0}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab td:last-child,table.tab th:last-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:18px; color:var(--amber); text-align:center; margin:18px 0}
+ul.pieces{line-height:1.85}
+</style><section class="slide on">
+<h1>Two Screens<br>Meeting</h1>
+<p class="lede">Every unit so far has read <em>one</em> record. One grid, one spectrum, one floor,
+one answer. This is the first unit about <strong>two</strong> &mdash; and it is where the optical
+language stops being a helpful picture and starts being the actual arithmetic.</p>
+<p>Two signals only meet if something carries them into the <em>same</em> coordinates. That
+something is a <strong>lens</strong>. What they land on is a <strong>screen</strong>. And the
+interesting questions are all about the crossing.</p>
+<p class="note">Both sides are real, and both are records you have already met.</p>
+</section>
+
+<section class="slide">
+<h2>What a lens is</h2>
+<p>A lens is not a number and it holds no data. It is a small bundle of one side's own
+<strong>laws</strong> &mdash; how that side converts its surface into the shared coordinates, and
+how it measures itself:</p>
+<table class="tab"><thead><tr><th>the lens carries</th><th>what it is</th><th>if you leave it out</th></tr></thead><tbody>
+<tr><td>entry</td><td>this side's surface &rarr; the shared frame</td><td>required &mdash; no lens without it</td></tr>
+<tr><td>inverse</td><td>the shared frame &rarr; back to this side's surface</td><td>the side is <em>entry-only</em>: it can be placed, read and coupled, but never rendered back</td></tr>
+<tr><td>energy</td><td>this side's own idea of energy per step</td><td>the screen uses the sum of squares</td></tr>
+<tr><td>zero</td><td>where this side balances, by its own law</td><td>the screen subtracts the column mean</td></tr>
+</tbody></table>
+<p>Two things a lens must respect. <strong>Every side must land on the same width</strong> &mdash;
+place one that does not and the call raises, naming the width the screen holds.</p>
+<p class="warn">And a lens is <strong>not allowed to declare its own phase space</strong>. That is
+measured off the frame by the screen, deliberately: <em>a side that could declare its own phase
+space could claim more brightness than it was sent.</em> The rule exists so the brightness
+accounting this unit closes on cannot be gamed.</p>
+</section>
+
+<section class="slide">
+<h2>The two sides</h2>
+<p>Split the EEG down the middle. <span class="exA">Electrodes 1 and 2</span> become one side;
+<span class="exB">electrodes 3 and 4</span> become the other. Same <strong>800</strong> samples, same
+clock, same recording &mdash; two <em>instruments</em> looking at one thing.</p>
+<svg class="fig-grid" viewBox="0 0 304 312" width="304" height="312" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><rect x="34" y="30" width="64" height="64" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber,#a5620c)" stroke-width="1.6"/><text x="66.0" y="66.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">0.04</text><rect x="98" y="30" width="64" height="64" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber,#a5620c)" stroke-width="1.6"/><text x="130.0" y="66.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">0.04</text><rect x="162" y="30" width="64" height="64" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="194.0" y="66.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.08</text><rect x="226" y="30" width="64" height="64" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="258.0" y="66.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.04</text><rect x="34" y="94" width="64" height="64" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber,#a5620c)" stroke-width="1.6"/><text x="66.0" y="130.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">0.01</text><rect x="98" y="94" width="64" height="64" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber,#a5620c)" stroke-width="1.6"/><text x="130.0" y="130.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">-0.06</text><rect x="162" y="94" width="64" height="64" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="194.0" y="130.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.12</text><rect x="226" y="94" width="64" height="64" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="258.0" y="130.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-0.11</text><rect x="34" y="158" width="64" height="64" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber,#a5620c)" stroke-width="1.6"/><text x="66.0" y="194.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">-0.09</text><rect x="98" y="158" width="64" height="64" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber,#a5620c)" stroke-width="1.6"/><text x="130.0" y="194.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">-0.78</text><rect x="162" y="158" width="64" height="64" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="194.0" y="194.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.44</text><rect x="226" y="158" width="64" height="64" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="258.0" y="194.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-1.29</text><rect x="34" y="222" width="64" height="64" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber,#a5620c)" stroke-width="1.6"/><text x="66.0" y="258.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">0.29</text><rect x="98" y="222" width="64" height="64" fill="var(--amber-bg,#f6e7ca)" stroke="var(--amber,#a5620c)" stroke-width="1.6"/><text x="130.0" y="258.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">-0.63</text><rect x="162" y="222" width="64" height="64" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="194.0" y="258.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">0.16</text><rect x="226" y="222" width="64" height="64" fill="var(--surface,#f8f9f7)" stroke="var(--rule,#d2d5d0)" stroke-width="0.7"/><text x="258.0" y="258.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle">-1.50</text><text x="66.0" y="22.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">e1</text><text x="130.0" y="22.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">e2</text><text x="194.0" y="22.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">e3</text><text x="258.0" y="22.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.72">e4</text><path d="M 14 33 L 14 283" stroke="var(--amber,#a5620c)" stroke-width="1.4" marker-end="url(#ar)" fill="none"/><g transform="translate(7,158.0) rotate(-90)"><text x="0.0" y="0.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="middle">time</text></g><text x="34.0" y="304.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10.5" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.7">first 4 of 800 rows — amber is the left side, plain is the right</text><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--amber,#a5620c)"/></marker></defs></svg>
+<p>This is the honest version of the question. We are not asking whether two unrelated datasets
+match. We are asking whether <strong>two views of the same subject resolve the same
+structure</strong> &mdash; which is what every sensor pair, every pair of cameras, and every second
+opinion is really asking.</p>
+<p>Total energy is <strong>1595.3</strong> on the left and <strong>1598.0</strong> on the right. Nearly
+equal, which is what you would hope for from four electrodes on one head.</p>
+</section>
+
+<section class="slide">
+<h2>Do they see the same thing?</h2>
+<p>The screen answers with the same kind of number unit A4 used, against the same kind of null
+&mdash; but the shuffle is different in an important way. Here you <strong>re-pair</strong> the two
+sides: keep each side's own internal structure completely intact, and randomise only which row of
+one lines up with which row of the other.</p>
+<p>That isolates exactly one question. Not <em>does either side have structure</em> &mdash; A4
+already answered that &mdash; but <strong>are they structured together?</strong></p>
+<div class="two">
+<div><span class="exA">coupling z</span><p class="big">+4.117</p>
+<p class="note">against a cutoff of 1.96. Comfortably resolved.</p></div>
+<div><span class="exB">strength</span><p class="big">0.1023</p>
+<p class="note">a signed number between &minus;1 and +1, and invariant to either side's units
+&mdash; a side changing from volts to millivolts cannot move it. <strong>The z is invariant
+too</strong>, which matters more: the verdict rests on it.</p></div>
+</div>
+<p>So: yes, and weakly. The two halves of the head are genuinely coupled, but only about a tenth of
+the way toward moving as one. <strong>The z-score says the coupling is real; the strength says it is
+small.</strong> Those are different claims and the library reports them separately.</p>
+</section>
+
+<section class="slide">
+<h2>The control</h2>
+<p>Same move as unit A4. Shuffle the rows of <em>one</em> side only. Every number on both sides
+survives; all that is destroyed is which left-row sits beside which right-row.</p>
+<svg class="fig-bars" viewBox="0 0 530 96" width="530" height="96" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">coupling z — and the same pair with one side scrambled</text><rect x="166.4" y="28" width="301.6" height="23" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="158.4" y="44.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">EEG, as recorded</text><text x="474.0" y="44.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">+4.117</text><rect x="166.4" y="60" width="51.8" height="23" fill="var(--teal,#20635f)" opacity="0.45"/><text x="158.4" y="76.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">EEG, right side shuffled</text><text x="474.0" y="76.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">+0.708</text><line x1="310.0" y1="24" x2="310.0" y2="88" stroke="var(--ink,#1b1d22)" stroke-width="1.3" stroke-dasharray="5 3"/><text x="310.0" y="20.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.8">cutoff 1.96</text></svg>
+<p>From <strong>+4.117</strong> to <strong>+0.708</strong> &mdash; under the cutoff, nothing found.</p>
+<p>And look at what happens to the strength. It returns <strong>exactly 0.0</strong>, and the read
+reports <code>resolved = False</code>.</p>
+<p class="warn">That zero is exact, and it is the result of the comparison. <strong>A strength below
+the floor is reported as zero</strong>, because a small non-zero number invites you to believe in a
+weak effect, and there is no effect here at all. A returned zero says <em>nothing above the
+floor</em>.</p>
+<p class="note cool"><strong>One shuffle is one draw, and a null is a population.</strong> That was
+the whole of this slide until 2026-08-28 &mdash; a single re-pairing, its z reported as though it
+were the value a shuffle gives. Unit A7 is the argument for why that is not enough. So it was run
+<strong>200</strong> times, which takes a fraction of a second:</p>
+<table class="tab"><thead><tr><th>200 re-pairings of the same two sides</th><th></th></tr></thead>
+<tbody>
+<tr><td>coupling z, lowest to highest</td><td>-3.038 to +2.432</td></tr>
+<tr><td>median</td><td>-0.008</td></tr>
+<tr><td>the single draw this slide used to show</td><td>+0.708</td></tr>
+<tr><td class="hit">the recorded pair</td><td class="hit">+4.117</td></tr>
+</tbody></table>
+<p class="warn"><strong>The recorded pair stands above every one of the 200.</strong> That is a much
+stronger statement than a comparison against one number, and it is the statement unit A4 makes
+properly on a single record: not &ldquo;higher than a shuffle&rdquo; but <em>outside the whole range
+shuffling can produce</em>.</p>
+<p class="warn">And the zero is a rate, not a rule. Strength comes back exactly zero in
+<strong>192 of 200</strong> shuffles &mdash; the other 8 resolve, at up to 0.0604. Zero almost always
+and not quite always is what a threshold gives; saying it returns zero <em>full stop</em> would be
+describing one draw again.</p>
+</section>
+
+<section class="slide">
+<h2>Coupling is not order</h2>
+<p>Now the same test on the market, split four companies against the other four &mdash; the same
+grid unit A1 opened with.</p>
+<svg class="fig-bars" viewBox="0 0 560 122" width="560" height="122" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">two different questions about the same eight companies</text><rect x="212.6" y="28" width="285.4" height="21" fill="var(--teal,#20635f)" opacity="0.45"/><text x="204.6" y="43.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">market prices, coupling</text><text x="504.0" y="43.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">+8.089</text><rect x="212.6" y="58" width="182.8" height="21" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="204.6" y="73.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">market changes, coupling</text><text x="504.0" y="73.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">+5.181</text><rect x="212.6" y="88" width="4.5" height="21" fill="var(--teal,#20635f)" opacity="0.45"/><text x="204.6" y="103.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">market changes, ORDER (unit A4)</text><text x="504.0" y="103.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">+0.127</text><line x1="281.8" y1="24" x2="281.8" y2="114" stroke="var(--ink,#1b1d22)" stroke-width="1.3" stroke-dasharray="5 3"/><text x="281.8" y="20.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.8">cutoff</text></svg>
+<p>The monthly changes couple at <strong>+5.181</strong>, strength <strong>0.3828</strong>. They move
+together, clearly and measurably.</p>
+<p class="warn">But unit A4 measured those same monthly changes and found <strong>no order at
+all</strong> &mdash; coherence z = +0.127, indistinguishable from noise. Both readings are correct
+and they are not in tension, because they ask different questions:</p>
+<ul class="pieces">
+<li><strong>Order</strong> asks: does this month tell me about next month? <em>No.</em></li>
+<li><strong>Coupling</strong> asks: does this month's move here tell me about this month's move
+there? <em>Yes.</em></li>
+</ul>
+<p>Eight technology companies rise and fall together in the same month, and that is real. It does
+not make any of them predictable from their own past. <strong>Moving together and being
+forecastable are separate properties</strong>, and conflating them is how people lose money.</p>
+<p class="note">Prices couple harder still, at +8.089 with strength 0.8189 &mdash; and for the same
+dull reason as in A4: price levels drift slowly, so both sides are near where they were.</p>
+</section>
+
+<section class="slide">
+<h2>What actually arrives</h2>
+<p>Coupling says the two sides are related. It does not say how much <em>gets across</em>. Send the
+left side's beam at the right side and the screen accounts for every unit of energy, in four parts:</p>
+<table class="tab"><thead><tr><th>part</th><th>energy</th><th>what it is</th></tr></thead><tbody>
+<tr><td>energy in</td><td>1595.32</td><td>everything the left side carries</td></tr>
+<tr><td>participation</td><td>0.4613</td><td>the <em>share</em> of it lying in what the right side can resolve</td></tr>
+<tr><td>pertinent</td><td>735.96</td><td>that share, in energy &mdash; the part with somewhere to land</td></tr>
+<tr><td>&tau;</td><td>0.9884</td><td>how much room the receiver has, relative to the sender</td></tr>
+<tr><td class="hit">delivered</td><td class="hit">727.40</td><td class="hit">pertinent &times; &tau;. What arrives</td></tr>
+<tr><td>reflected</td><td>8.57</td><td>coupled, but no room. Turned back</td></tr>
+<tr><td>bystanding</td><td>859.36</td><td>never coupled at all &mdash; and <strong>retrievable</strong>, as a frame you can put on another screen</td></tr>
+</tbody></table>
+<p><strong>&tau;</strong> is the Greek letter <strong>tau</strong>, said <em>TOW</em> to rhyme with
+&ldquo;now&rdquo;. Here it is the ratio of the receiver's phase space to the sender's, capped at 1
+&mdash; you cannot gain room by being sent to.</p>
+<p class="note">The three parts sum to the energy in, exactly: 727.397 + 8.567 + 859.358 = 1595.322. Not
+approximately &mdash; the check runs at zero difference. Nothing is lost at a crossing and nothing
+is invented; loss belongs to the travel <em>between</em> crossings, where it is charged against a
+measured distance.</p>
+</section>
+
+<section class="slide">
+<h2>And it runs one way</h2>
+<svg class="fig-bars" viewBox="0 0 500 100" width="500" height="100" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">energy delivered, same pair</text><rect x="87.2" y="28" width="350.8" height="25" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="79.2" y="45.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">left → right</text><text x="444.0" y="45.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">727.40</text><rect x="87.2" y="62" width="1.0" height="25" fill="var(--teal,#20635f)" opacity="0.45"/><text x="79.2" y="79.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">right → left</text><text x="444.0" y="79.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.00</text></svg>
+<p>Same two sides. Same screen. Same instant. Left to right delivers <strong>727.40</strong>. Right to
+left delivers <strong>0.00</strong>.</p>
+<p>The reason is on the screen already. The right side resolves <strong>1</strong> mode; the left
+side resolves <strong>0</strong>. A beam can only land on what the receiver can resolve, so
+left&rarr;right has a target and right&rarr;left has none &mdash; its participation is
+<strong>0.0</strong> and the entire 1597.99 passes through as bystanding.</p>
+<p class="warn">Nothing is lost in that direction, and nothing is delivered either. The energy is
+still there, still retrievable, still available to any screen that <em>can</em> resolve it. A
+crossing that delivers nothing is not the same as a crossing that destroys something &mdash; and
+most systems that get this wrong get it wrong by treating them as the same.</p>
+</section>
+
+<section class="slide">
+<h2>What a crossing cannot manufacture</h2>
+<p>There is one thing the accounting will not let you do, and it is the reason the lens was
+forbidden to declare its own phase space, back where a lens was defined.</p>
+<p><strong>Radiance</strong> is energy per unit of phase space &mdash; brightness, in the ordinary
+optical sense. Across any crossing:</p>
+<p class="formula">radiance out &nbsp;&le;&nbsp; radiance in</p>
+<p><strong>&le;</strong> is <strong>less than or equal to</strong>. On this crossing the two are
+equal to the last digit &mdash; in and out both <strong>590,537</strong> &mdash; because the receiver's
+phase space is slightly the smaller of the two, and equality holds exactly when a crossing
+concentrates.</p>
+<p>Sent the other way it would fall, by exactly the ratio of the two phase spaces and by no other
+amount. You can concentrate a beam for free; you cannot dilute one and keep it bright.</p>
+<p class="note">This is the optical statement of a rule the rest of the platform enforces in a
+different currency: <em>composition along a path is monotone and non-amplifying</em>. No lens, no
+screen and no crossing anywhere in the construction makes something brighter than what it was
+handed. It is checked as a theorem, not as a test.</p>
+</section>
+
+<section class="slide">
+<h2>Coupled, and still unpredictable</h2>
+<table class="tab"><thead><tr><th>pair</th><th>z</th><th>strength</th><th>verdict</th></tr></thead><tbody>
+<tr><td>EEG, left half vs right half</td><td>+4.117</td><td>0.1023</td><td>coupled, weakly</td></tr>
+<tr><td>&hellip;with one side scrambled</td><td>+0.708</td><td>0.0</td><td>nothing &mdash; the control</td></tr>
+<tr><td>market, four vs four (changes)</td><td>+5.181</td><td>0.3828</td><td>coupled &mdash; while unpredictable</td></tr>
+</tbody></table>
+<p>Three things worth carrying out of here:</p>
+<ul class="pieces">
+<li><strong>Two records meet only in shared coordinates.</strong> Everything else follows from
+getting them onto one screen &mdash; and a side of another width raises, naming
+the width it wanted.</li>
+<li><strong>Coupled, ordered and delivered are three different questions.</strong> The market's
+changes are coupled and not ordered. The EEG's right side is coupled and receives nothing when it
+transmits. None of these contradict.</li>
+<li><strong>The accounting closes exactly, and the ceiling is a theorem.</strong> Energy in equals
+delivered plus reflected plus bystanding, at zero difference; radiance out never exceeds radiance
+in.</li>
+</ul>
+<p class="note">That closes the optical core &mdash; six units on the instrument itself. What
+follows is the physics between: how a lens works in the system, how records are compared and
+transferred, and what propagation and attenuation actually cost.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-crossing-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-crossing-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Point-Spread</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson three &middot; the point-spread</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<section class="slide on" data-act="0">
+  <p class="eyebrow">Lesson three &middot; the point-spread</p>
+  <h1>How sharp,<br>how <em>long</em>.</h1>
+  <div class="two nr">
+    <div>
+      <p class="lead">The first two lessons measured a screen <em>standing still</em>. How much of it is real; what shape it has. Neither one ever looked at the order the rows came in.</p>
+      <p>This lesson does nothing else. It asks the question the ordered axis exists for:</p>
+      <div class="note">
+        <p style="font-size:17px"><strong>How long does the record remember?</strong></p>
+      </div>
+      <p>And that single question turns out to be the same one an optician asks about a lens &mdash; because &ldquo;how far apart must two things be before I can tell them apart&rdquo; and &ldquo;how long until a record forgets&rdquo; are the same arithmetic wearing different clothes.</p>
+      <p style="font-size:14px">Everything here is built from one new object: <strong>the decay</strong>. From it come a resolution limit, a shape number, a consistency check, and a set of rates.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Two records with a real ordered axis</h3>
+        <p style="margin:0 0 10px; font-size:14.5px"><strong>B &middot; the market, at full length</strong> &mdash; the same eight companies, across all <strong>70</strong> months. Memory is the question; sixteen rows is not enough to answer it.</p>
+        <p style="margin:0; font-size:14.5px"><strong>A real EEG</strong> &mdash; 800 samples from four electrodes. A genuine time series, where consecutive samples really are related.</p>
+      </div>
+      <div class="note cool">
+        <p><strong>The scan sits this one out.</strong> Its rows are eight scan lines, ordered in space, and eight lags gives four points, which is too few for a decay curve. Knowing which reads a record can support is part of reading it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 2 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="1">
+  <p class="eyebrow">Act I &middot; The decay</p>
+  <h2>Compare each row with the one <em>&tau;</em> steps later.</h2>
+  <div class="two nl">
+    <div>
+      <p>Take row 1 and row 2, and see how alike they are. Then row 2 and row 3. Average over the whole record. That is one number: <strong>how alike are rows one step apart</strong>.</p>
+      <p>Now do it for two steps apart. Then three. You get a list, one entry per gap, and the list is called the <strong>decay</strong>.</p>
+      <div class="eq">C(&tau;) = average likeness of rows &tau; apart</div>
+      <div class="note cool" style="margin-top:12px">
+        <p><strong>The symbol.</strong> <span class="sym">&tau;</span> is the Greek letter <strong>tau</strong> &mdash; rhymes with &ldquo;now&rdquo;, and it is their letter <em>t</em>. It is used across physics for <em>a gap in time</em>, which is exactly what it is counting: how many rows apart.</p>
+      </div>
+      <p style="margin-top:14px">By construction <span class="mono">C(0)</span> is every row compared with itself, so it is the biggest value there is. Divide everything by it and the list starts at 1 and falls away. <strong>How fast it falls is the whole read.</strong></p>
+      <div class="note">
+        <p>Opticians have a name for this curve. Shine a point of light through a lens and it does not come out a point &mdash; it comes out a small blur. The shape of that blur is the <strong>point-spread function</strong>, and it is this curve.</p>
+      </div>
+    </div>
+    <figure class="card">
+      <h3>The decay of both records</h3>
+      <svg viewBox="0 0 400 200" role="img" aria-label="Two decay curves over 24 lags. The EEG falls smoothly from 1 to near zero over about ten lags. The market drops to zero immediately and rattles about there.">
+        <g font-family="IBM Plex Mono, monospace" font-size="9.5">
+          <g stroke="currentColor" stroke-opacity=".2" fill="none"><path d="M4 98.4h380"/></g>
+          <polyline points="4,8.0 20,18.5 36,35.9 53,51.5 69,64.2 85,74.6 101,81.9 117,86.4 133,89.0 150,90.4 166,91.3 182,92.2 198,93.8 214,96.4 230,99.6 247,102.8 263,106.3 279,109.3 295,111.3 311,112.7 327,113.8 344,114.7 360,115.8 376,116.8"
+                    fill="none" stroke="#d99a34" stroke-width="2.2"/>
+          <polyline points="4,8.0 20,103.2 36,101.6 53,92.2 69,105.3 85,101.5 101,101.5 117,91.6 133,101.3 150,100.3 166,93.8 182,110.8 198,98.0 214,104.4 230,101.9 247,94.6 263,98.1 279,93.4 295,99.5 311,103.4 327,106.2 344,106.0 360,99.3 376,98.6"
+                    fill="none" stroke="#4d918b" stroke-width="2"/>
+          <text x="150" y="34" font-size="10" font-weight="600" fill="#a5620c">the EEG &mdash; a real decay</text>
+          <text x="150" y="128" font-size="10" font-weight="600" fill="#20635f">the market &mdash; nothing after lag 0</text>
+          <text x="0" y="140" fill="currentColor" fill-opacity=".6">0</text>
+          <text x="4" y="158" fill="currentColor" fill-opacity=".6">&tau; = 0</text>
+          <text x="376" y="158" text-anchor="end" fill="currentColor" fill-opacity=".6">&tau; = 23</text>
+          <text x="190" y="180" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity=".7" font-family="Libre Franklin, sans-serif">gap between rows, in steps</text>
+        </g>
+      </svg>
+      <figcaption>Both start at 1, because every row matches itself. The EEG falls smoothly &mdash; <span class="mono">1.000, 0.884, 0.692, 0.519, 0.378, 0.264&hellip;</span> &mdash; so a sample still resembles one taken five steps ago. The market drops straight through zero and rattles: <span class="mono">1.000, &minus;0.053, &minus;0.035, 0.069&hellip;</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ══ 3 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="1">
+  <p class="eyebrow">Act I &middot; The decay</p>
+  <h2>The market has no memory, and that is the right answer.</h2>
+  <div class="two">
+    <div>
+      <p>The flat teal line is a finding, and one of the most robust facts in finance.</p>
+      <div class="eq">the market   C(1)/C(0) = <b>&minus;0.053</b>
+the EEG      C(1)/C(0) = <b>+0.884</b></div>
+      <p style="margin-top:14px">Knowing how eight companies moved last month tells you <strong>nothing</strong> about how they will move next month. If it did, somebody would already have traded on it until it stopped being true.</p>
+      <div class="note">
+        <p><strong>And lesson one said the same thing by another route.</strong> The ordered-coherence score there read <span class="mono">z = +0.13</span> for the market &mdash; near zero &mdash; and <span class="mono">+9.30</span> for raw prices, which is the smoothness of a price series being misread as predictability.</p>
+        <p style="margin-bottom:0">Two different constructions, one on the correlation between rows and one on a permutation null, agreeing that monthly returns have no memory. That agreement is worth more than either read alone.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>An EEG, on the other hand, is a wave</h3>
+        <p style="margin:0 0 10px; font-size:14.5px">Brain activity is continuous. A voltage measured now is physically connected to the voltage a moment ago &mdash; there is no arbitrage to compete it away.</p>
+        <div class="eq" style="font-size:12.5px">&tau;    0     1     2     3     4     5
+    1.000 0.884 0.692 0.519 0.378 0.264</div>
+        <p style="margin:11px 0 0; font-size:14.5px">Still 26% alike five samples later. <strong>That is the shape of the blur</strong>, and everything left in this lesson is a way of putting a number on how wide it is.</p>
+      </div>
+      <div class="note cool">
+        <p><strong>A read that returns &ldquo;no structure&rdquo; has still measured something.</strong> The instrument did not fail on the market; it reported, correctly, that the ordered axis carries no usable memory. Confusing those two &mdash; a failed measurement and a measurement of absence &mdash; is how people end up trading on noise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="2">
+  <p class="eyebrow">Act II &middot; The limit</p>
+  <h2>Two honest ways to say how wide the blur is.</h2>
+  <div class="two nr">
+    <div>
+      <p>You have a curve that starts at 1 and falls. How wide is it? There is more than one defensible answer, and the construction takes two.</p>
+      <h3>1 &middot; Add it up</h3>
+      <p>Walk along the curve adding values until it first crosses zero. That total is the <strong>correlation length</strong>, written <span class="mono">&xi;</span>.</p>
+      <div class="note cool" style="margin-top:10px">
+        <p style="margin-bottom:0"><strong>The symbol.</strong> <span class="sym">&xi;</span> is the Greek letter <strong>xi</strong> &mdash; usually said &ldquo;zigh&rdquo; or &ldquo;ksee&rdquo;. Physics uses it for <em>a characteristic length</em>, which is what it is here: how many steps the memory runs.</p>
+      </div>
+      <h3 style="margin-top:16px">2 &middot; Take its entropy</h3>
+      <p>Square the curve, turn it into shares, take the entropy &mdash; <em>the same four lines as always</em> &mdash; and you get how many lags are really in play. Its reciprocal is the resolution:</p>
+      <div class="eq">a<sub>&delta;</sub> = 2<sup>&minus;H<sub>C</sub></sup></div>
+      <p style="font-size:13.5px">The small <span class="mono">&delta;</span> hanging off the <span class="mono">a</span> is the Greek letter <strong>delta</strong>, their letter <em>d</em>, which across science means <em>a difference or a spacing</em>. So <span class="mono">a<sub>&delta;</sub></span> reads as &ldquo;the smallest spacing this record can resolve&rdquo;.</p>
+      <p style="margin-top:12px">Reading, for the EEG: <span class="mono">H<sub>C</sub> = 4.569</span> bits, so <span class="mono">2<sup>4.569</sup> = 23.73</span> lags are in play, and <span class="mono">a<sub>&delta;</sub> = 1 &divide; 23.73 = 0.0421</span>.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Both widths, both records</h3>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>&nbsp;</th><th>&xi;</th><th>1 &divide; &xi;</th><th>H<sub>C</sub></th><th>a<sub>&delta;</sub></th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>a real EEG</td><td>4.468</td><td>0.2238</td><td>4.569</td><td>0.0421</td></tr>
+            <tr class="hi"><td>the market, 70 months</td><td>1.000</td><td>1.0000</td><td>1.044</td><td>0.4849</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <figcaption>The market&rsquo;s <span class="mono">&xi; = 1.000</span> is exact and it means exactly what it says: the curve crosses zero at the very first lag, so the memory is one row long &mdash; which is to say, none.</figcaption>
+      </div>
+      <div class="note">
+        <p><strong>Why <span class="mono">a<sub>&delta;</sub></span> is called a diffraction limit.</strong> Abbe worked out in 1873 that a microscope cannot resolve two points closer together than a limit set by its aperture &mdash; no matter how much you magnify. Push past it and you get a bigger blur, not more detail.</p>
+        <p style="margin-bottom:0">Here the &ldquo;aperture&rdquo; is the record and the limit is <span class="mono">a<sub>&delta;</sub></span>: two events closer together than this cannot be told apart, however finely the thing was sampled. The EEG can resolve to about a twenty-fourth of its length; the market to about half of its, which is another way of saying it resolves nothing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 5 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="2">
+  <p class="eyebrow">Act II &middot; The limit &middot; the check</p>
+  <h2>Plant a memory of known length and see if it comes back.</h2>
+  <div class="two nl">
+    <div>
+      <p>Everything so far is plausible. To know whether the widths are <em>right</em>, build records whose memory you set yourself, and see what the read returns.</p>
+      <p>These are made by a rule so simple you can say it in a sentence: <strong>each row is the previous row faded a little, plus a fresh random kick.</strong> How much it fades sets how long the memory runs, and we choose it.</p>
+      <div class="eq">planted memory:  &rho; = 1, 2, 4, 8, 16 steps
+4000 rows, 48 channels, nothing tuned</div>
+      <div class="note cool" style="margin-top:12px">
+        <p style="margin-bottom:0"><strong>The symbol.</strong> <span class="sym">&rho;</span> is the Greek letter <strong>rho</strong> &mdash; said &ldquo;row&rdquo;. It is their letter <em>r</em>, and it is standing for the memory length we planted.</p>
+      </div>
+      <p style="margin-top:14px">The instrument is told none of it. It sees only the numbers.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Planted against recovered</h3>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>&rho; planted</th><th>&xi; read back</th><th>1 &divide; a<sub>&delta;</sub></th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>1.594</td><td>1.83</td></tr>
+            <tr><td>2</td><td>2.560</td><td>3.37</td></tr>
+            <tr class="hi"><td>4</td><td>4.632</td><td>6.78</td></tr>
+            <tr class="hi"><td>8</td><td>8.572</td><td>13.85</td></tr>
+            <tr class="hi"><td>16</td><td>16.253</td><td>27.81</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <figcaption><span class="mono">&xi;</span> tracks the planted length almost exactly &mdash; 4.632 for a planted 4, 8.572 for an 8, 16.253 for a 16 &mdash; over a sixteenfold range, with no parameter adjusted between rows. The entropy width runs about 1.7&times; higher throughout, which is the next slide.</figcaption>
+      </div>
+      <div class="note">
+        <p><strong>That is what a ground-truth check looks like</strong>, and it is the same discipline as lesson one&rsquo;s planted noise level (a noise level of <span class="mono">&sigma; = 1.0</span> planted and <span class="mono">0.9957</span> read back &mdash; <span class="mono">&sigma;</span> is small <strong>sigma</strong>, the Greek <em>s</em>, used everywhere for the typical size of one noisy value). A read you can mark against a known answer is a read you are testing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 6 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="2">
+  <p class="eyebrow">Act II &middot; The limit</p>
+  <h2>Multiply the two widths, and the units cancel.</h2>
+  <div class="two">
+    <div>
+      <p>The two widths disagree by a consistent factor &mdash; <span class="mono">1 &divide; a<sub>&delta;</sub></span> runs about 1.7&times; above <span class="mono">&xi;</span> at every planted length. That is not a discrepancy; the two are measuring the same curve in different ways, and the gap between them says something about its <em>shape</em>.</p>
+      <p>So multiply them. One is a length and the other is a reciprocal length, so the product has no units at all:</p>
+      <div class="eq">g = &xi; &times; a<sub>&delta;</sub></div>
+      <p style="margin-top:14px">Abbe&rsquo;s rule has exactly this form: the resolution is a length times <em>a constant fixed by the shape of the aperture</em>. The famous <span class="mono">1.22</span> for a round lens is such a constant &mdash; it comes from the shape of the hole, not its size.</p>
+      <div class="note">
+        <p><strong>What it does and does not do.</strong> Measured over the same sixteenfold range: <span class="mono">&xi;</span> moves by <strong>10.2&times;</strong>, <span class="mono">a<sub>&delta;</sub></span> by <strong>15.2&times;</strong>, and <span class="mono">g</span> by <strong>1.49&times;</strong>. So it is far steadier than either width alone &mdash; but it is <em>not</em> a constant, and a decay of genuinely different shape moves it.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>The two widths and their product</h3>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>&rho;</th><th>&xi;</th><th>a<sub>&delta;</sub></th><th>g = &xi; &times; a<sub>&delta;</sub></th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>1.594</td><td>0.5463</td><td>0.8706</td></tr>
+            <tr><td>2</td><td>2.560</td><td>0.2968</td><td>0.7600</td></tr>
+            <tr><td>4</td><td>4.632</td><td>0.1476</td><td>0.6836</td></tr>
+            <tr><td>8</td><td>8.572</td><td>0.0722</td><td>0.6190</td></tr>
+            <tr><td>16</td><td>16.253</td><td>0.0360</td><td>0.5844</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <figcaption>Look down the columns. The first two are racing away from each other; the third barely moves. <strong>g reports the shape of the decay, with its width divided out.</strong></figcaption>
+      </div>
+      <div class="note cool">
+        <p><strong>Our two records:</strong> the EEG reads <span class="mono">g = 0.188</span> and the market <span class="mono">g = 0.485</span>. They are not the same shape of curve &mdash; one is a smooth exponential fade, the other is a spike at zero and nothing after &mdash; and the number says so without reference to how long either one is.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 7 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="3">
+  <p class="eyebrow">Act III &middot; The certificate</p>
+  <h2>Measure the same thing a second way, on purpose.</h2>
+  <div class="two nr">
+    <div>
+      <p>There is a completely different route to the same length. Build a matrix out of the decay curve, take <em>its</em> eigenvalues, and count how many are in play &mdash; the same entropy trick, on a different object.</p>
+      <div class="eq">temporal   from the curve      a<sub>&delta;</sub>
+spectral   from its eigenvalues a<sub>&delta;</sub><sup>spec</sup>
+           their ratio           &rho;<sub>M</sub></div>
+      <p style="margin-top:14px">For a steady, well-behaved record the two readings sit in a fixed proportion. So their <strong>ratio</strong> is a built-in consistency check &mdash; the instrument marking its own homework, with no model and nothing fitted.</p>
+      <div class="note">
+        <p><strong>And when the ratio moves, that is information.</strong> A record whose behaviour changes partway through &mdash; a regime switch, an instrument drifting, a subject falling asleep &mdash; breaks the fixed proportion, because the two routes weight the change differently.</p>
+      </div>
+      <p style="font-size:14px">This is the one read here that checks the others. It answers: <em>should I believe the numbers on the last three slides?</em></p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Steady against switching</h3>
+        <p style="margin:0 0 10px; font-size:14.5px">Two records, each cut into four blocks, with the ratio read on each block separately. One keeps the same memory throughout; the other changes from a memory of 2 to a memory of 16 halfway down.</p>
+        <div class="eq" style="font-size:12.5px">steady    2.737 2.517 2.606 2.685   spread <b>3.2%</b>
+switching 2.153 2.046 3.691 3.123   spread <b>24.9%</b></div>
+        <p style="margin:11px 0 0; font-size:14.5px">A <strong>7.8&times;</strong> separation, and you can see the switch land between the second and third blocks. Neither record was labelled.</p>
+      </div>
+      <div class="note cool">
+        <p><strong>Our two:</strong> the EEG reads a ratio of <span class="mono">6.11</span>, the market <span class="mono">1.90</span>. Those are not comparable to each other &mdash; the check is about whether a ratio <em>stays put across a record</em>, not about what value it takes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 8 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="3">
+  <p class="eyebrow">Act III &middot; The rates</p>
+  <h2>Finally: how fast does each pattern fade, and does it spin?</h2>
+  <div class="two nl">
+    <div>
+      <p>The decay gives one number for the whole record. But lesson one broke the record into <em>layers</em>, and each layer can fade at its own speed. So fit a one-step rule &mdash; <em>given this row, what is the next one?</em> &mdash; and read off, per layer, two things:</p>
+      <div class="eq"><b>&alpha;</b>  how fast it fades      (a rate)
+<b>&beta;</b>  how far it turns per step (a frequency)</div>
+      <div class="note cool" style="margin-top:12px">
+        <p style="margin-bottom:0"><strong>The symbols.</strong> <span class="sym">&alpha;</span> is <strong>alpha</strong>, their letter <em>a</em> &mdash; used in lesson one for a false-alarm level and here for a decay rate, which is the same overloading problem as sigma and worth naming twice. <span class="sym">&beta;</span> is <strong>beta</strong>, their letter <em>b</em>, and it is a per-step angle.</p>
+      </div>
+      <p style="margin-top:14px">A big <span class="mono">&alpha;</span> means that pattern is gone almost immediately. A small one means it persists. And a non-zero <span class="mono">&beta;</span> means the pattern <em>rotates</em> as it fades &mdash; oscillating at a definite frequency.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>The fading rates, both records</h3>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>&nbsp;</th><th>slowest &alpha;</th><th>fastest &alpha;</th><th>reads as</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>a real EEG</td><td>0.0985</td><td>0.1473</td><td>everything persists</td></tr>
+            <tr class="hi"><td>the market</td><td>1.1378</td><td>2.0935</td><td>everything gone at once</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <figcaption>An order of magnitude apart, and consistent with everything else in this lesson: the EEG&rsquo;s slowest pattern loses about a tenth of itself per step, the market&rsquo;s loses most of itself immediately.</figcaption>
+      </div>
+      <div class="card">
+        <h3>And the carrier</h3>
+        <div class="eq" style="font-size:13px">the market   &beta; = <b>0.0000</b>
+the EEG      &beta; = <b>3.1416</b></div>
+        <p style="margin:11px 0 0; font-size:14.5px">The market&rsquo;s dominant pattern does not rotate at all &mdash; it just fades. The EEG&rsquo;s advances by <span class="mono">3.1416</span> radians per sample, which is <span class="mono">&pi;</span> &mdash; a half turn every step, so the pattern flips sign each sample.</p>
+        <p style="margin:9px 0 0; font-size:14px">That is the fastest rotation a sampled record can represent, and a value sitting exactly at that limit is as likely to be an artefact of the recording as a fact about the brain. <strong>Worth reporting and worth doubting</strong> &mdash; the read is right, its interpretation needs the instrument's manual.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 9 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="4">
+  <p class="eyebrow">Putting it together</p>
+  <h2>Everything the ordered axis gave up.</h2>
+  <div class="scroll card tight">
+    <table>
+      <thead><tr><th>read</th><th>a real EEG</th><th>the market, 70 months</th><th>what it says</th></tr></thead>
+      <tbody>
+        <tr><td>C(1) &divide; C(0)</td><td>0.884</td><td>&minus;0.053</td><td>how alike consecutive rows are</td></tr>
+        <tr class="hi"><td>&xi; correlation length</td><td>4.468</td><td>1.000</td><td>how many steps the memory runs</td></tr>
+        <tr><td>H<sub>C</sub> decay entropy</td><td>4.569</td><td>1.044</td><td>how many lags are in play</td></tr>
+        <tr class="hi"><td>a<sub>&delta;</sub> diffraction limit</td><td>0.0421</td><td>0.4849</td><td>the finest gap it can resolve</td></tr>
+        <tr><td>g shape factor</td><td>0.188</td><td>0.485</td><td>the shape, width divided out</td></tr>
+        <tr><td>Mercer ratio</td><td>6.11</td><td>1.90</td><td>does the record hold together</td></tr>
+        <tr class="hi"><td>&alpha; fading rates</td><td>0.099 &ndash; 0.147</td><td>1.138 &ndash; 2.094</td><td>how fast each layer dies</td></tr>
+        <tr><td>&beta; carrier</td><td>3.1416</td><td>0.0000</td><td>does it rotate as it fades</td></tr>
+        <tr><td>attenuation</td><td>0.277</td><td>0.797</td><td>how far the top mode stands out</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="two" style="margin-top:22px">
+    <div class="note">
+      <p><strong>Nine reads, one object.</strong> Every one of them came from the same decay curve or from the operator fitted to the same rows, and every one is a different question about it. None needed a threshold, a model, or a setting.</p>
+      <p style="margin-bottom:0">And they agree. The EEG remembers and the market does not, and it shows up nine times independently &mdash; in the curve, in both widths, in the limit, in the rates. <strong>Reads that agree from different constructions are worth more than any one of them.</strong></p>
+    </div>
+    <div class="card sunk">
+      <h3>The three lessons together</h3>
+      <p style="margin:0 0 8px; font-size:14.5px"><strong>One &mdash; the screen.</strong> How much of this is real? A count, K, and a reconstruction from the layers that cleared the noise floor.</p>
+      <p style="margin:0 0 8px; font-size:14.5px"><strong>Two &mdash; the aperture.</strong> What shape is it? Fill fractions, an area, a capacity, a quality number, all dimensionless.</p>
+      <p style="margin:0; font-size:14.5px"><strong>Three &mdash; the point-spread.</strong> How long does it remember? A curve, two widths, a limit, a certificate and a set of rates.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 10 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="4">
+  <p class="eyebrow">Your turn</p>
+  <h2>Three problems, and the thread through all three lessons.</h2>
+  <div class="two">
+    <div class="stack">
+      <div class="card">
+        <h3>1 &middot; Read a decay</h3>
+        <div class="eq">&tau;    0     1     2     3     4
+    1.00  0.50  0.25  0.12  0.06</div>
+        <p style="margin-top:12px; font-size:14.5px">What is <span class="mono">&xi;</span>, and does this record remember?</p>
+        <details><summary>Answer</summary>
+          <p>Add until it would cross zero &mdash; it never quite does here, so add what you have: <span class="mono">1.00 + 0.50 + 0.25 + 0.12 + 0.06 &asymp; <strong>1.93</strong></span> (<span class="mono">&asymp;</span> is <strong>approximately equal to</strong>).<br>
+          It remembers, but barely: each step keeps about half of what came before, so after four steps only 6% survives. Compare the EEG&rsquo;s <span class="mono">4.47</span>.</p>
+        </details>
+      </div>
+      <div class="card">
+        <h3>2 &middot; Use the limit</h3>
+        <p style="font-size:14.5px">A record of 500 rows reads <span class="mono">a<sub>&delta;</sub> = 0.01</span>. Two events happen 3 rows apart. Can the record tell them apart?</p>
+        <details><summary>Answer</summary>
+          <p><span class="mono">a<sub>&delta;</sub></span> is a fraction of the record&rsquo;s length, so the finest resolvable gap is <span class="mono">0.01 &times; 500 = <strong>5 rows</strong></span>. Two events 3 rows apart are <strong>inside the limit</strong> &mdash; they will blur into one, and no amount of re-processing separates them. You would need a finer recording, not a cleverer method.</p>
+        </details>
+      </div>
+      <div class="card">
+        <h3>3 &middot; Judge a check</h3>
+        <p style="font-size:14.5px">You cut a record into five blocks and the Mercer ratio reads <span class="mono">4.1, 4.0, 4.2, 7.9, 8.1</span>. What has happened, and where?</p>
+        <details><summary>Answer</summary>
+          <p>Something changed <strong>between the third and fourth blocks</strong>. The ratio is stable at about 4.1 and then stable at about 8.0 &mdash; two steady regimes with a switch between them, not drift and not noise.</p>
+          <p>The reads either side are each fine; what you must not do is quote a single number for the whole record, because there is no single record.</p>
+        </details>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="note">
+        <p><strong>The thread through all three.</strong> Every read in these lessons is built the same way: <em>square something, turn it into shares, take the entropy, and divide by a count.</em></p>
+        <p style="margin-bottom:0">Lesson one pointed it at the column powers and got a scale. Lesson two pointed it at the layer strengths and got a fill fraction. Lesson three pointed it at the decay curve and got a resolution limit. <strong>One procedure, three objects, three completely different questions answered.</strong></p>
+      </div>
+      <div class="card sunk">
+        <h3>What none of it needed</h3>
+        <p style="margin:0 0 8px; font-size:14.5px">No threshold. No fitted constant. No training. No setting to choose, with one exception: <span class="mono">&alpha;</span>, how often you are willing to be fooled, which enters at the noise floor in lesson one and nowhere else.</p>
+        <p style="margin:0; font-size:13px; color:var(--ink3)">Data: matplotlib sample data <span class="mono">eeg.dat</span> &middot; monthly closes from Yahoo Finance via <span class="mono">Stocks.csv</span> &middot; planted AR(1) records with stated memory lengths. Reads computed with <span class="mono">entroptics 0.2.1</span>, August 2026.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-dyn-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-dyn-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

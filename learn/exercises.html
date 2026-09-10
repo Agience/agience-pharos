@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entroptics: Try It Yourself</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#eeefec;--surface:#f8f9f7;--sunk:#e5e7e3;--ink:#1b1d22;--ink2:#565a63;--ink3:#8b909a;
+  --rule:#d2d5d0;--rule2:#bcc0ba;--amber:#a5620c;--amber-bg:#f6e7ca;--amber-line:#d99a34;
+  --teal:#20635f;--teal-bg:#dbeae7;--teal-line:#4d918b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#131519;--surface:#1a1d23;
+  --sunk:#0f1115;--ink:#e8eaed;--ink2:#a4a9b2;--ink3:#767c87;--rule:#2b2f37;--rule2:#3c414b;
+  --amber:#f0a63e;--amber-bg:#392b12;--amber-line:#a9741f;--teal:#6bbdb5;--teal-bg:#12312e;
+  --teal-line:#3d827b}}
+:root[data-theme="dark"]{--bg:#131519;--surface:#1a1d23;--sunk:#0f1115;--ink:#e8eaed;
+  --ink2:#a4a9b2;--ink3:#767c87;--rule:#2b2f37;--rule2:#3c414b;--amber:#f0a63e;--amber-bg:#392b12;
+  --amber-line:#a9741f;--teal:#6bbdb5;--teal-bg:#12312e;--teal-line:#3d827b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:820px;margin:0 auto;padding:52px 20px 90px}
+h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(38px,6.4vw,62px);
+  line-height:1.03;margin:0 0 10px}
+h1 em{font-style:italic;color:var(--amber)}
+p{color:var(--ink2);max-width:66ch}
+a.back{color:var(--amber);text-decoration:none;font-size:14px}
+ol{list-style:none;padding:0;margin:30px 0 0;display:flex;flex-direction:column;gap:16px}
+li.ex{background:var(--surface);border:1px solid var(--rule);padding:18px 20px}
+.head{display:flex;align-items:baseline;gap:10px;margin-bottom:9px}
+.n{font-family:"IBM Plex Mono",monospace;font-size:19px;color:var(--amber);font-weight:500}
+.u{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;color:var(--ink3)}
+p.q{color:var(--ink);margin:0 0 12px}
+pre{font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.7;background:var(--sunk);
+  border-left:3px solid var(--teal-line);padding:10px 13px;overflow-x:auto;margin:0 0 12px;
+  white-space:pre-wrap;color:var(--ink2)}
+details{border-top:1px solid var(--rule);padding-top:10px}
+summary{cursor:pointer;font-size:12.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--amber);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+ ";font-family:"IBM Plex Mono",monospace}
+details[open] summary::before{content:"\2212 "}
+summary:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+p.a{font-family:"IBM Plex Mono",monospace;font-size:14px;color:var(--amber);margin:11px 0 8px}
+p.why{font-size:14.5px;margin:0}
+.note{border-left:3px solid var(--amber-line);background:var(--amber-bg);padding:13px 16px;
+  margin:26px 0 0;color:var(--ink)}
+.note p{color:var(--ink);margin:0}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);color:var(--ink3);
+  font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html">&larr; the course</a>
+<h1>Try it<br><em>yourself</em></h1>
+<p>34 questions on the two records the lessons use throughout &mdash; an EEG of
+800&thinsp;&times;&thinsp;4 and 71&thinsp;&times;&thinsp;8 of closing prices. Each shows the code
+that answers it. <strong>Work out what you expect before you open the answer</strong>; several of
+these are here because the obvious expectation is wrong.</p>
+<p>Every answer below was computed by running that code at the moment this page was built. Start
+from this, and what you get is what it says:</p>
+<pre class="setup">import numpy as np, pandas as pd, matplotlib, matplotlib.image
+from entroptics import Projection, Screen, Aperture
+
+sample = os.path.join(os.path.dirname(matplotlib.__file__), &quot;mpl-data&quot;, &quot;sample_data&quot;)
+eeg = np.asarray(np.fromfile(os.path.join(sample, &quot;eeg.dat&quot;), dtype=&quot;&lt;d&quot;).reshape(-1, 4), float)
+d = pd.read_csv(os.path.join(sample, &quot;Stocks.csv&quot;), comment=&quot;#&quot;,
+                parse_dates=[&quot;Date&quot;]).set_index(&quot;Date&quot;)[TICKERS].dropna()
+d = d[~d.index.duplicated()].sort_index()
+prices = np.asarray(d.values, float)
+returns = np.asarray(np.round(d.pct_change().dropna().values * 100.0, 4), float)
+raw = np.fromfile(os.path.join(sample, &quot;eeg.dat&quot;), dtype=&quot;&lt;d&quot;)
+photo = np.asarray(matplotlib.image.imread(
+    os.path.join(sample, &quot;grace_hopper.jpg&quot;)), float).mean(axis=2)
+rng = np.random.default_rng(0)
+
+def read(X):
+    s = Screen()
+    s.register(&quot;a&quot;, entry=lambda v: np.asarray(v, float))
+    s.place(&quot;a&quot;, np.asarray(X, float))
+    return s.read()</pre>
+<p><strong>23</strong> of the 34 run on that alone &mdash; counted by running them, not by
+reading the list. The rest also use an object the lesson they came from builds &mdash; a planted
+signal, an ontology, a pool of documents &mdash; and name it the way that lesson does, so the code
+is a reminder of the move, to be typed out and adapted.</p>
+<ol><li class="ex">
+<div class="head"><span class="n">1</span><span class="u">A4</span></div>
+<p class="q">Take the EEG and shuffle its rows into a random order. Every number survives; only the sequence is destroyed. What happens to the ordered-axis coherence?</p>
+<pre>Projection(eeg).coherence
+Projection(eeg[rng.permutation(len(eeg))]).coherence</pre>
+<details><summary>answer</summary>
+<p class="a">+41.29 becomes -1.05</p>
+<p class="why">Nothing was removed except the order, so whatever the read was seeing, it was seeing the order. Below 2 means nothing found.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">2</span><span class="u">A4</span></div>
+<p class="q">The same eight companies, twice: the closing prices, and the month-to-month changes in them. One of these is ordered and one is not. Which, and why?</p>
+<pre>Projection(prices).coherence
+Projection(returns).coherence</pre>
+<details><summary>answer</summary>
+<p class="a">prices +9.30, changes +0.127</p>
+<p class="why">The prices are ordered for a dull reason &mdash; a share price does not jump, so neighbouring rows are simply close together. Subtract the level and nothing survives.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">3</span><span class="u">A5</span></div>
+<p class="q">Reduce one company's monthly moves to three symbols &mdash; up, flat, down. Its conditional entropy falls from 1.482 bits to -0.023, steeper than English does. Is it more predictable than English?</p>
+<pre>sequence.redundancy_rate(english)
+sequence.redundancy_rate(symbols)</pre>
+<details><summary>answer</summary>
+<p class="a">English 0.2753, market 0.0000</p>
+<p class="why">No. Seventy symbols cannot estimate an eight-symbol block entropy over 3&#8312; = 6,561 possibilities, so the fall is the estimator running out of data. Redundancy of exactly zero is the instrument saying so.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">4</span><span class="u">A6</span></div>
+<p class="q">Split the EEG's four electrodes into two pairs and ask whether they are coupled. Then scramble the rows of one side only and ask again. What does the <em>strength</em> do?</p>
+<pre>s = Screen(); s.place(&quot;left&quot;, eeg[:, :2]); s.place(&quot;right&quot;, eeg[:, 2:])
+s.coupling(&quot;left&quot;, &quot;right&quot;).strength</pre>
+<details><summary>answer</summary>
+<p class="a">0.1023 becomes exactly 0.0</p>
+<p class="why">Exactly zero, with resolved = False. A strength below the floor is reported as zero, because a small non-zero value invites belief in a weak effect that is not there.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">5</span><span class="u">A6</span></div>
+<p class="q">On that same screen, send the left side's beam at the right, then send the right's at the left. How much energy arrives each way?</p>
+<pre>s.transfer(&quot;left&quot;, &quot;right&quot;).delivered
+s.transfer(&quot;right&quot;, &quot;left&quot;).delivered</pre>
+<details><summary>answer</summary>
+<p class="a">left&rarr;right 727.40, right&rarr;left 0.00</p>
+<p class="why">The receiving side resolves 1 mode and the sending side 0, so one direction has a target and the other has none. Nothing is lost either way &mdash; all 1597.99 passes through as bystanding, retrievable by any screen that can resolve it.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">6</span><span class="u">A7</span></div>
+<p class="q">A noise floor decides how many patterns count as real. Generate data that has no structure <em>by that floor's own definition</em>, and ask the floor how many patterns it finds. What should it say, and what does the standard one say?</p>
+<pre>nulls.calibration_report(J)[&#x27;mp&#x27;][&#x27;K_null&#x27;]</pre>
+<details><summary>answer</summary>
+<p class="a">it should find about 0; it finds 12</p>
+<p class="why">Whatever a floor finds in nothing, it adds to everything. On the same matrix that floor reports 41 patterns where a calibrated one reports 1.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">7</span><span class="u">A8</span></div>
+<p class="q">Read the EEG as 100 trials of 8 steps on 4 electrodes, then ask one simple question &mdash; the fill fraction &mdash; four ways. How much do the answers differ?</p>
+<pre>over_planes(field, (1, 2))
+phi(pool(field, 0))
+phi(field.reshape(800, 4))</pre>
+<details><summary>answer</summary>
+<p class="a">0.5009 &middot; 0.3027 &middot; 0.7192 &middot; 0.9490</p>
+<p class="why">Same function, same bytes, different fold. The last is a plain reshape back to the shape the file was stored in, and it reads far above every principled reduction.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">8</span><span class="u">B2</span></div>
+<p class="q">For one pair of records, compute the share of the sender that lies in what the receiver can resolve, and separately the transfer's participation. Are they related?</p>
+<pre>absorbed_energy / incident_energy
+transfer(a, b).participation</pre>
+<details><summary>answer</summary>
+<p class="a">identical: both 0.461326</p>
+<p class="why">They are the same quantity. Transfer's first gate <em>is</em> the projection; transfer adds a second, independent gate that projection knows nothing about.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">9</span><span class="u">B3</span></div>
+<p class="q">Two things in this system shrink along a path: permission, and signal strength over distance. Apply each one <em>twice</em>. Does either give back what you started with?</p>
+<pre>mask &amp; mask == mask
+attenuate(1, xi) ** 2 == attenuate(2, xi)</pre>
+<details><summary>answer</summary>
+<p class="a">permission: True &mdash; signal: 0.79944980&sup2; = 0.63911998, not 0.79944980</p>
+<p class="why">Intersecting a permission with itself changes nothing. Travelling the same distance twice attenuates twice. Reach for one where you need the other and nothing raises.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">10</span><span class="u">C1</span></div>
+<p class="q">Using a metric built from a dictionary's own shape, which pair of words is further apart: dog and cat, or dog and wolf? And where does democracy/tyranny land?</p>
+<pre>jc_tree(&#x27;dog.n.01&#x27;, &#x27;cat.n.01&#x27;, ic)
+jc_tree(&#x27;dog.n.01&#x27;, &#x27;wolf.n.01&#x27;, ic)</pre>
+<details><summary>answer</summary>
+<p class="a">dog/cat 0.6909, dog/wolf 0.8331, democracy/tyranny 1.7217</p>
+<p class="why">Dog and wolf are further apart, and opposites are furthest of all, because this measures <em>shared ancestry</em>: two words are close when they meet high in the tree. Using it as a similarity score would be wrong in a way nothing would flag.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">11</span><span class="u">B1</span></div>
+<p class="q">Register a lens that throws away all but the strongest direction of a signal, then rescales so <em>every joule comes back</em>. Ask the library to certify it. Does it pass?</p>
+<pre>def drop_mode(x):   # rank-1, renormalised to the original energy
+    U, S, Vt = np.linalg.svd(x, full_matrices=False)
+    S2 = S.copy(); S2[1:] = 0
+    B = (U * S2) @ Vt
+    return B * (np.linalg.norm(x) / np.linalg.norm(B))
+
+s.register(&quot;a&quot;, entry=drop_mode, inverse=lambda x: x)
+c = s.certify(&quot;a&quot;, eeg[:, :2])
+c.residual, c.K_signal, c.lossless</pre>
+<details><summary>answer</summary>
+<p class="a">residual 0.729452 &mdash; K_signal 1 &mdash; lossless: False</p>
+<p class="why">The residual is <strong>under 1</strong>, so it beats the trivial inverse that returns nothing &mdash; the energy check passes. It fails on the other half: what was thrown away is <em>structure</em>, and the leftover resolves it. Neither check alone would have caught this; that is why the verdict is a conjunction.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">12</span><span class="u">A7</span></div>
+<p class="q">Build a system planted to decay at a known rate, and noise of exactly the same shape. Read both. On the noise, three of the five reads come back <em>exactly</em> zero and a fourth comes back <em>exactly</em> 1 &mdash; which are they, and why is the fifth identical on both records?</p>
+<pre>r_planted = read(planted)
+r_noise   = read(noise)
+for f in (&quot;K_signal&quot;, &quot;basis_dim&quot;, &quot;attenuation&quot;, &quot;correlation_length&quot;, &quot;noise_floor&quot;):
+    print(f, getattr(r_planted, f), getattr(r_noise, f))</pre>
+<details><summary>answer</summary>
+<p class="a">K_signal 1/0 &middot; basis_dim 1/0 &middot; attenuation 1.424456/0.000000 &middot; correlation_length 17.033192/1.000000 &middot; noise_floor 1.433979/<strong>1.433979</strong></p>
+<p class="why">On noise the first three are exact &mdash; no modes, no basis, no attenuation &mdash; and the correlation length is exactly 1.0, correlated with nothing but itself. The floor is <strong>identical on both</strong>, because it is a property of the record's shape. What differs is entirely what stands above it.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">13</span><span class="u">D8</span></div>
+<p class="q">The EEG file is 3,200 numbers with no header &mdash; nothing in it says how they are laid out. Read the same bytes as 8 columns, then as 2. How many modes does each resolve?</p>
+<pre>raw = np.fromfile(&quot;eeg.dat&quot;, dtype=&quot;&lt;d&quot;)   # 3,200 values, no header
+read(raw.reshape(-1, 8)).K_signal
+read(raw.reshape(-1, 2)).K_signal</pre>
+<details><summary>answer</summary>
+<p class="a">as (400, 8): <strong>3 modes</strong> &mdash; as (1,600, 2): <strong>0</strong></p>
+<p class="why">Same bytes, same instrument, and at one legal shape it reports nothing there at all. Every unit in this course reads it as four columns &mdash; a reasonable choice, and still a <em>choice</em>, made by whoever loaded it.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">14</span><span class="u">D5e</span></div>
+<p class="q">Unit D5e works the mass-gap margin at L&nbsp;=&nbsp;12 and gets 0.150449. The whole chain is four operations on 2&pi;/(L+1). Work it at L&nbsp;=&nbsp;16: does the margin grow, and by how much?</p>
+<pre>kappa0 = 0.25 * np.log(3)
+th2 = (2 * np.pi / 17) ** 2          # &lt;d^2&gt; &lt;= 1
+mu = -np.log(1 - th2 / 2)
+kappa0 - mu</pre>
+<details><summary>answer</summary>
+<p class="a">0.150449 becomes 0.203907 &mdash; 1.36&times; the margin</p>
+<p class="why">The floor is fixed by counting and never moves. The cost falls as 1/L&sup2;, so a wider screen buys margin and the gap the bound guarantees grows with it. That is the aperture argument in one line of arithmetic.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">15</span><span class="u">A11</span></div>
+<p class="q">Unit A11's first test is to halve the record and read again. The EEG reports K<sub>signal</sub>&nbsp;=&nbsp;1 on all 800 rows. What does it report on the first 200?</p>
+<pre>read(eeg).K_signal
+read(eeg[:200]).K_signal</pre>
+<details><summary>answer</summary>
+<p class="a">1 becomes 0</p>
+<p class="why">Both are correct arithmetic on the record they were given. The zero measures how much record there was &mdash; at 200 rows there was nothing the read could resolve.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">16</span><span class="u">A12</span></div>
+<p class="q">The EEG has four columns. Square it, add down each column, divide by the total, and take the entropy of those shares in bits. Two to that power is how many columns are carrying the record. How many of the four are working?</p>
+<pre>p = (eeg ** 2).sum(axis=0)
+p = p / p.sum()
+H = -(p * np.log2(p)).sum()
+2 ** H</pre>
+<details><summary>answer</summary>
+<p class="a"><strong>3.999996</strong> of 4</p>
+<p class="why">The four shares are 0.2494, 0.2502, 0.2502, 0.2502 &mdash; near enough equal that the count comes back at four. Silence one sensor and it returns exactly 3.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">17</span><span class="u">A13</span></div>
+<p class="q">A read's channels are repeats of one measurement, so their disagreement is its error bar. Compare the noise share against the tail share on the EEG and on the market's prices. Which record's decay is mostly its own scatter?</p>
+<pre>s = Aperture(prices).decay_scatter
+s.noise_share / s.tail_share
+t = Aperture(eeg).decay_scatter
+t.noise_share / t.tail_share</pre>
+<details><summary>answer</summary>
+<p class="a">prices <strong>0.9088</strong>, the EEG 0.2373</p>
+<p class="why">The prices read as ordered on the axis and resolve more detail than the EEG, and 91% of the decay that resolution rests on is the channels disagreeing. Seventy-one rows cannot support it.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">18</span><span class="u">A14</span></div>
+<p class="q">K<sub>signal</sub> is a count, and a count needs a line. Read the EEG as 8 columns, take the tail probability of every mode, and count how many sit inside the library's documented false-alarm level of 0.05. Does that match K<sub>signal</sub>?</p>
+<pre>e8 = raw.reshape(-1, 8)
+(Aperture(e8).significance.pvalue &lt; 0.05).sum()
+read(e8).K_signal</pre>
+<details><summary>answer</summary>
+<p class="a">4 modes inside 0.05, K<sub>signal</sub> = <strong>3</strong></p>
+<p class="why">The fourth mode has p&nbsp;=&nbsp;1.83e-03 &mdash; inside 0.05 and outside the count. Both answers are correct; they are answers to two questions, and the evidence is published so a reader can draw their own line.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">19</span><span class="u">A15</span></div>
+<p class="q">The EEG and the market's prices both report one mode. How much does that one mode carry in each?</p>
+<pre>Aperture(eeg).resolved_power
+Aperture(prices).resolved_power</pre>
+<details><summary>answer</summary>
+<p class="a">the EEG 0.375320, the prices <strong>4.025171</strong></p>
+<p class="why">10.7 times the weight in the same count. A count answers how many things are there and a weight answers how much of the record they account for.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">20</span><span class="u">A16</span></div>
+<p class="q"><span class="mono">phi_T</span> reads 0.0037 on the EEG and 0.0037 on noise. At four decimal places those are the same number. Measure the spread of twelve noise draws and ask again.</p>
+<pre>z = [Aperture(rng.standard_normal(eeg.shape)).phi_T for _ in range(12)]
+(Aperture(eeg).phi_T - np.mean(z)) / np.std(z, ddof=1)</pre>
+<details><summary>answer</summary>
+<p class="a"><strong>-30.25</strong> standard deviations apart</p>
+<p class="why">The whole noise band is 5.61e-06 wide &mdash; narrower than the last place that was printed. A difference is large or small only compared with something, and decimal places are a property of the printing.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">21</span><span class="u">B5</span></div>
+<p class="q">The diffraction limit says how close two things can be and still arrive as two. One over it is how many separable things a record can hold. Count them on the EEG and on the market's monthly changes.</p>
+<pre>1 / Aperture(eeg).diffraction_limit.a_delta
+1 / Aperture(returns).diffraction_limit.a_delta</pre>
+<details><summary>answer</summary>
+<p class="a">the EEG <strong>23.74</strong> spots, the changes 2.06</p>
+<p class="why">Every record this course finds order in resolves at least 10.8 spots and every record with nothing in it resolves under 3. The monthly changes sit inside the noise band, which is where units A3, A4 and A5 put them by three other routes.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">22</span><span class="u">E3</span></div>
+<p class="q">A terrain grid is 344&nbsp;&times;&nbsp;403 ground elevations. Read it as stored, then read it transposed. Nothing about the land has changed &mdash; do the answers agree?</p>
+<pre>E = np.load(os.path.join(sample, &quot;jacksboro_fault_dem.npz&quot;))[&quot;elevation&quot;]
+read(np.asarray(E, float)).K_signal
+read(np.asarray(E.T, float)).K_signal</pre>
+<details><summary>answer</summary>
+<p class="a"><strong>13</strong> modes north&ndash;south, <strong>11</strong> east&ndash;west</p>
+<p class="why">Both readings are correct and they answer two questions &mdash; how elevation varies walking north, and walking east. On the EEG the rows are time and the columns are sensors, so the shape carries a meaning somebody chose; on a piece of land both directions are directions, and a mode count with no direction attached is an answer with the question thrown away.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">23</span><span class="u">D5a</span></div>
+<p class="q">The mass gap's floor comes from counting. A stack of <em>n</em> cubes is fixed by its n&minus;1 steps, each a free choice among three, and its outside has 4n+2 faces. At n&nbsp;=&nbsp;8, how many stacks are there and how big is each one?</p>
+<pre>3 ** (8 - 1)
+4 * 8 + 2</pre>
+<details><summary>answer</summary>
+<p class="a"><strong>2187</strong> stacks, each with <strong>34</strong> faces</p>
+<p class="why">Three choices arriving with four faces is the whole theorem. Share ln&nbsp;3 across four faces and you have &kappa;<sub>0</sub> = ln(3)/4 = 0.274653, with no coupling in it and no lattice spacing.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">24</span><span class="u">D5b</span></div>
+<p class="q">The interior bound replaces a cosine with the parabola 1&nbsp;&minus;&nbsp;x&sup2;/2. That single step is the only thing in the whole argument a reader has to take on trust. Check it at the angles the unit uses.</p>
+<pre>x = np.array([0.1, 0.3, 0.5, 0.7])
+np.cos(x) - (1 - x * x / 2)</pre>
+<details><summary>answer</summary>
+<p class="a">all four differences positive: 0.000004, 0.000336, 0.002583, 0.009842</p>
+<p class="why">The parabola sits under the cosine every time, and that direction is what makes the chain safe: replacing the cosine with something smaller can only make the bound on &mu; larger, and an upper bound that errs upward is still an upper bound.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">25</span><span class="u">D5c</span></div>
+<p class="q">A read returns one number: the fraction of a fluctuation that survives one step along the time axis. The measurement is 0.3588. What decay rate is that, and what is left after ten steps?</p>
+<pre>-np.log(0.3588)
+0.3588 ** 10</pre>
+<details><summary>answer</summary>
+<p class="a">a rate of <strong>1.0250</strong>; <strong>3.5361e-05</strong> left after ten steps</p>
+<p class="why">Factors multiply along a path and rates add, which is the only reason the logarithm is here. A rate is what a mass is, so a positive one is the gap.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">26</span><span class="u">D5d</span></div>
+<p class="q">Unit D5a's counting gives a floor on the rate. Written as a factor per step that is a ceiling. Work it, and compare it with the measured 0.3588.</p>
+<pre>3 ** -0.25
+-np.log(0.3588) / (0.25 * np.log(3))</pre>
+<details><summary>answer</summary>
+<p class="a">the ceiling is <strong>0.759836</strong>; the measurement clears it by <strong>3.7&times;</strong></p>
+<p class="why">The measured step loses far more than the counting requires, so the margin the bound guarantees is the smaller of the two &mdash; which is the direction a bound is built to err in.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">27</span><span class="u">D5</span></div>
+<p class="q">A published table pooled 24 anomalous configurations with 96 ordinary ones and reported the average. An average is the share-weighted sum of what it averages. How much of the anomaly survives the pooling?</p>
+<pre>24 / (24 + 96)</pre>
+<details><summary>answer</summary>
+<p class="a"><strong>0.20</strong> &mdash; the pool reports a fifth of what the minority shows</p>
+<p class="why">The anomalous configurations are still there and still anomalous; the pooled average is dominated by the majority. The size of the minority decides whether an average can carry the question at all.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">28</span><span class="u">A9</span></div>
+<p class="q">A screen of side L resolves angles in steps of 2&pi;/(L+1) &mdash; a finite window resolves finite detail. Work it at L&nbsp;=&nbsp;8 and at L&nbsp;=&nbsp;28. How much finer does the wider screen resolve?</p>
+<pre>2 * np.pi / 9
+2 * np.pi / 29</pre>
+<details><summary>answer</summary>
+<p class="a">0.698132 becomes <strong>0.216662</strong> &mdash; 3.22&times; finer</p>
+<p class="why">Everything the aperture argument does follows from this one line. The angle scale falls as 1/L, so the correlation moment it multiplies falls as 1/L&sup2;, and the margin below the floor grows with it.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">29</span><span class="u">A1</span></div>
+<p class="q">The first thing to do with a record is read it. Put the EEG on a screen and take all four reads at once &mdash; no settings, no fitting, nothing to choose.</p>
+<pre>read(eeg).K_signal
+read(eeg).contrast
+read(eeg).attenuation
+Projection(eeg).coherence</pre>
+<details><summary>answer</summary>
+<p class="a">1 mode, contrast 1.3194, attenuation 0.277159, coherence +41.2872</p>
+<p class="why">One mode stands above the floor, influence falls off at 0.277159 per step, and the ordered axis reads far above 2. Four numbers from one placement, and unit A11 is where each of them gets asked what it measures.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">30</span><span class="u">A2</span></div>
+<p class="q"><span class="mono">basis_dim</span> is how many directions the aperture actually resolves. Read the same EEG bytes as 2 columns and as 4, and compare it with K<sub>signal</sub>.</p>
+<pre>read(raw.reshape(-1, 2)).basis_dim
+read(raw.reshape(-1, 4)).basis_dim</pre>
+<details><summary>answer</summary>
+<p class="a">0 at two columns, 1 at four</p>
+<p class="why">A basis of zero is the aperture saying it resolves no direction at all. The bytes are identical &mdash; what changed is how many columns they were poured into, which is unit D8's subject from the other side.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">31</span><span class="u">A10</span></div>
+<p class="q">How much record is enough? Read the EEG at 50 rows, 200, 400 and 800, and watch two reads answer differently.</p>
+<pre>[Projection(eeg[:n]).coherence for n in (50, 200, 400, 800)]
+[read(eeg[:n]).K_signal for n in (50, 200, 400, 800)]</pre>
+<details><summary>answer</summary>
+<p class="a">coherence +12.4, +32.9, +46.1, +41.3 &mdash; K<sub>signal</sub> 0, 0, 1, 1</p>
+<p class="why">The coherence verdict holds at every length &mdash; above 2 on 50 rows already. The mode count flips from 0 to 1 between 200 and 400. <em>Enough</em> is a property of the read as much as of the record, so the answer is different for the two.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">32</span><span class="u">E2</span></div>
+<p class="q">Unit E2 maps where the instrument is blind. Pour the same EEG bytes into 2 columns and into 4, and ask whether there is anything there.</p>
+<pre>read(raw.reshape(-1, 2)).K_signal
+read(raw.reshape(-1, 4)).K_signal</pre>
+<details><summary>answer</summary>
+<p class="a">0 at two columns, 1 at four</p>
+<p class="why">Not one number changed &mdash; only the shape they were read at. At two columns the instrument reports nothing in a record it finds structure in at four, and the blind spot is deterministic: the same bytes at the same width give the same answer every time.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">33</span><span class="u">C2</span></div>
+<p class="q">A photograph is 600&nbsp;&times;&nbsp;512 pixels. Count the separable spots it holds, then average the pixels in 2&nbsp;&times;&nbsp;2 blocks &mdash; a blur &mdash; and count again. What does blurring do to the count?</p>
+<pre>1 / Aperture(photo).diffraction_limit.a_delta
+b = photo[:600, :512].reshape(300, 2, 256, 2).mean(axis=(1, 3))
+1 / Aperture(b).diffraction_limit.a_delta</pre>
+<details><summary>answer</summary>
+<p class="a">87.8037 becomes <strong>43.6731</strong> &mdash; 2.010&times; fewer</p>
+<p class="why">It halves. Nothing in the spot count's definition mentions pixels or blurring &mdash; it is the entropy of the record's own decay &mdash; and it returns the answer you would have predicted. Blur by 4 and it halves again; by 3 and it divides by three.</p></details>
+</li>
+<li class="ex">
+<div class="head"><span class="n">34</span><span class="u">C3</span></div>
+<p class="q">A 91-row grid of ground height crosses a coastline; 59 of its rows are mostly land. Those 59 rows resolve 23.6432 spots and the whole grid resolves 29.3631. Before concluding anything, ask what <em>any</em> 59 rows of this grid resolve.</p>
+<pre>T = np.load(os.path.join(sample, &quot;topobathy.npz&quot;))[&quot;topo&quot;]
+land = T[(T &gt; 0).mean(axis=1) &gt; 0.5]
+pick = np.sort(rng.choice(len(T), len(land), replace=False))
+1 / Aperture(np.asarray(T[pick], float)).diffraction_limit.a_delta</pre>
+<details><summary>answer</summary>
+<p class="a">a random 59 rows read <strong>20.2366</strong>, against the land's 23.6432</p>
+<p class="why">The land reads above what its own size gives, so it carries structure the row count does not explain. Run the same line on the 32 mostly-sea rows and they read what their size reads &mdash; which is the finding, and neither half of it is visible without this control.</p></details>
+</li></ol>
+<div class="note"><p><strong>If your answer differs, that is worth more than agreement.</strong>
+Check the shape of what you passed in, and which axis you treated as the ordered one &mdash; between
+them those account for almost every disagreement, and one whole lesson each.</p></div>
+<footer>Answers generated 2026-08-31 from the installed library. None is transcribed.</footer>
+</div>
+</body>
+</html>

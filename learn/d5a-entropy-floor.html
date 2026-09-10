@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Entropy Floor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D5a &middot; the counting</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:17px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+pre.rec{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7; background:var(--sunk);
+        border-left:2px solid var(--edge); padding:10px 14px; overflow-x:auto}
+</style><section class="slide on" data-act="floor">
+<h1>The Entropy Floor</h1>
+<p class="lede">The whole mass-gap argument turns on one comparison: what a thing
+<em>costs</em> against how many of that thing there <em>are</em>. This unit works out the second
+number, and every step of it is arithmetic you can do on a calculator.</p>
+<p class="note">The symbols here, said aloud: <strong>&kappa;</strong> is <em>kappa</em>, the floor this unit counts out; <strong>&mu;</strong> is <em>mu</em>, what one plaquette of sheet costs; <strong>&xi;</strong> is <em>xi</em>. <span class="mono">&ge;</span> is <em>greater than or equal</em> and <span class="mono">&infin;</span> is <em>infinity</em>, which appears under a limit.</p>
+<p>The number is called <strong>&kappa;<sub>0</sub></strong>, and it comes from counting shapes on a
+grid. No physics goes into it &mdash; no coupling, no choice of scale, nothing measured. It is a
+piece of geometry, and the next slide gives you the five words you need to see what is being
+counted.</p>
+<p class="formula">&kappa;<sub>0</sub> &nbsp;=&nbsp; <strong>0.274653</strong></p>
+<p>That is where this unit ends up. What follows is where it comes from.</p>
+<p class="note cool">Paper &sect;7, Theorem 7.1. The Lean development is
+<code>research/lean/MassGap/Floor.lean</code>.</p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>The five words</h2>
+<p>The argument counts a particular kind of object, so it is worth having the words first. Each of
+these is one line.</p>
+<table class="tab"><thead><tr><th>word</th><th>what it is</th></tr></thead><tbody>
+<tr><td><strong>lattice</strong></td><td>space chopped into a grid of cubes, so that it fits in a
+computer. Unit <strong>A1</strong>'s grid of measurements, in four dimensions</td></tr>
+<tr><td><strong>plaquette</strong></td><td>one square face of one cube. The lattice's unit of
+<em>area</em> &mdash; areas here are counted in plaquettes the way a floor is counted in
+tiles</td></tr>
+<tr><td><strong>vortex</strong></td><td>a closed sheet made of plaquettes, carrying a twist in the
+field. Closed means it has no edge, like the surface of a balloon</td></tr>
+<tr><td class="hit"><strong>tension &mu;</strong></td><td class="hit">what one plaquette of that
+sheet <em>costs</em>. A big sheet costs &mu; per plaquette, so it is suppressed by
+<code>e<sup>&minus;&mu;A</sup></code></td></tr>
+<tr><td class="hit"><strong>floor &kappa;<sub>0</sub></strong></td><td class="hit">how many such
+sheets there <em>are</em>, per plaquette. Many sheets of the same area means many chances, which
+works against the cost</td></tr>
+</tbody></table>
+<p>The last two are the two sides of one comparison, and everything in this unit is about the
+second. <strong>Cost against count.</strong> If the sheets are numerous enough to outweigh what each
+one costs, they fill space, and that filling is what confinement is.</p>
+<p class="note cool">You do not need to know what a vortex is <em>made of</em> to follow the
+counting. What matters is its shape: a closed surface built out of unit squares, and the question is
+how many closed surfaces of a given area there are.</p>
+<h3 style="margin-top:24px">The comparison, written down</h3>
+<p>Now that the words are in place, here is the whole thing in one line. A sheet of area <em>A</em>
+counts twice over: its cost makes it <em>less</em> likely by a factor
+<code>e<sup>&minus;&mu;A</sup></code>, and the number of sheets of that area makes it <em>more</em>
+likely by a factor <code>e<sup>+&kappa;A</sup></code>. Subtract the two rates:</p>
+<p class="formula">F<sub>v</sub> &nbsp;=&nbsp; &mu; &minus; &kappa;</p>
+<p>When that is <strong>negative</strong> &mdash; when <strong>&mu; &lt; &kappa;</strong> &mdash;
+the count wins, the sheets fill space, and the flux is confined. So a <em>lower bound</em> on
+&kappa; is worth having: it lets the whole question be settled by measuring &mu; alone, which is
+what unit <strong>D5b</strong> does.</p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>Count a family you can count</h2>
+<p><strong>N(A)</strong> is the number of closed connected centre-vortex surfaces of area <em>A</em>
+through one fixed plaquette. Counting all of them is hard. Exhibiting a large family of them and
+counting <em>that</em> gives a lower bound, and a lower bound is what the argument needs.</p>
+<p>The family: take a <strong>path of cubes</strong> in a fixed three-dimensional sublattice, each
+cube touching the last face to face, and use the <strong>boundary</strong> of the resulting solid.
+The boundary of any solid is a closed surface, so every member of the family qualifies.</p>
+<p>The paths are <strong>directed</strong>: every step moves in <code>+x</code>, <code>+y</code> or
+<code>+z</code>, never backwards. That single restriction earns two things at once.</p>
+<ul class="pieces">
+<li><strong>They are self-avoiding for free.</strong> Each step raises the coordinate sum
+<code>x+y+z</code> by exactly one, so the sum is different at every cube and no position can repeat.
+A general path would need a check; this family needs none.</li>
+<li><strong>They are easy to count.</strong> A path of <em>n</em> cubes is fixed by its
+<em>n</em>&minus;1 steps, each a free choice among three. So there are
+<strong>3<sup>n&minus;1</sup></strong> of them, and no two are the same path.</li>
+</ul>
+<p class="note cool">In Lean that count is <code>directed_paths_card</code>: the paths are the maps
+<code>Fin k &rarr; Fin 3</code>, and there are <code>3 ^ k</code> of them.</p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>The area of the boundary</h2>
+<p>Now the area, in plaquettes. Work it out on the first two cases and the rule appears.</p>
+<p><strong>One cube.</strong> A cube has six faces and there is nothing for it to share one with, so
+the boundary is all six: <strong>A = 6</strong>, and the enumeration agrees.</p>
+<p><strong>Two cubes.</strong> The second cube brings six more faces, and the face where the two
+meet is now <em>inside</em> the solid &mdash; so it leaves the boundary, and it leaves for
+<em>both</em> cubes. Six added, two removed: <strong>A = 10</strong>.</p>
+<p>Every further cube does exactly the same thing. Starting from six and adding four each time:</p>
+<p class="formula">A &nbsp;=&nbsp; 6n &minus; 2(n&minus;1) &nbsp;=&nbsp; 4n + 2</p>
+<p>Which is the number worth holding on to: <strong>each cube adds four plaquettes of area, and
+carries three choices with it</strong>. Those two numbers are the whole theorem.</p>
+<table class="tab"><thead><tr><th>cubes n</th><th>paths</th><th>3<sup>n&minus;1</sup></th>
+<th>area A, enumerated</th><th>4n + 2</th><th>distinct surfaces</th></tr></thead>
+<tbody><tr><td>1</td><td>1</td><td>1</td><td class="hit">6</td><td>6</td><td>1</td></tr><tr><td>2</td><td>3</td><td>3</td><td class="hit">10</td><td>10</td><td>3</td></tr><tr><td>3</td><td>9</td><td>9</td><td class="hit">14</td><td>14</td><td>9</td></tr><tr><td>4</td><td>27</td><td>27</td><td class="hit">18</td><td>18</td><td>27</td></tr><tr><td>5</td><td>81</td><td>81</td><td class="hit">22</td><td>22</td><td>81</td></tr><tr><td>6</td><td>243</td><td>243</td><td class="hit">26</td><td>26</td><td>243</td></tr><tr><td>7</td><td>729</td><td>729</td><td class="hit">30</td><td>30</td><td>729</td></tr><tr><td>8</td><td>2187</td><td>2187</td><td class="hit">34</td><td>34</td><td>2187</td></tr></tbody></table>
+<p class="note">Every path of <em>n</em> cubes has boundary area exactly <strong>4n + 2</strong>
+&mdash; the enumeration finds one area per row, and it is the predicted one. The last column is the
+injectivity check, below.</p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>Different paths, different surfaces</h2>
+<p>The count <strong>3<sup>n&minus;1</sup></strong> is a count of <em>paths</em>. The theorem needs a
+count of <em>surfaces</em>. Those agree only if two different paths can never produce the same
+boundary, so that step is the one to check.</p>
+<p>They cannot, and the reason is the same coordinate sum that made the paths self-avoiding. Along a
+path the cubes carry sums <code>0, 1, 2, &hellip;, n&minus;1</code>, one each. So the solid remembers
+its own path: <strong>sort the cubes by coordinate sum and the path comes back</strong>. A surface
+that came from two different paths would need its cubes in two different orders, and there is only
+one order.</p>
+<p>The map from path to surface is therefore <strong>injective</strong>, and the surface count is at
+least the path count:</p>
+<p class="formula">N(A) &nbsp;&ge;&nbsp; 3<sup>n&minus;1</sup> &nbsp;=&nbsp;
+3<sup>(A&minus;2)/4&minus;1</sup></p>
+<p class="note">Watched directly at the largest case enumerated: <strong>2187</strong> paths at
+n&nbsp;=&nbsp;8 produce <strong>2187</strong> distinct boundary surfaces, compared as sets of faces.
+The counts match at every row of the table above.</p>
+<p class="note cool">In Lean this is <code>cubeConfig_injective</code>, proved for every <em>k</em>.
+The enumeration here shows a reader what the lemma is about, and the lemma covers every case past
+where an enumeration can go.</p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>What one plaquette is worth</h2>
+<p>Two numbers came out of the counting, and they are the whole theorem:</p>
+<table class="tab"><thead><tr><th>per cube added</th><th>value</th></tr></thead><tbody>
+<tr><td>ways to continue the path</td><td class="hit"><strong>3</strong></td></tr>
+<tr><td>plaquettes of boundary added</td><td class="hit"><strong>4</strong></td></tr>
+</tbody></table>
+<p>Three choices arrive together with four plaquettes. So spread the choices evenly over the
+plaquettes and ask what <em>one</em> plaquette is worth. Four of them multiply to 3, so each one is
+the <strong>fourth root of 3</strong>:</p>
+<p class="formula">3<sup>&frac14;</sup> &nbsp;=&nbsp; <strong>1.316074</strong> &nbsp;&nbsp;choices per
+plaquette</p>
+<p class="note">Check it on a calculator: <strong>1.316074 &times; 1.316074 &times; 1.316074 &times; 1.316074 =
+3.0000</strong>. Four plaquettes, three choices, exactly as the counting said.</p>
+<p>Now turn it around. A vortex surface is <em>suppressed</em> by its action weight and
+<em>multiplied</em> by how many surfaces there are. For the multiplicity to lose, the weight has to
+shrink by more than the count grows &mdash; so per plaquette it must shrink by more than one part in
+1.316074. That reciprocal is the number the published tables are read against:</p>
+<p class="formula">1 &nbsp;&divide;&nbsp; 1.316074 &nbsp;=&nbsp; <strong>0.7598</strong></p>
+<p class="note cool">Unit <strong>A7</strong> asked what &ldquo;nothing&rdquo; looks like, and unit
+<strong>A1</strong> counted modes standing above a floor. This is the same shape of question with
+the floor fixed by geometry: how much can a thing shrink and still be outnumbered?</p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>The same number, written as a rate</h2>
+<p>The previous slide produced two numbers by multiplying and dividing:</p>
+<table class="tab"><thead><tr><th>per plaquette</th><th>value</th><th>what it counts</th>
+</tr></thead><tbody>
+<tr><td>3<sup>&frac14;</sup></td><td class="hit">1.316074</td><td>how fast the number of surfaces
+grows</td></tr>
+<tr><td>1 &divide; 3<sup>&frac14;</sup></td><td class="hit">0.7598</td><td>how fast a surface's weight
+must shrink</td></tr>
+</tbody></table>
+<p>Physics writes growth and shrinking as <strong>rates</strong>, because rates <em>add</em> along
+a path where factors <em>multiply</em>. The tool for that is the natural logarithm,
+<code>ln</code>: it answers <em>what exponent produced this?</em> Applied to the growth factor:</p>
+<p class="formula">&kappa;<sub>0</sub> &nbsp;=&nbsp; ln(3<sup>&frac14;</sup>) &nbsp;=&nbsp;
+&frac14; &times; ln 3 &nbsp;=&nbsp; <strong>0.274653</strong></p>
+<p>And the shrinking factor is the same rate with a minus sign, run back through
+<code>e</code>:</p>
+<p class="formula">e<sup>&minus;&kappa;<sub>0</sub></sup> &nbsp;=&nbsp; 0.7598 &nbsp;&nbsp;&mdash; the
+same 0.7598 as the division above</p>
+<p class="note">Two ways of writing one fact. <strong>Factors multiply along a path; rates add.</strong>
+That is the only reason the logarithm is here, and unit <strong>B3</strong> uses it for exactly the
+same purpose: survival over a distance is
+<code>e<sup>&minus;d/&xi;</sup></code>, a factor per step written as a rate.</p>
+<p class="note cool">Whichever form you prefer, the content is one sentence: <strong>a vortex surface
+carries 1.316074 times as many shapes for every plaquette of area, and its weight has to fall faster
+than that to stay suppressed.</strong></p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>Entropy per unit area</h2>
+<p>&kappa; is the growth rate of the count per unit area &mdash; how much entropy one plaquette of
+surface carries:</p>
+<p class="formula">&kappa; &nbsp;=&nbsp; lim<sub>A&rarr;&infin;</sub> &nbsp; ln N(A) &divide; A</p>
+<p>Substituting the family's count and its area, with <em>n</em> cubes giving
+<code>A = 4n + 2</code>:</p>
+<p class="formula">ln N(A) &divide; A &nbsp;&ge;&nbsp; (n&minus;1) ln 3 &divide; (4n + 2)</p>
+<p>Take <em>n</em> large. The <code>&minus;1</code> and the <code>+2</code> stop mattering, and the
+ratio settles at <strong>ln 3 over 4</strong>: three choices, four plaquettes.</p>
+<table class="tab"><thead><tr><th>cubes n</th><th>area A</th><th>N(A) &ge;</th>
+<th>ln N(A) &divide; A</th></tr></thead><tbody><tr><td>2</td><td>10</td><td>3<sup>1</sup></td><td class="hit">0.109861</td></tr><tr><td>4</td><td>18</td><td>3<sup>3</sup></td><td class="hit">0.183102</td></tr><tr><td>8</td><td>34</td><td>3<sup>7</sup></td><td class="hit">0.226185</td></tr><tr><td>16</td><td>66</td><td>3<sup>15</sup></td><td class="hit">0.249685</td></tr><tr><td>64</td><td>258</td><td>3<sup>63</sup></td><td class="hit">0.268266</td></tr><tr><td>256</td><td>1,026</td><td>3<sup>255</sup></td><td class="hit">0.273047</td></tr><tr><td>1024</td><td>4,098</td><td>3<sup>1023</sup></td><td class="hit">0.274251</td></tr></tbody></table>
+<p class="formula">&kappa;<sub>0</sub> &nbsp;=&nbsp; &frac14; ln 3 &nbsp;=&nbsp;
+<strong>0.274653</strong></p>
+<p class="note">The column climbs toward 0.274653 from below, which is the direction that makes it a
+floor: every finite area gives a number the limit exceeds, so the bound holds at every A and the
+limit is the strongest form of it.</p>
+<p class="note cool"><code>floor_density_limit</code> takes that ratio to its limit in Lean, and
+<code>floor_pos</code> is the one-line consequence the rest of the paper uses:
+<code>0 &lt; &frac14; ln 3</code>.</p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>What the floor is worth</h2>
+<p>&kappa;<sub>0</sub> carries no coupling and no lattice spacing. It came from counting cubes, and
+the cubes know nothing about &beta; or about how fine the lattice is. That is what makes it usable
+at every coupling at once, and what lets it survive the continuum limit unchanged.</p>
+<p>Two consequences the rest of the argument leans on.</p>
+<ul class="pieces">
+<li><strong>Confinement becomes one inequality.</strong> <code>F<sub>v</sub> = &mu; &minus;
+&kappa; &lt; 0</code> is implied by <strong>&mu; &lt; &kappa;<sub>0</sub></strong>, so the whole
+question is whether the measured tension stays under one fixed number. Unit D5b is that
+measurement, at both coupling ends and across the interior.</li>
+<li><strong>The gap inherits the surplus.</strong> The margin below the floor is what bounds the
+decay rate: <strong>&Delta; &ge; &kappa;<sub>0</sub> &minus; &mu;(&beta;)</strong>. The floor
+supplies the scale, and it supplies it dimension-free, so the bound holds as modes are added and as
+the spacing goes to zero.</li>
+</ul>
+<p>The same statement, written as a magnitude per step, reads as a ceiling: a rate of at least
+&kappa;<sub>0</sub> is a multiplier of at most:</p>
+<p class="formula">e<sup>&minus;&kappa;<sub>0</sub></sup> &nbsp;=&nbsp; 3<sup>&minus;&frac14;</sup>
+&nbsp;=&nbsp; <strong>0.7598</strong></p>
+<p class="note">That is the number the published tables are read against, and unit D5 is where they
+are read.</p>
+</section>
+
+<section class="slide" data-act="floor">
+<h2>The counting, end to end</h2>
+<ul class="pieces">
+<li><strong>Bound a hard count with an easy one.</strong> Closed vortex surfaces are hard to
+enumerate; the boundaries of directed cube-paths are a family inside them that counts itself.</li>
+<li><strong>Three choices, four plaquettes.</strong> Each cube added to a path offers three
+directions and adds four plaquettes of boundary area &mdash; six new faces less the two that stop
+being on the outside. Those two numbers are &kappa;<sub>0</sub>.</li>
+<li><strong>Injectivity is what makes it a count of surfaces.</strong> The coordinate sum orders the
+cubes, so the surface remembers its path, and 3<sup>n&minus;1</sup> paths give
+3<sup>n&minus;1</sup> surfaces.</li>
+<li><strong>The floor is geometry.</strong> No coupling, no spacing, no fit &mdash;
+&kappa;<sub>0</sub> = &frac14; ln 3 = 0.274653, the same number at every &beta; and every lattice
+spacing.</li>
+</ul>
+<p class="note">Everything on these slides was produced by enumerating the family: 2187 paths at
+n&nbsp;=&nbsp;8, each boundary built face by face, each area counted. The general statement is the
+theorem, and the Lean development carries it for every <em>n</em>.</p>
+<p class="note cool">Next: unit <strong>D5b</strong> measures &mu;(&beta;) against this floor
+&mdash; the Osterwalder&ndash;Seiler bound at strong coupling, the free-field plateau at weak
+coupling, and the interior in between.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-floor-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-floor-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

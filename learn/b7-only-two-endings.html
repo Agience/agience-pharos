@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Only Two Endings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson B7 &middot; the two fates of a finite decay</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+.ends { font-variant-numeric: tabular-nums; }
+.ends td.flat { background: rgba(64,200,120,.16); font-weight: 600; }
+</style>
+<section class="slide on" data-act="endings">
+<h1>Only Two Endings</h1>
+<p class="lede">Build a decay out of a <strong>finite</strong> number of pieces, where each piece
+keeps its own fixed fraction of itself at every step. Two endings are available to that decay, and
+this unit measures both of them to nine decimals.</p>
+<p class="formula">C(&tau;) = P<sub>1</sub>m<sub>1</sub><sup>&tau;</sup> +
+P<sub>2</sub>m<sub>2</sub><sup>&tau;</sup> + &hellip; + P<sub>F</sub>m<sub>F</sub><sup>&tau;</sup></p>
+<p><strong>Reading it.</strong> <strong>&tau;</strong>, said <em>tau</em>, counts steps.
+<strong>m</strong> is the fraction one piece keeps each step, and <strong>P</strong> is how big that
+piece started. A piece with m = 0.9 keeps 0.9 of itself after one step and
+<strong>0.81</strong> after two.</p>
+<table class="tab ends"><thead><tr><th>if the largest m is&hellip;</th><th>then the decay&hellip;</th>
+<th>measured here</th></tr></thead><tbody>
+<tr><td>under 1</td><td>falls by a fixed fraction every step, forever</td>
+<td class="hit"><strong>0.951926843</strong> per step</td></tr>
+<tr class="hi"><td>exactly 1</td><td>settles on that piece and stays there</td>
+<td class="hit"><strong>0.700000000000</strong></td></tr>
+</tbody></table>
+<p><strong>Those are the two.</strong> The third shape anyone might reach for &mdash; a slow slide
+where the decay falls by half over each <em>doubling</em> of &tau; &mdash; is measured on the fourth
+slide, and the measurement shows what it costs.</p>
+<p class="note cool">Unit <strong>B6</strong> measured the constant that turns a read width into a
+gap. This one measures where a gap comes from. Both are one step of the same argument, and the
+<strong>D5</strong> units that come later will use them together.</p>
+</section>
+
+<section class="slide" data-act="endings">
+<h2>Ending one: every piece under one</h2>
+<p>Six pieces, the largest keeping <strong>0.951927257</strong> of itself each step. Add them up and watch
+what fraction the whole sum keeps from one step to the next:</p>
+<table class="tab ends"><thead><tr><th>&tau;</th><th>C(&tau;)</th>
+<th>C(&tau;+1) &divide; C(&tau;)</th></tr></thead><tbody>
+<tr><td>100</td><td>1.038719e-02</td><td class="hit"><strong>0.950017537</strong></td></tr><tr><td>500</td><td>1.859954e-11</td><td class="hit"><strong>0.951492213</strong></td></tr><tr><td>1000</td><td>3.398900e-22</td><td class="hit"><strong>0.951881900</strong></td></tr><tr><td>2000</td><td>1.351174e-43</td><td class="hit"><strong>0.951926843</strong></td></tr>
+</tbody></table>
+<p><strong>The sum ends up keeping exactly what its largest piece keeps</strong> &mdash;
+0.951926843 against 0.951927257, agreeing to <strong>7 digits</strong>. The five smaller pieces shrink faster, so
+by &tau; = 2000 they have gone from the total and the largest one is what is left.</p>
+<p class="formula">rate = &minus;log(0.951927257) = <strong>0.04926666</strong> per step</p>
+<p><strong>That rate is the gap.</strong> A decay that falls by a fixed fraction every step has a
+single number describing it, and every finite sum whose pieces all sit under 1 arrives here. The
+size of the gap is set by the <em>largest</em> piece, and the rest of the sum decides how long it
+takes to show.</p>
+<p class="note">The six pieces run from 0.800974 to 0.951927257. Sums with a wider spread settle sooner, and
+sums whose top two pieces sit close together take longer &mdash; the arithmetic is the same and the
+&tau; at which it is visible moves.</p>
+</section>
+
+<section class="slide" data-act="endings">
+<h2>Ending two: one piece at exactly one</h2>
+<p>Now add a seventh piece that keeps <strong>all</strong> of itself every step &mdash; m = 1 &mdash;
+and give it a weight of <strong>0.7</strong>. Everything else is as before:</p>
+<table class="tab ends"><thead><tr><th>&tau;</th><th>C(&tau;)</th></tr></thead><tbody>
+<tr><td>100</td><td class="hit"><strong>0.710387191190</strong></td></tr><tr class="hi"><td>1000</td><td class="hit"><strong>0.700000000000</strong></td></tr><tr class="hi"><td>2000</td><td class="hit"><strong>0.700000000000</strong></td></tr><tr class="hi"><td>3999</td><td class="hit"><strong>0.700000000000</strong></td></tr>
+</tbody></table>
+<p><strong>0.700000000000, and it holds there.</strong> The six shrinking pieces fade out as before, and what
+remains is the piece that keeps everything: its weight, exactly, for as long as anyone cares to
+look.</p>
+<p><strong>This is the gapless ending.</strong> A piece at m = 1 carries content that survives every
+step, so the correlation reaches out to any distance at full strength. In the physics this unit
+serves, that is a <strong>massless mode</strong>, and its reach is what makes it one.</p>
+<p class="note cool">The two endings are settled by one comparison: <strong>is the largest m below
+1, or at 1?</strong> Below 1 gives a rate. At 1 gives a floor. A finite sum of these pieces arrives
+at one of the two.</p>
+</section>
+
+<section class="slide" data-act="endings">
+<h2>The shape in between</h2>
+<p>The third shape is a <strong>power law</strong>: the decay falls by a fixed fraction over each
+<em>doubling</em> of &tau;, so it stays alive far longer than a fixed fraction per step. Measure
+both shapes two ways &mdash; how fast each falls <strong>per step</strong>, and how fast each falls
+<strong>per doubling</strong>:</p>
+<table class="tab ends"><thead><tr><th>shape</th><th>&tau;</th><th>per doubling</th>
+<th>per step</th></tr></thead><tbody>
+<tr><td>a power law, &tau;<sup>&minus;2</sup></td><td>200</td><td class="flat">-2.000000</td><td>-0.00995033</td></tr><tr><td>a power law, &tau;<sup>&minus;2</sup></td><td>800</td><td class="flat">-2.000000</td><td>-0.00249688</td></tr><tr><td>a power law, &tau;<sup>&minus;2</sup></td><td>3200</td><td class="flat">-2.000000</td><td>-0.00062480</td></tr>
+<tr class="hi"><td>the finite sum</td><td>200</td><td>-10.1927</td><td class="flat">-0.05071039</td></tr><tr class="hi"><td>the finite sum</td><td>800</td><td>-39.5591</td><td class="flat">-0.04938716</td></tr><tr class="hi"><td>the finite sum</td><td>3200</td><td>-157.7026</td><td class="flat">-0.04926666</td></tr>
+</tbody></table>
+<p><strong>Each shape holds one column still, and the green cells are those columns.</strong> The
+power law keeps <strong>-2.000000</strong> per doubling at every &tau;. The finite sum keeps
+<strong>-0.04926666</strong> per step at every &tau;, which is the rate the second slide measured.</p>
+<p><strong>The other column tells the same story from the other side.</strong> The finite sum's
+per-doubling figure runs 10.2, 39.6, 157.7 &mdash; it grows with &tau; and keeps growing. Holding
+that column still across all &tau; is what a power law requires, and a sum of finitely many pieces
+produces the growing column every time.</p>
+<p class="note">This is the step the mass-gap argument turns on. A theory with no gap needs the
+power law. The power law needs a column that a finite sum sends off to infinity, so a finite
+instrument reading a finite record lands on one of the two endings above.</p>
+</section>
+
+<section class="slide" data-act="endings">
+<h2>The test, on a record with a known answer</h2>
+<p>Two flat columns make a <strong>test</strong>: measure both slopes on a record, and whichever
+holds still says which shape the record has. Run it first where the answer was put in by hand
+&mdash; a record built so that it falls at <strong>0.05</strong> per step:</p>
+<table class="tab ends"><thead><tr><th>lag</th><th>C</th><th>per step</th>
+<th>per doubling</th></tr></thead><tbody>
+<tr><td>10</td><td>0.604423</td><td class="hit"><strong>-0.050851</strong></td><td>-0.5068</td></tr><tr><td>20</td><td>0.359200</td><td class="hit"><strong>-0.052881</strong></td><td>-1.0567</td></tr><tr><td>40</td><td>0.125126</td><td class="hit"><strong>-0.050717</strong></td><td>-2.0282</td></tr>
+</tbody></table>
+<p><strong>The per-step column returns the rate that was built in</strong> &mdash; 0.05, read as
+-0.050851, -0.052881 and -0.050717, a worst miss of <strong>0.002881</strong>. The per-doubling column doubles as the
+lag doubles, which is the growing column from the previous slide seen on real data.</p>
+<p><strong>Where the read stops working, measured.</strong> At lag <strong>80</strong> the
+correlation has fallen to <strong>0.008030</strong>, and the per-step slope reads
+<strong>-0.117203</strong> against the 0.05 that was planted. A correlation that small carries mostly the
+record's own scatter, so the reading widens. Unit <strong>A13</strong> measures exactly how much of
+a decay is that scatter, and it is the reading to take alongside this one.</p>
+<p class="note cool">The usable range is the part of the curve where C is still large enough to
+carry the signal, and the honest way to find it is to build a record whose answer is known and see
+where the test stops returning it. That is what this slide is.</p>
+</section>
+
+<section class="slide" data-act="endings">
+<h2>The test on real ground</h2>
+<p>The terrain grid of unit <strong>E3</strong>: 344 by 403 elevation readings taken off a real
+hillside and measured as found. Both slopes, over lags 6 to 30:</p>
+<table class="tab ends"><thead><tr><th>lag</th><th>C</th><th>per step</th>
+<th>per doubling</th></tr></thead><tbody>
+<tr><td>6</td><td>0.783050</td><td class="hit"><strong>-0.055102</strong></td><td>-0.3275</td></tr><tr><td>12</td><td>0.566908</td><td class="hit"><strong>-0.051041</strong></td><td>-0.6111</td></tr><tr><td>18</td><td>0.427190</td><td class="hit"><strong>-0.042437</strong></td><td>-0.7631</td></tr><tr><td>24</td><td>0.340650</td><td class="hit"><strong>-0.034303</strong></td><td>-0.8228</td></tr><tr><td>30</td><td>0.275393</td><td class="hit"><strong>-0.036657</strong></td><td>-1.0993</td></tr>
+</tbody></table>
+<p><strong>The per-step column holds within a factor of 1.606 across that range</strong>
+(-0.034303 to -0.055102). The per-doubling column spreads by <strong>3.356</strong> over the same lags
+(-0.3275 to -1.0993) and grows steadily with the lag.</p>
+<p><strong>So the per-step reading is the steadier of the two, by 2.09 times</strong>, which places
+this hillside with the first ending: a decay that falls by a fixed fraction per step, at a rate
+reading between 0.034 and 0.055 across these lags. The elevation of two points a fixed distance apart is related by a fixed factor, whatever
+part of the hill they sit on.</p>
+<p class="note">A factor of 1.606 is a real spread and it is reported as one. The built record on the
+previous slide held its column to a worst miss of 0.002881, which is what a clean single-piece decay
+looks like; this hillside sits looser than that and still separates clearly from the growing
+column beside it.</p>
+</section>
+
+<section class="slide" data-act="endings">
+<h2>What this settles</h2>
+<table class="tab ends"><thead><tr><th>the largest piece</th><th>the decay</th><th>the reading</th>
+<th>the physics</th></tr></thead><tbody>
+<tr><td>under 1</td><td>a fixed fraction per step</td>
+<td class="hit"><strong>0.04926666</strong></td><td>a gap this size</td></tr>
+<tr class="hi"><td>exactly 1</td><td>settles and holds</td>
+<td class="hit"><strong>0.700000000000</strong></td><td>a massless mode</td></tr>
+<tr><td>infinitely many</td><td>a fixed fraction per doubling</td>
+<td class="hit"><strong>2.000000</strong></td><td>a gapless continuum</td></tr>
+</tbody></table>
+<p><strong>The argument in one line.</strong> An instrument that reads a finite record sees finitely
+many pieces. Finitely many pieces give one of the first two rows. The third row is the one a gapless
+theory needs, and reaching it takes a number of pieces that a finite screen has no room for.</p>
+<p><strong>What a reader can do with this.</strong> Take any record, form its decay, and measure
+both slopes across a range where C is still large. Whichever column holds still names the shape, and
+if the per-step column is the steady one, that reading <em>is</em> the rate. Unit <strong>B6</strong>
+supplies the constant that turns a rate into a stated gap, and unit <strong>D5c</strong> comes later
+to run both on a real field.</p>
+<p class="note cool">Every number on the first four slides is arithmetic on a sum written by hand,
+so they carry as many digits as anyone cares to print. The fifth and sixth slides run the same test
+on records, where the answer arrives with a width, and both slides report that width.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-endings-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-endings-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

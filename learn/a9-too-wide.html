@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Too Wide to Read at Once</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson twenty-one &middot; the sweep</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab td:last-child,table.tab th:last-child{text-align:left}
+table.tab td.hit{color:var(--amber); font-weight:600}
+ul.pieces{line-height:1.85}
+</style><section class="slide on">
+<h1>Too Wide to<br>Read at Once</h1>
+<p class="lede">Every record so far has been small enough to hand over whole. Real fields run far
+wider: a radio capture, a wide sensor array, a spectrogram of a long recording.</p>
+<p>The obvious response is to feed the whole thing in and wait longer. That costs more time, and on a
+signal occupying a small part of the width it also returns a <strong>wrong answer</strong>. This
+unit measures how wrong.</p>
+<p class="note">One faint band, 40 columns wide. The field around it grows from 2,048 to 32,768 columns and
+the signal is never touched.</p>
+</section>
+
+<section class="slide">
+<h2>The same signal, drowning</h2>
+<svg class="fig-bars" viewBox="0 0 520 122" width="520" height="122" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">reading the whole width at once</text><rect x="100.4" y="28" width="357.6" height="21" fill="var(--teal,#20635f)" opacity="0.45"/><text x="92.4" y="43.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">2,048 columns</text><text x="464.0" y="43.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">+14.326</text><rect x="100.4" y="58" width="143.1" height="21" fill="var(--teal,#20635f)" opacity="0.45"/><text x="92.4" y="73.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">8,192 columns</text><text x="464.0" y="73.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">+5.732</text><rect x="100.4" y="88" width="11.1" height="21" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="92.4" y="103.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">32,768 columns</text><text x="464.0" y="103.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">+0.445</text><line x1="150.3" y1="24" x2="150.3" y2="114" stroke="var(--ink,#1b1d22)" stroke-width="1.3" stroke-dasharray="5 3"/><text x="150.3" y="20.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="10" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="middle" opacity="0.8">z = 2</text></svg>
+<table class="tab"><thead><tr><th>field width</th><th>patches</th><th>whole-field z</th>
+<th>verdict</th></tr></thead><tbody><tr><td>2,048</td><td>2</td><td class=''>+14.326</td><td>found</td></tr><tr><td>8,192</td><td>8</td><td class=''>+5.732</td><td>found</td></tr><tr><td>32,768</td><td>32</td><td class='hit'>+0.445</td><td><strong>nothing</strong></td></tr></tbody></table>
+<p>Nothing about the signal changed between those rows. Same 40 columns, same strength, same shape.
+Only the amount of <em>unrelated</em> data around it grew.</p>
+<p class="warn">At 32,768 columns the read is <strong>+0.445</strong> &mdash; indistinguishable from
+nothing. The signal is still there, exactly as strong as it was when the same read returned
+<strong>+14.33</strong>. It has simply been averaged against 32,728 columns of noise.</p>
+<p class="note">This is the ordinary arithmetic of averaging. A read over the full width asks
+&ldquo;is this <em>field</em> ordered?&rdquo;, and across a field that is almost all empty the
+answer is no.</p>
+</section>
+
+<section class="slide">
+<h2>So do not read it all at once</h2>
+<p>Fix the aperture at a width the instrument reads comfortably &mdash; here
+<strong>1,024</strong> columns &mdash; and slide it across the field. Each position is its own small
+read. Nothing is ever decomposed at full width.</p>
+<p>The gate on each patch is <strong>coherence</strong>, the read from unit A4: <em>does this patch
+have any order in it at all?</em> Patches that answer no are dropped without further work; the
+expensive part runs only where there is something to look at.</p>
+<table class="tab"><thead><tr><th>field width</th><th>whole-field z</th><th>bands found</th>
+<th>where</th></tr></thead><tbody><tr><td>2,048</td><td>+14.326</td><td class='hit'>1</td><td>columns 0&ndash;1,024</td></tr><tr><td>8,192</td><td>+5.732</td><td class='hit'>1</td><td>columns 0&ndash;1,024</td></tr><tr><td>32,768</td><td>+0.445</td><td class='hit'>1</td><td>columns 0&ndash;1,024</td></tr></tbody></table>
+<p><strong>Found in all three, in the same place</strong>, including the field where reading the
+whole width returned nothing at all.</p>
+<p class="note">The band is reported as the patch that contained it, not to the column &mdash; the
+aperture is 1,024 wide, so that is the resolution the answer has. An answer more precise than the
+instrument would be an invention.</p>
+</section>
+
+<section class="slide">
+<h2>The cost of asking many times</h2>
+<p>There is a catch in sliding an aperture, and it has nothing to do with signals. A level like
+<em>&ldquo;call it real above z = 1.64&rdquo;</em> is chosen so that a question asked <strong>once
+</strong> is wrong about one time in twenty.</p>
+<p>A sweep across 32 patches asks that question <strong>32 times</strong>. On a field containing
+absolutely nothing, it should therefore be wrong about <strong>1.6</strong> times per field
+&mdash; which is what one-in-twenty means when you ask twenty-odd times.</p>
+<p>So it was asked of pure noise, <strong>384 times</strong> &mdash; 12 empty fields at 32 patches
+each, because a rate read off four fields is a number with a spread nobody printed:</p>
+<table class="tab"><thead><tr><th></th><th>at the single-question level</th>
+<th>at the swept level</th></tr></thead><tbody>
+<tr><td>questions asked of nothing</td><td>384</td><td>384</td></tr>
+<tr><td>times it said something was there</td><td class="hit">24</td><td>0</td></tr>
+<tr><td>per question</td><td class="hit">0.0625</td><td>0.0000</td></tr>
+<tr><td>per field, across the 12</td><td class="hit">0 to 4</td><td>0.00</td></tr>
+</tbody></table>
+<p class="warn">One question in twenty is <strong>0.0500</strong>. Measured over 384 of them, the
+single-question level fires at <strong>0.0625</strong> &mdash; <strong>more often than nominal, not
+less</strong>. The library predicts that in its own docstring: the coherence z's permutation
+distribution is <em>&ldquo;mildly right-skewed at small N, so the one-sided normal tail is
+approached&rdquo;</em>. A right-skewed null puts more weight in the upper tail than the normal curve
+does, so a threshold read off the normal curve is crossed more often than the number on it says.</p>
+<p class="note">Twelve empty fields is what it takes to read this rate. Four fields give 0.0938 per
+question, half again what twelve give, and 3.0 false bands per field against an expected 1.6
+&mdash; a spread wide enough to move the conclusion. <strong>The number of fields is part of the
+measurement</strong>, and it belongs beside the rate wherever the rate is quoted.</p>
+<p>The library raises its own level to <strong>z = 2.96</strong> by default &mdash; derived from the
+patch count, not chosen &mdash; and finds <strong>0</strong> in 12 empty fields.</p>
+<p class="warn">This is unit A7 again, from a new direction. There, what counted as
+&ldquo;nothing&rdquo; depended on what you destroyed. Here it depends on <strong>how many times you
+ask</strong>. Both change the null, and the data stays exactly as it was.</p>
+</section>
+
+<section class="slide">
+<h2>A finite aperture is what makes a read mean anything</h2>
+<p>An aperture is finite, and that is what makes a read mean something: it fixes the question to a
+bounded region. A read over an unbounded field answers a much broader question &mdash; <em>is
+everything, taken together, ordered?</em> &mdash; and on a field that is mostly empty the answer is
+no.</p>
+<ul class="pieces">
+<li><strong>Width dilutes.</strong> The same band read +14.33 at 2,048 columns and +0.445 at 32,768. Nothing
+about it changed.</li>
+<li><strong>Fix the aperture and move it.</strong> Each read stays bounded however large the field
+grows, and a cheap gate decides where the expensive read runs.</li>
+<li><strong>Asking many times changes what nothing looks like.</strong> A level for one question
+fires on about one patch in twenty of an empty field, and the sweep raises its own level to match
+the number of patches it asks about.</li>
+<li><strong>Report at the resolution you have.</strong> The answer is a patch, not a column.</li>
+</ul>
+<p class="note">Which is nine reads of the instrument on its own terms: how to organise a record,
+what to read off it, whether it is ordered at all, what it does along its axis, what to do when it
+has no numbers, when two of them meet, what &ldquo;nothing&rdquo; means, what to do with a third
+axis, and now what to do when it is simply too big. <strong>Unit A10</strong> closes the track with
+the question underneath all of them &mdash; how much record any of these reads needs before its
+answer means anything.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-sweep-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-sweep-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

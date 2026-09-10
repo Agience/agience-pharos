@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reading a Jacobian Lens</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ink:#0B1020; --bone:#F7F8FB;
+  --bg:var(--bone); --fg:#141A2A; --mut:#5C6780; --line:#DDE2EC; --panel:#FFFFFF;
+  --grid:#E6EAF2; --accent:#C4832A; --ok:#2F8A8E; --bad:#B14A41;
+  --shadow:0 1px 2px rgba(11,16,32,.06),0 8px 24px rgba(11,16,32,.05);
+  --display:"Fraunces",Georgia,serif; --body:"Public Sans",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:var(--ink); --fg:#E8ECF5; --mut:#8E9AB5; --line:#242C42; --panel:#131A2E;
+  --grid:#1E2740; --accent:#F0B45C; --ok:#5CC9CD; --bad:#E0776D;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --bg:var(--ink); --fg:#E8ECF5; --mut:#8E9AB5; --line:#242C42; --panel:#131A2E;
+  --grid:#1E2740; --accent:#F0B45C; --ok:#5CC9CD; --bad:#E0776D;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.65 var(--body);
+     -webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:64px 28px 96px;display:flex;
+      flex-direction:column;gap:44px}
+header{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font:600 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;
+         color:var(--accent)}
+h1{font:600 clamp(34px,5.2vw,54px)/1.06 var(--display);margin:0;text-wrap:balance;
+   font-variation-settings:"opsz" 144}
+.stand{font-size:19px;color:var(--mut);max-width:66ch;margin:0}
+.meta{font:400 13px/1.5 var(--mono);color:var(--mut);display:flex;gap:20px;flex-wrap:wrap}
+h2{font:600 clamp(21px,2.6vw,27px)/1.2 var(--display);margin:0;text-wrap:balance;
+   font-variation-settings:"opsz" 60}
+h3{font:600 15px/1.35 var(--body);margin:0}
+section{display:flex;flex-direction:column;gap:15px}
+p{margin:0;max-width:68ch}
+.lede{font-size:17.5px}
+.chip{display:inline-flex;align-items:center;font:600 10.5px/1 var(--mono);letter-spacing:.1em;
+  text-transform:uppercase;padding:5px 9px;border-radius:3px;border:1px solid currentColor}
+.chip.ok{color:var(--ok)} .chip.bad{color:var(--bad)} .chip.mid{color:var(--mut)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:15px 16px;
+      box-shadow:var(--shadow);display:flex;flex-direction:column;gap:5px}
+.card .k{font:600 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+         color:var(--mut)}
+.card .v{font:600 27px/1.05 var(--display);font-variant-numeric:tabular-nums;
+         font-variation-settings:"opsz" 60}
+.card .s{font:400 12.5px/1.45 var(--body);color:var(--mut)}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;
+       padding:18px 16px 12px;box-shadow:var(--shadow);overflow-x:auto}
+figcaption{font-size:13px;color:var(--mut);margin-top:10px;max-width:70ch}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font:400 12px/1.6 var(--mono);color:var(--mut);
+        margin-bottom:10px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;
+          vertical-align:middle}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--panel);
+    box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font:400 13px/1.5 var(--mono);
+      font-variant-numeric:tabular-nums}
+th,td{padding:9px 13px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--mut);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+th:first-child,td:first-child{text-align:left}
+tbody tr:last-child td{border-bottom:none}
+.note{border-left:3px solid var(--bad);padding:15px 19px;background:var(--panel);
+      border-radius:0 6px 6px 0;box-shadow:var(--shadow);display:flex;flex-direction:column;
+      gap:9px}
+.note.good{border-left-color:var(--ok)}
+.note h3{font:600 11px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;
+         color:var(--bad)}
+.note.good h3{color:var(--ok)}
+code{font:400 13.5px/1.4 var(--mono);background:var(--grid);padding:1px 5px;border-radius:3px}
+hr{border:none;border-top:1px solid var(--line);margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Measurement report &middot; 22 August 2026</div>
+  <h1>Reading a Jacobian lens as an optical lens</h1>
+  <p class="stand">Six language models, four families, widths 512&ndash;2560. What a corpus-averaged
+     transport carries, how much of a residual stream it spans, and where two models can be
+     made to meet.</p>
+  <div class="meta"><span>entroptics &times; anthropics/jacobian-lens</span>
+    <span>117 tests passing</span><span>4 validation checks passing</span></div>
+</header>
+
+<section>
+  <h2>What was asked</h2>
+  <p class="lede">The Jacobian lens transports a residual-stream vector into the final-layer
+    basis and decodes it with the model&rsquo;s unembedding. On that readout Anthropic identify a
+    global workspace holding &ldquo;on the order of tens&rdquo; of concepts and occupying
+    6&ndash;10% of activation variance &mdash; both obtained through a sparse decomposition and a
+    chosen activity threshold.</p>
+  <p>Entroptics reads a signal as a finite optical aperture whose resolution its own entropy
+    fixes. Everything below is measured from published lens files and residual streams, with no
+    fitted constant and every read scored against a null.</p>
+</section>
+
+<section>
+  <h2>Three findings about the transport itself</h2>
+  <div class="cards">
+    <div class="card"><div class="k">Identity core</div><div class="v">79%</div>
+      <div class="s">of &Vert;J&Vert;&sup2; is pass-through by the last layers. A spectral floor
+      reads that flat block as its bulk.</div></div>
+    <div class="card"><div class="k">Fit agreement</div><div class="v">0.9993</div>
+      <div class="s">between two independent published fits &mdash; averaging removed the noise,
+      so the spectrum has no bulk whose edge could be found.</div></div>
+    <div class="card"><div class="k">Generation gap</div><div class="v">12.1&times;</div>
+      <div class="s">between Qwen3 and Qwen3.5 in peak effective rank. Generation dominates
+      size.</div></div>
+  </div>
+  <p>A residual stream adds <code>h</code> to everything downstream, so the transport tends to
+    the identity with depth. Removing it is an orthogonal projection onto span(I) &mdash; exact, rather than a
+    fit &mdash; and it is a precondition for every other read: without it the depth trend
+    inverts entirely.</p>
+</section>
+
+<section>
+  <h2>Effective rank across depth</h2>
+  <figure>
+    <div class="legend" id="lg-depth"></div>
+    <div id="fig-depth"></div>
+    <figcaption>Participation ratio of <b>J &minus; &alpha;I</b> against relative depth, nine
+      models, log scale. Threshold-free &mdash; no false-alarm level, no fitted constant. The
+      interior band is absent below ~300M and present by 0.8B; its height tracks family and
+      generation rather than size.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>How much of a stream a readout spans</h2>
+  <p class="lede">Coverage is a subspace overlap: how much of the signal&rsquo;s resolved
+    subspace the readout actually reaches. It is scored against an analytic null, because a
+    small readout in a wide space covers something by chance alone and that share has to be
+    subtracted before anything is claimed.</p>
+  <div class="cards">
+    <div class="card"><div class="k">Coverage</div>
+      <div class="v">&Vert;V<sub>s</sub><sup>T</sup>V<sub>t</sub>&Vert;&sup2; / k<sub>s</sub></div>
+      <div class="s">squared canonical correlations, in [0,1]</div></div>
+    <div class="card"><div class="k">Chance level</div><div class="v">k<sub>t</sub> / d</div>
+      <div class="s">what a random readout of the same size covers</div></div>
+    <div class="card"><div class="k">At d = 768</div><div class="v">2.6%</div>
+      <div class="s">chance coverage for a ~20-direction readout &mdash; so ~97%
+      &ldquo;outside&rdquo; is free</div></div>
+  </div>
+  <figure>
+    <div class="legend" id="lg-cov"></div>
+    <div id="fig-cov"></div>
+    <figcaption>Coverage of the residual stream&rsquo;s resolved subspace by the transport&rsquo;s
+      identity-free part <b>M = J &minus; &alpha;I</b>, by a random rank-<i>K</i> matrix, and the
+      analytic chance level. gpt2, eight 128-token wikitext&#8209;2 <code>test</code> sequences, log
+      scale. The real transport separates from both at every layer.</figcaption>
+  </figure>
+  <div class="note good">
+    <h3>Result</h3>
+    <p>The transport covers <b>14% &rarr; 38%</b> of the stream&rsquo;s resolved subspace,
+      rising with depth, at <b>17&ndash;73&times; the null</b>. A random rank-<i>K</i> matrix sits
+      at <b>0.9&ndash;1.1&times;</b> chance across every layer, so the separation is a property of
+      this transport rather than of the geometry &mdash; which is the check the retracted
+      complement read failed.</p>
+    <p><b>Read on M, not on J.</b> The transport acquires an identity core with depth
+      (<i>J</i> &rarr; &alpha;<i>I</i>), and an identity covers everything trivially: on raw
+      <i>J</i> this curve climbs to 72% at the last layer, measuring identity dominance rather than
+      what the readout carries. Removing it is an orthogonal projection, not a fit.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The &eacute;tendue ceiling</h2>
+  <figure>
+    <div class="legend" id="lg-et"></div>
+    <div id="fig-et"></div>
+    <figcaption>&Eacute;tendue match &mdash; the ratio of the two sides&rsquo; phase space,
+      bounding how many directions the transport can carry at all, before any data. Curves whose
+      maximum sits at relative depth 0 are strictly monotone: no interior band. The interior peak
+      tracks the transport&rsquo;s own effective rank, across Qwen, Gemma and
+      GPT-2/NeoX.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Two models of different size, meeting</h2>
+  <p class="lede">A screen lets the two sides keep their own native bases. Each side has its
+    own conversion into a shared one, and the only requirement is that the conversion be the
+    system&rsquo;s own rather than a fitted alignment. That is what lets models of different width
+    interoperate at all.</p>
+  <p>Qwen3.5-0.8B and Qwen3.5-4B are 1024 and 2560 wide. Each enters through its own Jacobian and
+    its own readout, which lands both in the token basis their tokenizers already share &mdash;
+    all 248,077 ids identical. Nothing is trained to make this work: the conversions are the ones
+    the models already have. Restricting to <b>4096 tokens carrying 94.4%</b> of both sides&rsquo;
+    output mass is the scaling lever, taking the shared basis down by 60&times; while keeping
+    almost all the signal.</p>
+  <figure>
+    <div class="legend" id="lg-cx"></div>
+    <div id="fig-cx"></div>
+    <figcaption>Measured coupling between the two models against relative depth, scored with the
+      signed exact-permutation null. Agreement rises monotonically, 0.37 at the embedding to 0.69
+      at the last layer.</figcaption>
+  </figure>
+  <div class="tw"><table>
+    <thead><tr><th>A layer</th><th>B layer</th><th>pairing</th><th>coupling</th><th>z</th></tr></thead>
+    <tbody>
+      <tr><td>5</td><td>7</td><td>matched</td><td>0.460</td><td>58.0</td></tr>
+      <tr><td>5</td><td>30</td><td>mismatched</td><td>0.253</td><td>30.2</td></tr>
+      <tr><td>11</td><td>15</td><td>matched</td><td>0.514</td><td>53.2</td></tr>
+      <tr><td>11</td><td>0</td><td>mismatched</td><td>0.300</td><td>46.6</td></tr>
+      <tr><td>18</td><td>25</td><td>matched</td><td>0.605</td><td>57.6</td></tr>
+      <tr><td>18</td><td>2</td><td>mismatched</td><td>0.228</td><td>32.0</td></tr>
+    </tbody></table></div>
+  <div class="note good">
+    <h3>Control passed</h3>
+    <p>The permutation null shuffles rows, so it tests position alignment &mdash; leaving open whether the
+      <em>level</em> of coupling is layer-specific rather than shared token statistics. Two logit
+      frames over one vocabulary agree on word frequency whatever layer they came from.</p>
+    <p>Coupling A&rsquo;s layer against B&rsquo;s <em>wrong</em> layer halves it, at every depth:
+      <b>0.46 against 0.25</b>, <b>0.51 against 0.30</b>, <b>0.61 against 0.23</b>. Column-centring
+      changes the numbers not at all, so the per-token mean was never in them. The crossing
+      measures layer-specific agreement.</p>
+  </div>
+</section>
+
+<hr>
+
+<section>
+  <h2>How far the linearisation actually carries</h2>
+  <p class="lede">Two corrections are needed before the transport can be scored against the
+    model&rsquo;s own final residual. It is a first-order expansion, so its prediction is
+    <b>affine</b> and carries an offset. And its target is the <b>pre-norm</b> residual &mdash;
+    <code>hidden_states[-1]</code> arrives with the final norm already applied, at mean per-token
+    norm 156.1 against 52.1 for its neighbour, while <i>J</i> maps into the un-normalised stream.
+    RMSNorm is invertible up to per-token scale, so the right target is recoverable exactly as a
+    direction, and direction is what fixes the logits anyway.</p>
+  <figure>
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" role="img" aria-label="explained variance of the transport against relative depth">
+<line x1="58" y1="274.0" x2="694" y2="274.0" stroke="#1E2740"/>
+<text x="49" y="277.5" text-anchor="end" fill="#7C86A0">0.00</text>
+<line x1="58" y1="210.5" x2="694" y2="210.5" stroke="#1E2740"/>
+<text x="49" y="214.0" text-anchor="end" fill="#7C86A0">0.25</text>
+<line x1="58" y1="147.0" x2="694" y2="147.0" stroke="#1E2740"/>
+<text x="49" y="150.5" text-anchor="end" fill="#7C86A0">0.50</text>
+<line x1="58" y1="83.5" x2="694" y2="83.5" stroke="#1E2740"/>
+<text x="49" y="87.0" text-anchor="end" fill="#7C86A0">0.75</text>
+<line x1="58" y1="20.0" x2="694" y2="20.0" stroke="#1E2740"/>
+<text x="49" y="23.5" text-anchor="end" fill="#7C86A0">1.00</text>
+<text x="58.0" y="290" text-anchor="middle" fill="#7C86A0">0.00</text>
+<text x="217.0" y="290" text-anchor="middle" fill="#7C86A0">0.25</text>
+<text x="376.0" y="290" text-anchor="middle" fill="#7C86A0">0.50</text>
+<text x="535.0" y="290" text-anchor="middle" fill="#7C86A0">0.75</text>
+<text x="694.0" y="290" text-anchor="middle" fill="#7C86A0">1.00</text>
+<line x1="58" y1="147.0" x2="694" y2="147.0" stroke="#E0776D" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="66" y="141.0" fill="#E0776D">half the variance</text>
+<path d="M58.0,274.0 L58.0,272.5 L79.2,272.1 L100.4,271.6 L121.6,270.1 L142.8,269.3 L164.0,267.4 L185.2,264.9 L206.4,263.8 L227.6,262.0 L248.8,260.7 L270.0,259.1 L291.2,257.9 L312.4,256.4 L333.6,254.7 L354.8,252.6 L376.0,250.0 L397.2,245.7 L418.4,238.1 L439.6,228.9 L460.8,217.6 L482.0,209.8 L503.2,202.7 L524.4,193.7 L545.6,183.5 L566.8,174.0 L588.0,165.7 L609.2,154.9 L630.4,132.2 L651.6,110.3 L672.8,86.8 L694.0,57.6 L694.0,274.0 Z" fill="#5CC9CD" fill-opacity="0.12"/>
+<path d="M58.0,272.5 L79.2,272.1 L100.4,271.6 L121.6,270.1 L142.8,269.3 L164.0,267.4 L185.2,264.9 L206.4,263.8 L227.6,262.0 L248.8,260.7 L270.0,259.1 L291.2,257.9 L312.4,256.4 L333.6,254.7 L354.8,252.6 L376.0,250.0 L397.2,245.7 L418.4,238.1 L439.6,228.9 L460.8,217.6 L482.0,209.8 L503.2,202.7 L524.4,193.7 L545.6,183.5 L566.8,174.0 L588.0,165.7 L609.2,154.9 L630.4,132.2 L651.6,110.3 L672.8,86.8 L694.0,57.6" fill="none" stroke="#5CC9CD" stroke-width="2.4"/>
+<circle cx="58.0" cy="272.5" r="3.0" fill="#5CC9CD"/>
+<circle cx="79.2" cy="272.1" r="3.0" fill="#5CC9CD"/>
+<circle cx="100.4" cy="271.6" r="3.0" fill="#5CC9CD"/>
+<circle cx="121.6" cy="270.1" r="3.0" fill="#5CC9CD"/>
+<circle cx="142.8" cy="269.3" r="3.0" fill="#5CC9CD"/>
+<circle cx="164.0" cy="267.4" r="3.0" fill="#5CC9CD"/>
+<circle cx="185.2" cy="264.9" r="3.0" fill="#5CC9CD"/>
+<circle cx="206.4" cy="263.8" r="3.0" fill="#5CC9CD"/>
+<circle cx="227.6" cy="262.0" r="3.0" fill="#5CC9CD"/>
+<circle cx="248.8" cy="260.7" r="3.0" fill="#5CC9CD"/>
+<circle cx="270.0" cy="259.1" r="3.0" fill="#5CC9CD"/>
+<circle cx="291.2" cy="257.9" r="3.0" fill="#5CC9CD"/>
+<circle cx="312.4" cy="256.4" r="3.0" fill="#5CC9CD"/>
+<circle cx="333.6" cy="254.7" r="3.0" fill="#5CC9CD"/>
+<circle cx="354.8" cy="252.6" r="3.0" fill="#5CC9CD"/>
+<circle cx="376.0" cy="250.0" r="3.0" fill="#5CC9CD"/>
+<circle cx="397.2" cy="245.7" r="3.0" fill="#5CC9CD"/>
+<circle cx="418.4" cy="238.1" r="3.0" fill="#5CC9CD"/>
+<circle cx="439.6" cy="228.9" r="3.0" fill="#5CC9CD"/>
+<circle cx="460.8" cy="217.6" r="3.0" fill="#5CC9CD"/>
+<circle cx="482.0" cy="209.8" r="3.0" fill="#5CC9CD"/>
+<circle cx="503.2" cy="202.7" r="3.0" fill="#5CC9CD"/>
+<circle cx="524.4" cy="193.7" r="3.0" fill="#5CC9CD"/>
+<circle cx="545.6" cy="183.5" r="3.0" fill="#5CC9CD"/>
+<circle cx="566.8" cy="174.0" r="3.0" fill="#5CC9CD"/>
+<circle cx="588.0" cy="165.7" r="3.0" fill="#5CC9CD"/>
+<circle cx="609.2" cy="154.9" r="3.0" fill="#5CC9CD"/>
+<circle cx="630.4" cy="132.2" r="3.0" fill="#5CC9CD"/>
+<circle cx="651.6" cy="110.3" r="3.0" fill="#5CC9CD"/>
+<circle cx="672.8" cy="86.8" r="3.0" fill="#5CC9CD"/>
+<circle cx="694.0" cy="57.6" r="3.0" fill="#5CC9CD"/>
+<line x1="72" y1="32" x2="92" y2="32" stroke="#5CC9CD" stroke-width="2.4"/>
+<text x="97" y="35.5" fill="#B6BECD">Qwen/Qwen3.5-4B (d=2560)</text>
+<path d="M58.0,267.4 L86.9,266.0 L115.8,264.4 L144.7,262.7 L173.6,260.5 L202.5,257.5 L231.5,254.7 L260.4,252.5 L289.3,250.5 L318.2,248.8 L347.1,246.3 L376.0,243.0 L404.9,236.6 L433.8,228.3 L462.7,213.0 L491.6,191.2 L520.5,175.1 L549.5,166.1 L578.4,152.2 L607.3,122.3 L636.2,104.1 L665.1,80.4 L694.0,56.4" fill="none" stroke="#F0B45C" stroke-width="2.4"/>
+<circle cx="58.0" cy="267.4" r="3.0" fill="#F0B45C"/>
+<circle cx="86.9" cy="266.0" r="3.0" fill="#F0B45C"/>
+<circle cx="115.8" cy="264.4" r="3.0" fill="#F0B45C"/>
+<circle cx="144.7" cy="262.7" r="3.0" fill="#F0B45C"/>
+<circle cx="173.6" cy="260.5" r="3.0" fill="#F0B45C"/>
+<circle cx="202.5" cy="257.5" r="3.0" fill="#F0B45C"/>
+<circle cx="231.5" cy="254.7" r="3.0" fill="#F0B45C"/>
+<circle cx="260.4" cy="252.5" r="3.0" fill="#F0B45C"/>
+<circle cx="289.3" cy="250.5" r="3.0" fill="#F0B45C"/>
+<circle cx="318.2" cy="248.8" r="3.0" fill="#F0B45C"/>
+<circle cx="347.1" cy="246.3" r="3.0" fill="#F0B45C"/>
+<circle cx="376.0" cy="243.0" r="3.0" fill="#F0B45C"/>
+<circle cx="404.9" cy="236.6" r="3.0" fill="#F0B45C"/>
+<circle cx="433.8" cy="228.3" r="3.0" fill="#F0B45C"/>
+<circle cx="462.7" cy="213.0" r="3.0" fill="#F0B45C"/>
+<circle cx="491.6" cy="191.2" r="3.0" fill="#F0B45C"/>
+<circle cx="520.5" cy="175.1" r="3.0" fill="#F0B45C"/>
+<circle cx="549.5" cy="166.1" r="3.0" fill="#F0B45C"/>
+<circle cx="578.4" cy="152.2" r="3.0" fill="#F0B45C"/>
+<circle cx="607.3" cy="122.3" r="3.0" fill="#F0B45C"/>
+<circle cx="636.2" cy="104.1" r="3.0" fill="#F0B45C"/>
+<circle cx="665.1" cy="80.4" r="3.0" fill="#F0B45C"/>
+<circle cx="694.0" cy="56.4" r="3.0" fill="#F0B45C"/>
+<line x1="72" y1="51" x2="92" y2="51" stroke="#F0B45C" stroke-width="2.4"/>
+<text x="97" y="54.5" fill="#B6BECD">Qwen/Qwen3.5-0.8B (d=1024)</text>
+<text x="58" y="312" fill="#7C86A0">relative depth</text>
+<text transform="translate(14,147.0) rotate(-90)" text-anchor="middle" fill="#7C86A0">explained variance of the final state</text>
+</svg>
+    <figcaption>Explained variance of the token-varying part &mdash; centred cos<sup>2</sup>
+      between the normalised transport and the model&rsquo;s own normalised final state, against
+      relative depth so the two models compare. 6 held-out wikitext&#8209;2 <code>test</code>
+      sequences each.</figcaption>
+  </figure>
+  <div class="note good">
+    <h3>The shape replicates at a second width</h3>
+    <p>A depth profile from one network describes that network. Qwen3.5&#8209;0.8B is the other
+      model in the catalogue with a published lens &mdash; <b>d = 1024</b> against 2560, 23 layers
+      against 31 &mdash; measured identically.</p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Qwen3.5&#8209;0.8B</th><th>Qwen3.5&#8209;4B</th></tr></thead>
+      <tbody>
+        <tr><td>mean cos<sup>2</sup>, first quarter of depth</td><td>0.043</td><td>0.020</td></tr>
+        <tr><td>crosses half the variance at</td><td>rel. depth 0.86</td><td>rel. depth 0.90</td></tr>
+        <tr><td>cos<sup>2</sup> at the last layer</td><td>0.857</td><td>0.852</td></tr>
+      </tbody></table></div>
+    <p>Crossing depth and endpoint agree closely across a 2.5&times; difference in width, and both
+      sit far below 5% through the first quarter of depth. The profile is a property of the method,
+      not of one network.</p>
+  </div>
+  <div class="note">
+    <h3>Under 5% at and below layer 8</h3>
+    <p>The curve is monotone and low for most of the network: <b>0.006</b> at layer 0,
+      <b>0.047</b> at layer 8, <b>0.111</b> at layer 16, crossing half only at relative depth 0.90
+      and reaching <b>0.852</b> at layer 30. Mean cos<sup>2</sup> over the first quarter of depth
+      is <b>0.020</b>. At the depths a lens is most wanted for &mdash; early and
+      middle, where the logit lens is known to fail &mdash; a shared mean-Jacobian transport
+      reproduces almost none of the token-to-token variation in the final residual.</p>
+    <p><b>The floor holds across every scoring; the ceiling moves with it.</b> Three scorings were tried &mdash; an
+      uncentred affine <i>R</i><sup>2</sup> against the post-norm frame, the raw product against
+      the recovered pre-norm direction, and the readout-space form above. Through layer 16 they
+      agree to within 0.003. At layer 30 they read 0.788, 0.691 and 0.852 &mdash; a spread of 0.16
+      driven entirely by scoring choice. The low reach at early and middle depth survives every
+      metric by two orders of magnitude and is quoted as a number; the saturation point moves with the
+      choice and is quoted as a range.</p>
+    <p><b>What fixes its scope.</b> It measures the <em>shared</em> Jacobian as one linear map
+      across tokens, while each <i>J</i> averages a per-token local linearisation; the two differ
+      by exactly the variation measured here. So a low cos<sup>2</sup> establishes one thing: the
+      transport reproduces little of the final state's token-varying part.</p>
+  </div>
+  <p>The same measurement orders the catalogue&rsquo;s two Qwen3.5&#8209;4B fits against
+    expectation: the <b>n = 417</b> fit is the better linearisation on 24 of 31 layers, unanimous
+    across all six streams on every layer from 6 upward. More fit data produced a worse
+    linearisation here.</p>
+  <div class="note">
+    <h3>Three explanations excluded, and the scope that remains</h3>
+    <p>Storage is identical &mdash; both files are 0.41 GB at the same shape and
+      dtype, differing only in the recorded <code>n_prompts</code>. The evaluation sequences come
+      from wikitext&#8209;2 <b>test</b> while a fit is conventionally taken on train, which
+      matters: a prompt inside both fit sets carries 1/417 of the smaller mean against 1/1000 of
+      the larger, and would hand the smaller fit a 2.4&times; advantage on it by construction. And
+      the ordering survives both targets and both statistics.</p>
+    <p>What remains is scope. One model, one corpus family, and the only fit pair the catalogue
+      publishes &mdash; a property of these two artefacts on held-out wikitext.</p>
+  </div>
+</section>
+
+<hr>
+
+<section>
+  <h2>How the measurement is checked</h2>
+  <p class="lede">Every number above is scored against a null. Four checks establish that the
+    reads fire on structure and not on chance, and the fourth states the size of the difference
+    the read can resolve.</p>
+  <div class="tw"><table>
+    <thead><tr><th>check</th><th>ground truth</th><th>result</th></tr></thead>
+    <tbody>
+      <tr><td>planted rank</td><td>a synthetic transport of known rank</td>
+          <td>exact above the BBP threshold; sub-threshold correctly not resolved</td></tr>
+      <tr><td>analytic coverage</td><td>a readout that is the signal&rsquo;s own top-<i>k</i> subspace</td>
+          <td>returns k / k<sub>signal</sub> to &plusmn;0.02</td></tr>
+      <tr><td>null separation</td><td>matched-spectrum and random rank-<i>K</i> surrogates</td>
+          <td>real transport 0.13&ndash;0.22 against nulls at chance</td></tr>
+      <tr><td>ranking resolution</td><td>a transport degraded by a measured amount, two opposite modes</td>
+          <td>perfect ordering at a 0.07% gap (lost rank) and 1.04% (added noise); chance below</td></tr>
+    </tbody></table></div>
+  <figure>
+<svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" role="img" aria-label="ordering accuracy against true transport-error gap">
+<line x1="62" y1="284.0" x2="568" y2="284.0" stroke="#1E2740"/>
+<text x="53" y="287.5" text-anchor="end" fill="#7C86A0">0.00</text>
+<line x1="62" y1="218.5" x2="568" y2="218.5" stroke="#1E2740"/>
+<text x="53" y="222.0" text-anchor="end" fill="#7C86A0">0.25</text>
+<line x1="62" y1="153.0" x2="568" y2="153.0" stroke="#1E2740"/>
+<text x="53" y="156.5" text-anchor="end" fill="#7C86A0">0.50</text>
+<line x1="62" y1="87.5" x2="568" y2="87.5" stroke="#1E2740"/>
+<text x="53" y="91.0" text-anchor="end" fill="#7C86A0">0.75</text>
+<line x1="62" y1="22.0" x2="568" y2="22.0" stroke="#1E2740"/>
+<text x="53" y="25.5" text-anchor="end" fill="#7C86A0">1.00</text>
+<line x1="62.0" y1="22" x2="62.0" y2="284" stroke="#1E2740"/>
+<text x="62.0" y="300" text-anchor="middle" fill="#7C86A0">0.01%</text>
+<line x1="230.7" y1="22" x2="230.7" y2="284" stroke="#1E2740"/>
+<text x="230.7" y="300" text-anchor="middle" fill="#7C86A0">0.1%</text>
+<line x1="399.3" y1="22" x2="399.3" y2="284" stroke="#1E2740"/>
+<text x="399.3" y="300" text-anchor="middle" fill="#7C86A0">1%</text>
+<line x1="568.0" y1="22" x2="568.0" y2="284" stroke="#1E2740"/>
+<text x="568.0" y="300" text-anchor="middle" fill="#7C86A0">10%</text>
+<line x1="62" y1="153.0" x2="568" y2="153.0" stroke="#E0776D" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="564" y="147.0" text-anchor="end" fill="#E0776D">chance</text>
+<path d="M94.6,134.3 L219.3,54.8 L296.3,54.8 L402.3,22.0 L498.5,22.0" fill="none" stroke="#F0B45C" stroke-width="2.2"/>
+<circle cx="94.6" cy="134.3" r="3.6" fill="#F0B45C"/>
+<circle cx="219.3" cy="54.8" r="3.6" fill="#F0B45C"/>
+<circle cx="296.3" cy="54.8" r="3.6" fill="#F0B45C"/>
+<circle cx="402.3" cy="22.0" r="3.6" fill="#F0B45C"/>
+<circle cx="498.5" cy="22.0" r="3.6" fill="#F0B45C"/>
+<path d="M205.8,22.0 L288.9,22.0 L402.1,22.0 L487.9,22.0 L547.2,22.0" fill="none" stroke="#5CC9CD" stroke-width="2.2"/>
+<circle cx="205.8" cy="22.0" r="3.6" fill="#5CC9CD"/>
+<circle cx="288.9" cy="22.0" r="3.6" fill="#5CC9CD"/>
+<circle cx="402.1" cy="22.0" r="3.6" fill="#5CC9CD"/>
+<circle cx="487.9" cy="22.0" r="3.6" fill="#5CC9CD"/>
+<circle cx="547.2" cy="22.0" r="3.6" fill="#5CC9CD"/>
+<path d="M205.8,196.7 L288.9,153.0 L402.1,120.2 L487.9,54.8 L547.2,54.8" fill="none" stroke="#7C86A0" stroke-width="2.2" stroke-dasharray="3 3"/>
+<circle cx="205.8" cy="196.7" r="3.6" fill="#7C86A0"/>
+<circle cx="288.9" cy="153.0" r="3.6" fill="#7C86A0"/>
+<circle cx="402.1" cy="120.2" r="3.6" fill="#7C86A0"/>
+<circle cx="487.9" cy="54.8" r="3.6" fill="#7C86A0"/>
+<circle cx="547.2" cy="54.8" r="3.6" fill="#7C86A0"/>
+<line x1="574" y1="34" x2="594" y2="34" stroke="#F0B45C" stroke-width="2.2"/>
+<text x="599" y="37.5" fill="#B6BECD">coverage — added noise</text>
+<line x1="574" y1="53" x2="594" y2="53" stroke="#5CC9CD" stroke-width="2.2"/>
+<text x="599" y="56.5" fill="#B6BECD">coverage — lost rank</text>
+<line x1="574" y1="72" x2="594" y2="72" stroke="#7C86A0" stroke-width="2.2"/>
+<text x="599" y="75.5" fill="#B6BECD">participation ratio</text>
+<text x="62" y="322" fill="#7C86A0">true gap, centred cosine to the pre-norm residual (log)</text>
+<text transform="translate(15,153.0) rotate(-90)" text-anchor="middle" fill="#7C86A0">layers ordered correctly</text>
+</svg>
+    <figcaption>Ordering accuracy against the size of the true difference, measured as centred
+      cosine to the pre-norm final residual. Coverage climbs out of chance and saturates;
+      participation ratio, read off the same transported frame, stays near chance.</figcaption>
+  </figure>
+  <div class="note good">
+    <h3>The read has a stated resolution, and the cheap alternatives stop short of it</h3>
+    <p>A ranking check that compares one pair of maps returns a verdict but no scale. This one
+      degrades a known transport by a tunable amount and measures the resulting gap in held-out
+      transport error, so the question becomes the one an instrument can answer: <b>how large must
+      a difference be before the read resolves it?</b></p>
+    <p>Coverage is monotone in that gap and orders every layer correctly at <b>0.07%</b> under
+      lost rank (p = 0.03) and <b>1.04%</b> under added noise (p = 0.008), decaying to chance
+      below. The gap is in the corrected metric above &mdash; centred cosine to the pre-norm
+      residual direction. Scored against the uncentred error on the post-norm frame instead, the noise
+      figure comes out three times smaller. Two cheaper reads of the same frame stop short of this. Participation ratio never
+      separates significantly, reaching only 0.88 (p = 0.07) at a 7.5% gap. Norm ratio scores <b>0.00 on every noise row and
+      1.00 on every rank row</b> &mdash; so it reports which degradation was applied rather than whether
+      quality fell, so reading it as a quality score requires already knowing the answer. Coverage
+      points the same way for both modes, and that is the argument for it.</p>
+  </div>
+  <div class="note">
+    <h3>Stated scope</h3>
+    <p>The calibration covers transports that differ by added noise or lost rank. A third mode lies
+      outside it, transports that differ by <em>how much data their fit saw</em>: on two published
+      fits separated by ~0.15% of transport error, coverage orders by fit sample size rather than
+      by transport accuracy, consistently and with the sign inverted. That is a third mode, and
+      coverage's calibration leaves it out.</p>
+  </div>
+  <p>These are internal checks &mdash; the instrument against its own nulls and constructions,
+    with ground truth constructed to a known size rather than assumed. The reads characterise a transport; none of them scores an individual
+    token, and none is offered as a confidence signal.</p>
+</section>
+
+<hr>
+
+<section>
+  <h2>What each read is worth</h2>
+  <div class="tw"><table>
+    <thead><tr><th>read</th><th>evidence</th><th>use</th></tr></thead>
+    <tbody id="tbl-reads"></tbody>
+  </table></div>
+  <p>Precision, rather than cost, sets the ceiling on scale: bfloat16 checkpoints carry ~3 decimal
+    digits, unusable for a de-biased variance or a Tracy&ndash;Widom deviate, and float32 puts a
+    27B model past any single accelerator. 4B is the honest limit reached here.</p>
+</section>
+</div>
+
+<script id="payload" type="application/json">{"coverage": [{"layer": 0, "real": 0.14204130804313003, "real_null": 0.008463541666666668, "random": 0.008397529384387713, "random_null": 0.008463541666666668}, {"layer": 1, "real": 0.1589423549303843, "real_null": 0.005859375, "random": 0.005826821059559426, "random_null": 0.005859375}, {"layer": 2, "real": 0.1995551561425372, "real_null": 0.00537109375, "random": 0.005042627761262555, "random_null": 0.00537109375}, {"layer": 3, "real": 0.19444008600590307, "real_null": 0.004720052083333333, "random": 0.004220645646023002, "random_null": 0.004720052083333333}, {"layer": 4, "real": 0.17940934726525415, "real_null": 0.00537109375, "random": 0.005437697262806662, "random_null": 0.00537109375}, {"layer": 5, "real": 0.16203074456490474, "real_null": 0.004557291666666666, "random": 0.005160489694782779, "random_null": 0.004557291666666666}, {"layer": 6, "real": 0.1730849629293015, "real_null": 0.006673177083333334, "random": 0.006138345631918819, "random_null": 0.006673177083333334}, {"layer": 7, "real": 0.2098200664224291, "real_null": 0.008626302083333334, "random": 0.00895473983583837, "random_null": 0.008626302083333334}, {"layer": 8, "real": 0.23564064836893803, "real_null": 0.008463541666666668, "random": 0.00854964524108579, "random_null": 0.008463541666666668}, {"layer": 9, "real": 0.24394629988955988, "real_null": 0.005208333333333333, "random": 0.004569654846660819, "random_null": 0.005208333333333333}, {"layer": 10, "real": 0.37766728988375453, "real_null": 0.005208333333333333, "random": 0.004898879664783335, "random_null": 0.005208333333333333}], "streams": [{"name": "pythia-70m", "d": 512, "prompts": 8, "outside_min": 0.9838709677419355, "outside_max": 1.0163934426229508, "jshare_min": 0.005493823584734492, "jshare_max": 0.06391166618637412, "peak_match": 0.004245902399764107, "peak_layer": 0, "peak_depth": 0.0, "monotone": true, "curve": [{"depth": 0.0, "match": 0.004245902399764107, "tdirs": 5.125, "kstream": 14.75}, {"depth": 0.25, "match": 0.0038261428535783606, "tdirs": 4.625, "kstream": 15.5}, {"depth": 0.5, "match": 0.0020597589952180547, "tdirs": 2.25, "kstream": 16.375}, {"depth": 0.75, "match": 0.0008469627760668845, "tdirs": 1.125, "kstream": 15.25}, {"depth": 1.0, "match": 0.0005089900120099447, "tdirs": 1.0, "kstream": 16.75}]}, {"name": "gpt2", "d": 768, "prompts": 8, "outside_min": 0.9774011299435028, "outside_max": 1.0, "jshare_min": 0.01357400073128645, "jshare_max": 0.09218790608003746, "peak_match": 0.1582067283131799, "peak_layer": 0, "peak_depth": 0.0, "monotone": true, "curve": [{"depth": 0.0, "match": 0.1582067283131799, "tdirs": 19.375, "kstream": 22.125}, {"depth": 0.1, "match": 0.1265173005624418, "tdirs": 14.0, "kstream": 20.375}, {"depth": 0.2, "match": 0.10204318407139888, "tdirs": 10.0, "kstream": 19.625}, {"depth": 0.3, "match": 0.03164342207982432, "tdirs": 7.5, "kstream": 19.25}, {"depth": 0.4, "match": 0.007508063901940076, "tdirs": 6.5, "kstream": 19.125}, {"depth": 0.5, "match": 0.004321883497582132, "tdirs": 7.5, "kstream": 19.25}, {"depth": 0.6, "match": 0.0025257530739323927, "tdirs": 7.625, "kstream": 19.0}, {"depth": 0.7, "match": 0.0016646274467137163, "tdirs": 7.375, "kstream": 18.875}, {"depth": 0.8, "match": 0.0010592696921297058, "tdirs": 5.625, "kstream": 18.625}, {"depth": 0.9, "match": 0.0007965715853506452, "tdirs": 3.0, "kstream": 18.125}, {"depth": 1.0, "match": 0.0006108633531470705, "tdirs": 2.0, "kstream": 17.75}]}, {"name": "qwen3.5-0.8b", "d": 1024, "prompts": 12, "outside_min": 0.9880478087649402, "outside_max": 1.0090909090909093, "jshare_min": 0.0925695743614473, "jshare_max": 0.1993631288228882, "peak_match": 0.5236666463273977, "peak_layer": 6, "peak_depth": 0.2727272727272727, "monotone": false, "curve": [{"depth": 0.0, "match": 0.23708861714234397, "tdirs": 21.416666666666668, "kstream": 21.833333333333332}, {"depth": 0.045454545454545456, "match": 0.16871052986683588, "tdirs": 21.166666666666668, "kstream": 20.583333333333332}, {"depth": 0.09090909090909091, "match": 0.26366328623212354, "tdirs": 22.166666666666668, "kstream": 20.916666666666668}, {"depth": 0.13636363636363635, "match": 0.32825352221879134, "tdirs": 22.25, "kstream": 20.666666666666668}, {"depth": 0.18181818181818182, "match": 0.36370755986057585, "tdirs": 22.166666666666668, "kstream": 21.083333333333332}, {"depth": 0.22727272727272727, "match": 0.39477142680569877, "tdirs": 21.833333333333332, "kstream": 20.916666666666668}, {"depth": 0.2727272727272727, "match": 0.5236666463273977, "tdirs": 21.75, "kstream": 20.333333333333332}, {"depth": 0.3181818181818182, "match": 0.44666592018785517, "tdirs": 21.666666666666668, "kstream": 20.416666666666668}, {"depth": 0.36363636363636365, "match": 0.4425900883792553, "tdirs": 21.5, "kstream": 21.166666666666668}, {"depth": 0.4090909090909091, "match": 0.4252761498428939, "tdirs": 21.416666666666668, "kstream": 21.5}, {"depth": 0.45454545454545453, "match": 0.4836981878766582, "tdirs": 21.166666666666668, "kstream": 20.583333333333332}, {"depth": 0.5, "match": 0.4265847059361594, "tdirs": 21.0, "kstream": 20.666666666666668}, {"depth": 0.5454545454545454, "match": 0.4145210188242599, "tdirs": 20.583333333333332, "kstream": 20.25}, {"depth": 0.5909090909090909, "match": 0.4253745393042521, "tdirs": 20.25, "kstream": 20.25}, {"depth": 0.6363636363636364, "match": 0.39312165381310415, "tdirs": 18.75, "kstream": 20.25}, {"depth": 0.6818181818181818, "match": 0.23580634335659165, "tdirs": 17.5, "kstream": 19.833333333333332}, {"depth": 0.7272727272727273, "match": 0.24564360052828146, "tdirs": 17.0, "kstream": 19.0}, {"depth": 0.7727272727272727, "match": 0.23679519347347597, "tdirs": 16.5, "kstream": 19.333333333333332}, {"depth": 0.8181818181818182, "match": 0.2310567678346389, "tdirs": 16.25, "kstream": 19.333333333333332}, {"depth": 0.8636363636363636, "match": 0.18019819802964354, "tdirs": 15.5, "kstream": 18.583333333333332}, {"depth": 0.9090909090909091, "match": 0.16619125464724643, "tdirs": 15.5, "kstream": 18.166666666666668}, {"depth": 0.9545454545454546, "match": 0.12274552670518601, "tdirs": 14.833333333333334, "kstream": 18.25}, {"depth": 1.0, "match": 0.08041011554237583, "tdirs": 14.5, "kstream": 18.333333333333332}]}, {"name": "gemma-3-1b", "d": 1152, "prompts": 4, "outside_min": 0.5966386554621849, "outside_max": 1.0232558139534884, "jshare_min": -9.143257172206098e-05, "jshare_max": 0.0016942673514970252, "peak_match": 0.2320847884397766, "peak_layer": 8, "peak_depth": 0.3333333333333333, "monotone": false, "curve": [{"depth": 0.0, "match": 0.04164677688997182, "tdirs": 12.0, "kstream": 29.75}, {"depth": 0.041666666666666664, "match": 0.02585324017598989, "tdirs": 9.0, "kstream": 27.5}, {"depth": 0.08333333333333333, "match": 0.014479819378203756, "tdirs": 7.0, "kstream": 23.25}, {"depth": 0.125, "match": 0.008774647095724817, "tdirs": 5.0, "kstream": 23.25}, {"depth": 0.16666666666666666, "match": 0.05620851694362726, "tdirs": 12.25, "kstream": 24.25}, {"depth": 0.20833333333333334, "match": 0.08166138753353132, "tdirs": 13.0, "kstream": 21.75}, {"depth": 0.25, "match": 0.114642995176262, "tdirs": 15.5, "kstream": 21.0}, {"depth": 0.2916666666666667, "match": 0.1582335770725802, "tdirs": 16.75, "kstream": 22.0}, {"depth": 0.3333333333333333, "match": 0.2320847884397766, "tdirs": 17.5, "kstream": 21.5}, {"depth": 0.375, "match": 0.14265509766568507, "tdirs": 16.75, "kstream": 22.0}, {"depth": 0.4166666666666667, "match": 0.043293299257097656, "tdirs": 11.0, "kstream": 22.25}, {"depth": 0.4583333333333333, "match": 0.21093063035662885, "tdirs": 19.0, "kstream": 21.75}, {"depth": 0.5, "match": 0.17769360564183573, "tdirs": 17.75, "kstream": 21.5}, {"depth": 0.5416666666666666, "match": 0.14937080864109487, "tdirs": 18.75, "kstream": 21.0}, {"depth": 0.5833333333333334, "match": 0.06906576531069156, "tdirs": 17.0, "kstream": 20.5}, {"depth": 0.625, "match": 0.08023512305546698, "tdirs": 18.5, "kstream": 20.5}, {"depth": 0.6666666666666666, "match": 0.05748710945805554, "tdirs": 18.25, "kstream": 21.75}, {"depth": 0.7083333333333334, "match": 0.025194044844071613, "tdirs": 14.0, "kstream": 21.25}, {"depth": 0.75, "match": 0.022019815825703146, "tdirs": 12.0, "kstream": 23.75}, {"depth": 0.7916666666666666, "match": 0.015881478598103214, "tdirs": 8.0, "kstream": 24.0}, {"depth": 0.8333333333333334, "match": 0.009911691307355244, "tdirs": 6.0, "kstream": 21.0}, {"depth": 0.875, "match": 0.0112506483944956, "tdirs": 7.0, "kstream": 21.75}, {"depth": 0.9166666666666666, "match": 0.00781427765616166, "tdirs": 6.0, "kstream": 21.5}, {"depth": 0.9583333333333334, "match": 0.0024954017341569886, "tdirs": 3.0, "kstream": 22.0}, {"depth": 1.0, "match": 0.0018733049620429682, "tdirs": 3.0, "kstream": 23.75}]}, {"name": "qwen3-1.7b", "d": 2048, "prompts": 4, "outside_min": 0.983739837398374, "outside_max": 1.010752688172043, "jshare_min": 8.223297822040898e-05, "jshare_max": 0.010385000916963816, "peak_match": 0.06874815111097951, "peak_layer": 4, "peak_depth": 0.15384615384615385, "monotone": false, "curve": [{"depth": 0.0, "match": 0.0037667157254635078, "tdirs": 5.0, "kstream": 32.0}, {"depth": 0.038461538461538464, "match": 0.004249880159915339, "tdirs": 4.0, "kstream": 29.25}, {"depth": 0.07692307692307693, "match": 0.033755366343457674, "tdirs": 2.5, "kstream": 31.5}, {"depth": 0.11538461538461539, "match": 0.04057508277326419, "tdirs": 4.0, "kstream": 34.75}, {"depth": 0.15384615384615385, "match": 0.06874815111097951, "tdirs": 4.0, "kstream": 31.25}, {"depth": 0.19230769230769232, "match": 0.032456768778421796, "tdirs": 3.0, "kstream": 28.25}, {"depth": 0.23076923076923078, "match": 0.025781347041521477, "tdirs": 3.0, "kstream": 26.25}, {"depth": 0.2692307692307692, "match": 0.02068588528793534, "tdirs": 3.0, "kstream": 25.75}, {"depth": 0.3076923076923077, "match": 0.018198003795975026, "tdirs": 3.0, "kstream": 25.5}, {"depth": 0.34615384615384615, "match": 0.01717148347939783, "tdirs": 4.0, "kstream": 24.0}, {"depth": 0.38461538461538464, "match": 0.01718356641427411, "tdirs": 6.0, "kstream": 23.5}, {"depth": 0.4230769230769231, "match": 0.009754850683139586, "tdirs": 5.0, "kstream": 24.0}, {"depth": 0.46153846153846156, "match": 0.00810720956423172, "tdirs": 5.0, "kstream": 23.5}, {"depth": 0.5, "match": 0.004910411340950836, "tdirs": 5.0, "kstream": 23.5}, {"depth": 0.5384615384615384, "match": 0.0031118011059045178, "tdirs": 4.0, "kstream": 23.75}, {"depth": 0.5769230769230769, "match": 0.0030221367430059774, "tdirs": 5.0, "kstream": 23.25}, {"depth": 0.6153846153846154, "match": 0.002735425875550552, "tdirs": 7.0, "kstream": 23.25}, {"depth": 0.6538461538461539, "match": 0.002511610622931768, "tdirs": 7.0, "kstream": 22.75}, {"depth": 0.6923076923076923, "match": 0.0036056490681203907, "tdirs": 9.0, "kstream": 24.0}, {"depth": 0.7307692307692307, "match": 0.006436090811498519, "tdirs": 11.25, "kstream": 25.25}, {"depth": 0.7692307692307693, "match": 0.007053262704130236, "tdirs": 11.75, "kstream": 30.0}, {"depth": 0.8076923076923077, "match": 0.007067748696349578, "tdirs": 10.75, "kstream": 31.25}, {"depth": 0.8461538461538461, "match": 0.008546588468522378, "tdirs": 11.25, "kstream": 30.75}, {"depth": 0.8846153846153846, "match": 0.007041977048617004, "tdirs": 9.25, "kstream": 30.0}, {"depth": 0.9230769230769231, "match": 0.007291284951655692, "tdirs": 9.5, "kstream": 30.0}, {"depth": 0.9615384615384616, "match": 0.0045758108681947865, "tdirs": 8.0, "kstream": 30.5}, {"depth": 1.0, "match": 0.0008146554937751194, "tdirs": 2.0, "kstream": 32.0}]}, {"name": "qwen3.5-4b", "d": 2560, "prompts": 6, "outside_min": 0.9895287958115183, "outside_max": 1.0222222222222221, "jshare_min": 0.006718945471219651, "jshare_max": 0.1455388435283962, "peak_match": 0.331345267953992, "peak_layer": 26, "peak_depth": 0.8666666666666667, "monotone": false, "curve": [{"depth": 0.0, "match": 0.01816131567727394, "tdirs": 12.0, "kstream": 37.166666666666664}, {"depth": 0.03333333333333333, "match": 0.008471781878503152, "tdirs": 9.0, "kstream": 31.666666666666668}, {"depth": 0.06666666666666667, "match": 0.01863952543622412, "tdirs": 14.833333333333334, "kstream": 33.333333333333336}, {"depth": 0.1, "match": 0.11845893599258818, "tdirs": 23.0, "kstream": 28.0}, {"depth": 0.13333333333333333, "match": 0.1334284724870066, "tdirs": 24.0, "kstream": 32.0}, {"depth": 0.16666666666666666, "match": 0.14407315108772328, "tdirs": 24.333333333333332, "kstream": 31.833333333333332}, {"depth": 0.2, "match": 0.19054520649392273, "tdirs": 24.666666666666668, "kstream": 30.0}, {"depth": 0.23333333333333334, "match": 0.20693943782342297, "tdirs": 24.666666666666668, "kstream": 27.333333333333332}, {"depth": 0.26666666666666666, "match": 0.2509180294681969, "tdirs": 24.333333333333332, "kstream": 25.166666666666668}, {"depth": 0.3, "match": 0.26169353521577915, "tdirs": 24.833333333333332, "kstream": 24.0}, {"depth": 0.3333333333333333, "match": 0.280990501521755, "tdirs": 24.333333333333332, "kstream": 24.166666666666668}, {"depth": 0.36666666666666664, "match": 0.26673664590691754, "tdirs": 24.0, "kstream": 24.666666666666668}, {"depth": 0.4, "match": 0.22971756411169467, "tdirs": 23.666666666666668, "kstream": 25.0}, {"depth": 0.43333333333333335, "match": 0.22067292458049845, "tdirs": 23.5, "kstream": 26.0}, {"depth": 0.4666666666666667, "match": 0.21010689088186477, "tdirs": 23.0, "kstream": 25.166666666666668}, {"depth": 0.5, "match": 0.19917389051124956, "tdirs": 23.0, "kstream": 25.0}, {"depth": 0.5333333333333333, "match": 0.21192349821598436, "tdirs": 23.166666666666668, "kstream": 25.0}, {"depth": 0.5666666666666667, "match": 0.20915904969254107, "tdirs": 22.166666666666668, "kstream": 25.166666666666668}, {"depth": 0.6, "match": 0.23322542103272736, "tdirs": 21.333333333333332, "kstream": 24.5}, {"depth": 0.6333333333333333, "match": 0.20270021141671177, "tdirs": 19.833333333333332, "kstream": 24.0}, {"depth": 0.6666666666666666, "match": 0.2304691142308628, "tdirs": 19.833333333333332, "kstream": 23.166666666666668}, {"depth": 0.7, "match": 0.2455636399523945, "tdirs": 19.833333333333332, "kstream": 24.0}, {"depth": 0.7333333333333333, "match": 0.2664686861078435, "tdirs": 19.5, "kstream": 24.666666666666668}, {"depth": 0.7666666666666667, "match": 0.25261143437012373, "tdirs": 19.333333333333332, "kstream": 26.0}, {"depth": 0.8, "match": 0.3008816154244771, "tdirs": 18.166666666666668, "kstream": 22.833333333333332}, {"depth": 0.8333333333333334, "match": 0.32550277785624565, "tdirs": 18.333333333333332, "kstream": 22.5}, {"depth": 0.8666666666666667, "match": 0.331345267953992, "tdirs": 18.5, "kstream": 22.666666666666668}, {"depth": 0.9, "match": 0.3029728945544052, "tdirs": 18.166666666666668, "kstream": 21.5}, {"depth": 0.9333333333333333, "match": 0.27599647056486054, "tdirs": 17.833333333333332, "kstream": 21.666666666666668}, {"depth": 0.9666666666666667, "match": 0.22369004896849265, "tdirs": 18.5, "kstream": 21.5}, {"depth": 1.0, "match": 0.14686049533066223, "tdirs": 18.166666666666668, "kstream": 23.0}]}], "depth": [{"name": "gemma-3-1b", "d": 1152, "layers": 25, "peak_layer": 13, "peak_depth": 0.5416666666666666, "peak_PR": 30.398894112023378, "curve": [{"depth": 0.0, "pr_m": 14.031972891369326, "pr_j": 14.91985793909642, "ide": 0.041709474943658766}, {"depth": 0.041666666666666664, "pr_m": 9.17601988931808, "pr_j": 9.535597541994521, "ide": 0.024188360661375665}, {"depth": 0.08333333333333333, "pr_m": 6.9745378977273615, "pr_j": 7.158833627184011, "ide": 0.016729199160579387}, {"depth": 0.125, "pr_m": 5.479721678224736, "pr_j": 5.558882788964833, "ide": 0.009512038026774312}, {"depth": 0.16666666666666666, "pr_m": 12.679192169986651, "pr_j": 13.01101555674681, "ide": 0.015447873658726567}, {"depth": 0.20833333333333334, "pr_m": 13.899552526040969, "pr_j": 14.199617642041945, "ide": 0.01263553065043019}, {"depth": 0.25, "pr_m": 17.67924905464827, "pr_j": 18.054629212760634, "ide": 0.012438360591872637}, {"depth": 0.2916666666666667, "pr_m": 18.957661888905875, "pr_j": 19.418372709577824, "ide": 0.01410989794134096}, {"depth": 0.3333333333333333, "pr_m": 23.656286857524794, "pr_j": 24.271280858119773, "ide": 0.015505098659029508}, {"depth": 0.375, "pr_m": 20.16639105387727, "pr_j": 20.757311088085192, "ide": 0.016638335021468467}, {"depth": 0.4166666666666667, "pr_m": 10.555155756882574, "pr_j": 10.87225017491273, "ide": 0.015851237705006984}, {"depth": 0.4583333333333333, "pr_m": 29.2119964938752, "pr_j": 30.861040560772533, "ide": 0.030514672278028187}, {"depth": 0.5, "pr_m": 26.041952854209626, "pr_j": 28.35094644894191, "ide": 0.04551988612835758}, {"depth": 0.5416666666666666, "pr_m": 30.398894112023378, "pr_j": 33.98840403160963, "ide": 0.060556429991963624}, {"depth": 0.5833333333333334, "pr_m": 21.06521985886657, "pr_j": 23.91960112724467, "ide": 0.06565548692382282}, {"depth": 0.625, "pr_m": 26.58349081228134, "pr_j": 30.985980999305475, "ide": 0.07852929895442219}, {"depth": 0.6666666666666666, "pr_m": 22.716024250745203, "pr_j": 30.08550382504052, "ide": 0.13727818921379958}, {"depth": 0.7083333333333334, "pr_m": 14.431400228706876, "pr_j": 25.741097350638395, "ide": 0.2569936503224293}, {"depth": 0.75, "pr_m": 12.249405698478375, "pr_j": 27.290656344849918, "ide": 0.3364819530249481}, {"depth": 0.7916666666666666, "pr_m": 7.579152633735057, "pr_j": 22.154141330993383, "ide": 0.41980940495264985}, {"depth": 0.8333333333333334, "pr_m": 6.3991435647465975, "pr_j": 20.67683626387781, "ide": 0.4478333387705277}, {"depth": 0.875, "pr_m": 6.706240780686789, "pr_j": 23.26062912451363, "ide": 0.46804769790605066}, {"depth": 0.9166666666666666, "pr_m": 6.074732307452064, "pr_j": 21.808790642185624, "ide": 0.4775504436997288}, {"depth": 0.9583333333333334, "pr_m": 2.5253061042523726, "pr_j": 14.783447605745447, "ide": 0.588905539204368}, {"depth": 1.0, "pr_m": 2.568603671253988, "pr_j": 21.737784705530665, "ide": 0.6596027075432098}]}, {"name": "gemma-3-270m", "d": 640, "layers": 17, "peak_layer": 0, "peak_depth": 0.0, "peak_PR": 74.96976610813034, "curve": [{"depth": 0.0, "pr_m": 74.96976610813034, "pr_j": 66.2850590049663, "ide": 0.13719410338924437}, {"depth": 0.0625, "pr_m": 74.00393554552599, "pr_j": 65.22644546470202, "ide": 0.1308544050246231}, {"depth": 0.125, "pr_m": 73.05218817010035, "pr_j": 64.45497697561596, "ide": 0.12882090745866673}, {"depth": 0.1875, "pr_m": 17.974506683417253, "pr_j": 18.026113095509515, "ide": 0.0026718603228881}, {"depth": 0.25, "pr_m": 18.20203504059587, "pr_j": 18.26986686798473, "ide": 0.0034055272704477395}, {"depth": 0.3125, "pr_m": 17.547460615045836, "pr_j": 17.60691194326559, "ide": 0.0030643575062325058}, {"depth": 0.375, "pr_m": 29.44884699686134, "pr_j": 29.56501265524635, "ide": 0.0027040070161487993}, {"depth": 0.4375, "pr_m": 31.810039634605324, "pr_j": 31.95361963080291, "ide": 0.0030795851296949316}, {"depth": 0.5, "pr_m": 31.495088177324057, "pr_j": 31.669571174098564, "ide": 0.0036726052425864295}, {"depth": 0.5625, "pr_m": 31.799847989012672, "pr_j": 32.00216654672713, "ide": 0.004147134606288431}, {"depth": 0.625, "pr_m": 27.759861528932912, "pr_j": 27.930995760771903, "ide": 0.003932254402762403}, {"depth": 0.6875, "pr_m": 30.41680934102383, "pr_j": 30.709413232126437, "ide": 0.006065820950478704}, {"depth": 0.75, "pr_m": 21.824734667066867, "pr_j": 23.166219591733952, "ide": 0.0322908379804084}, {"depth": 0.8125, "pr_m": 18.523391542742885, "pr_j": 19.845121833336663, "ide": 0.03695476842979673}, {"depth": 0.875, "pr_m": 19.857963734646965, "pr_j": 21.898492629346705, "ide": 0.051755668314382657}, {"depth": 0.9375, "pr_m": 10.352623302961762, "pr_j": 12.280898024893768, "ide": 0.08427728685602345}, {"depth": 1.0, "pr_m": 11.752734413972266, "pr_j": 14.640151322787682, "ide": 0.10745481577559442}]}, {"name": "gemma-3-4b", "d": 2560, "layers": 33, "peak_layer": 26, "peak_depth": 0.8125, "peak_PR": 29.71776214121644, "curve": [{"depth": 0.0, "pr_m": 5.404144246292683, "pr_j": 5.470420779926786, "ide": 0.006940773955817962}, {"depth": 0.03125, "pr_m": 4.9891894843830995, "pr_j": 5.040457283720258, "ide": 0.005510945814065289}, {"depth": 0.0625, "pr_m": 4.524788852378063, "pr_j": 4.573420997088558, "ide": 0.005765355993725949}, {"depth": 0.09375, "pr_m": 4.301683399184097, "pr_j": 4.343513212581052, "ide": 0.00521806562582513}, {"depth": 0.125, "pr_m": 4.137517054245639, "pr_j": 4.170877895090706, "ide": 0.004333850501521008}, {"depth": 0.15625, "pr_m": 3.803156514526735, "pr_j": 3.829380948846383, "ide": 0.003648385179636639}, {"depth": 0.1875, "pr_m": 4.123329376781473, "pr_j": 4.166505312834985, "ide": 0.005348033210899217}, {"depth": 0.21875, "pr_m": 4.562974303998364, "pr_j": 4.6157451194847265, "ide": 0.005890543522717872}, {"depth": 0.25, "pr_m": 4.652106900678319, "pr_j": 4.711359712971156, "ide": 0.006483728771064037}, {"depth": 0.28125, "pr_m": 4.080422405277208, "pr_j": 4.13343926961415, "ide": 0.00654886669254258}, {"depth": 0.3125, "pr_m": 4.9473874330938425, "pr_j": 5.041977715176277, "ide": 0.009534855299680012}, {"depth": 0.34375, "pr_m": 4.710179718764549, "pr_j": 4.810984827982846, "ide": 0.010630600391214776}, {"depth": 0.375, "pr_m": 4.254319152018429, "pr_j": 4.369312797191204, "ide": 0.013348924497019332}, {"depth": 0.40625, "pr_m": 5.967949524397083, "pr_j": 6.18949104886272, "ide": 0.0182826408767806}, {"depth": 0.4375, "pr_m": 5.417617083665668, "pr_j": 5.664494482445778, "ide": 0.02227403609454969}, {"depth": 0.46875, "pr_m": 7.215082858087046, "pr_j": 7.736837228561597, "ide": 0.03467138832572195}, {"depth": 0.5, "pr_m": 8.126124201428015, "pr_j": 8.852102269562229, "ide": 0.042336551501100765}, {"depth": 0.53125, "pr_m": 11.611522295817357, "pr_j": 13.166715044010571, "ide": 0.061754098212255325}, {"depth": 0.5625, "pr_m": 12.410027127370405, "pr_j": 14.551227505279094, "ide": 0.07755346028045677}, {"depth": 0.59375, "pr_m": 13.373858977525435, "pr_j": 16.247933708847672, "ide": 0.09405043774947854}, {"depth": 0.625, "pr_m": 15.211800475994567, "pr_j": 19.544618476575334, "ide": 0.11936076460055556}, {"depth": 0.65625, "pr_m": 15.97411658735674, "pr_j": 22.09212900126557, "ide": 0.15165060544011374}, {"depth": 0.6875, "pr_m": 16.224644853161962, "pr_j": 24.00842981112654, "ide": 0.18016563590295237}, {"depth": 0.71875, "pr_m": 20.08576447482859, "pr_j": 33.011009386700664, "ide": 0.22322672377759967}, {"depth": 0.75, "pr_m": 21.34614576820211, "pr_j": 36.579764568679956, "ide": 0.23997082296464384}, {"depth": 0.78125, "pr_m": 25.451833530764766, "pr_j": 47.321145914941226, "ide": 0.27199958218297504}, {"depth": 0.8125, "pr_m": 29.71776214121644, "pr_j": 61.46484781245421, "ide": 0.3120021195681598}, {"depth": 0.84375, "pr_m": 26.651808020689327, "pr_j": 59.25964990695157, "ide": 0.33619207767133374}, {"depth": 0.875, "pr_m": 25.9964567438548, "pr_j": 55.60939873587235, "ide": 0.32320454571765994}, {"depth": 0.90625, "pr_m": 10.623810454146124, "pr_j": 35.04614406649822, "ide": 0.45268763686286734}, {"depth": 0.9375, "pr_m": 5.757025242796127, "pr_j": 24.308591229045415, "ide": 0.5152948527057939}, {"depth": 0.96875, "pr_m": 4.955890000292641, "pr_j": 21.511951295431896, "ide": 0.5217473771578157}, {"depth": 1.0, "pr_m": 1.814382893843486, "pr_j": 20.49400835255096, "ide": 0.7033864753400646}]}, {"name": "gpt2-small", "d": 768, "layers": 11, "peak_layer": 2, "peak_depth": 0.2, "peak_PR": 63.949382436252826, "curve": [{"depth": 0.0, "pr_m": 36.3448784397594, "pr_j": 41.640882754513164, "ide": 0.09657307363798547}, {"depth": 0.1, "pr_m": 60.52463506120434, "pr_j": 71.75561741942589, "ide": 0.13516833261055947}, {"depth": 0.2, "pr_m": 63.949382436252826, "pr_j": 83.01266067730234, "ide": 0.18508758797795374}, {"depth": 0.3, "pr_m": 51.74469856579649, "pr_j": 75.06490211398227, "ide": 0.21965218738724435}, {"depth": 0.4, "pr_m": 34.96227943984511, "pr_j": 57.78779447910985, "ide": 0.25424171332405593}, {"depth": 0.5, "pr_m": 22.867607616862234, "pr_j": 41.552375921418445, "ide": 0.2782324881750489}, {"depth": 0.6, "pr_m": 17.306296915720267, "pr_j": 39.46375273363493, "ide": 0.34847847353655376}, {"depth": 0.7, "pr_m": 11.595879360644258, "pr_j": 32.66455647808693, "ide": 0.40480984110109414}, {"depth": 0.8, "pr_m": 6.56633235611644, "pr_j": 24.00814416667462, "ide": 0.4708239916782666}, {"depth": 0.9, "pr_m": 3.413608913978354, "pr_j": 15.269532505830131, "ide": 0.5185689008663298}, {"depth": 1.0, "pr_m": 1.506947228308229, "pr_j": 4.651544789591005, "ide": 0.4222514534737372}]}, {"name": "llama3.1-8b", "d": 4096, "layers": 31, "peak_layer": 23, "peak_depth": 0.7666666666666667, "peak_PR": 352.7287166501917, "curve": [{"depth": 0.0, "pr_m": 6.468358033928857, "pr_j": 6.474731491553986, "ide": 0.0005057452695361031}, {"depth": 0.03333333333333333, "pr_m": 6.76445564616345, "pr_j": 6.773576286531471, "ide": 0.0006968408694646956}, {"depth": 0.06666666666666667, "pr_m": 7.731684112589982, "pr_j": 7.747252754201674, "ide": 0.0010468909460920805}, {"depth": 0.1, "pr_m": 9.758374281775742, "pr_j": 9.786415568414549, "ide": 0.00154191218001826}, {"depth": 0.13333333333333333, "pr_m": 18.272627363480808, "pr_j": 18.3607219949067, "ide": 0.002720017472402209}, {"depth": 0.16666666666666666, "pr_m": 19.98397506706731, "pr_j": 20.11607601532979, "ide": 0.0036952428077871857}, {"depth": 0.2, "pr_m": 19.09038157517179, "pr_j": 19.25345461904873, "ide": 0.004671275801893459}, {"depth": 0.23333333333333334, "pr_m": 19.95122869853277, "pr_j": 20.16978780534078, "ide": 0.005994965947883807}, {"depth": 0.26666666666666666, "pr_m": 18.910775471496965, "pr_j": 19.168514444546425, "ide": 0.00734205416690742}, {"depth": 0.3, "pr_m": 23.230108613790293, "pr_j": 23.75147939451618, "ide": 0.011899566257707555}, {"depth": 0.3333333333333333, "pr_m": 23.616535053143437, "pr_j": 24.326738165846372, "ide": 0.015732590085068297}, {"depth": 0.36666666666666664, "pr_m": 29.36684326881692, "pr_j": 30.653100785239634, "ide": 0.022721625932674103}, {"depth": 0.4, "pr_m": 34.727820738938824, "pr_j": 37.09939229356272, "ide": 0.034571338994380925}, {"depth": 0.43333333333333335, "pr_m": 48.5812709589352, "pr_j": 54.44538208982737, "ide": 0.05911984429089148}, {"depth": 0.4666666666666667, "pr_m": 63.60815263747235, "pr_j": 76.17176553561498, "ide": 0.09182107223957839}, {"depth": 0.5, "pr_m": 81.88019988957741, "pr_j": 109.49848779519161, "ide": 0.14428161973116724}, {"depth": 0.5333333333333333, "pr_m": 122.18864393426486, "pr_j": 186.90737988063435, "ide": 0.2068908929621781}, {"depth": 0.5666666666666667, "pr_m": 179.15602002924314, "pr_j": 326.4721845176775, "ide": 0.28483767841820895}, {"depth": 0.6, "pr_m": 213.8745666916561, "pr_j": 438.8864914089164, "ide": 0.33500887169602866}, {"depth": 0.6333333333333333, "pr_m": 253.6406466896166, "pr_j": 572.2146627351528, "ide": 0.3765743600347542}, {"depth": 0.6666666666666666, "pr_m": 283.30388672134524, "pr_j": 694.2604415631062, "ide": 0.41189103102880237}, {"depth": 0.7, "pr_m": 300.76609210620865, "pr_j": 831.2318065686566, "ide": 0.45635772585715917}, {"depth": 0.7333333333333333, "pr_m": 334.2483333772269, "pr_j": 1000.329910843446, "ide": 0.4898456879397911}, {"depth": 0.7666666666666667, "pr_m": 352.7287166501917, "pr_j": 1118.3322908202222, "ide": 0.512782803354365}, {"depth": 0.8, "pr_m": 337.01745049153703, "pr_j": 1133.1534618233568, "ide": 0.5281558649234597}, {"depth": 0.8333333333333334, "pr_m": 331.36629353624454, "pr_j": 1177.3552454811315, "ide": 0.5437981021922543}, {"depth": 0.8666666666666667, "pr_m": 321.4598234147413, "pr_j": 1234.591779230864, "ide": 0.5628591543402112}, {"depth": 0.9, "pr_m": 350.5361282043805, "pr_j": 1416.8154699065562, "ide": 0.5862069316589708}, {"depth": 0.9333333333333333, "pr_m": 299.588777018261, "pr_j": 1333.541146261298, "ide": 0.6000000889414073}, {"depth": 0.9666666666666667, "pr_m": 229.55538271315868, "pr_j": 1254.2932831584035, "ide": 0.6308963504515497}, {"depth": 1.0, "pr_m": 200.54047152979004, "pr_j": 1743.5936016251137, "ide": 0.720247662808105}]}, {"name": "pythia-70m-deduped", "d": 512, "layers": 5, "peak_layer": 0, "peak_depth": 0.0, "peak_PR": 8.948152741521886, "curve": [{"depth": 0.0, "pr_m": 8.948152741521886, "pr_j": 9.258973463499514, "ide": 0.018888412985334398}, {"depth": 0.25, "pr_m": 8.09251043276723, "pr_j": 8.714648645406315, "ide": 0.03783873117475375}, {"depth": 0.5, "pr_m": 8.360061456439166, "pr_j": 10.15917794638926, "ide": 0.09482602133433794}, {"depth": 0.75, "pr_m": 6.3077099994016566, "pr_j": 11.640352791958792, "ide": 0.2665777217204376}, {"depth": 1.0, "pr_m": 2.658135999168325, "pr_j": 9.038362898630428, "ide": 0.4582923966893682}]}, {"name": "qwen3-4b", "d": 2560, "layers": 35, "peak_layer": 25, "peak_depth": 0.7352941176470589, "peak_PR": 24.585991191753045, "curve": [{"depth": 0.0, "pr_m": 8.996179877891446, "pr_j": 9.085904237619197, "ide": 0.005430854472702581}, {"depth": 0.029411764705882353, "pr_m": 8.449225950603074, "pr_j": 8.533272209796925, "ide": 0.005410048582856047}, {"depth": 0.058823529411764705, "pr_m": 8.338879763456083, "pr_j": 8.423494239536916, "ide": 0.00560567992043034}, {"depth": 0.08823529411764706, "pr_m": 10.675052311271838, "pr_j": 10.799902415518607, "ide": 0.006761160918074419}, {"depth": 0.11764705882352941, "pr_m": 9.571954851417761, "pr_j": 9.71332164625953, "ide": 0.008052839139217139}, {"depth": 0.14705882352941177, "pr_m": 8.573792788791513, "pr_j": 8.713515116426263, "ide": 0.008563817143804858}, {"depth": 0.17647058823529413, "pr_m": 6.141068136724941, "pr_j": 6.250072804257824, "ide": 0.009206798566610445}, {"depth": 0.20588235294117646, "pr_m": 5.0683664508185915, "pr_j": 5.162946847890254, "ide": 0.00953449669834219}, {"depth": 0.23529411764705882, "pr_m": 4.3760805670292005, "pr_j": 4.4646696669737125, "ide": 0.010215380816179636}, {"depth": 0.2647058823529412, "pr_m": 3.9706831849888635, "pr_j": 4.057557768973828, "ide": 0.010998003427623363}, {"depth": 0.29411764705882354, "pr_m": 3.9695843361038845, "pr_j": 4.075141622615738, "ide": 0.013263472714757675}, {"depth": 0.3235294117647059, "pr_m": 3.8714655945680616, "pr_j": 3.995796366928397, "ide": 0.015801841997969353}, {"depth": 0.35294117647058826, "pr_m": 3.475966660000743, "pr_j": 3.613018454114946, "ide": 0.019398843187427968}, {"depth": 0.38235294117647056, "pr_m": 3.2238444813078266, "pr_j": 3.364447194482005, "ide": 0.021322650220109117}, {"depth": 0.4117647058823529, "pr_m": 2.7275827870435783, "pr_j": 2.850041485986654, "ide": 0.021813307799741846}, {"depth": 0.4411764705882353, "pr_m": 2.36879004247945, "pr_j": 2.47415617256549, "ide": 0.02154299242315524}, {"depth": 0.47058823529411764, "pr_m": 2.6951462255236467, "pr_j": 2.862638425211571, "ide": 0.02969556885069429}, {"depth": 0.5, "pr_m": 3.5076488727201554, "pr_j": 3.842169519105747, "ide": 0.04481745297147283}, {"depth": 0.5294117647058824, "pr_m": 3.807731244181679, "pr_j": 4.320860595758558, "ide": 0.06182137969679693}, {"depth": 0.5588235294117647, "pr_m": 5.081398027059955, "pr_j": 6.195083824986677, "ide": 0.09551159800904843}, {"depth": 0.5882352941176471, "pr_m": 4.99897092300044, "pr_j": 6.383948439423289, "ide": 0.11628581229715422}, {"depth": 0.6176470588235294, "pr_m": 4.810843413611122, "pr_j": 6.5084769266755345, "ide": 0.14140979271560994}, {"depth": 0.6470588235294118, "pr_m": 11.973818218188093, "pr_j": 21.97926592634778, "ide": 0.2662651364102021}, {"depth": 0.6764705882352942, "pr_m": 20.586306712711522, "pr_j": 49.44184039081898, "ide": 0.36464935924117176}, {"depth": 0.7058823529411765, "pr_m": 22.520714182047875, "pr_j": 72.49092578527069, "ide": 0.4547030859641343}, {"depth": 0.7352941176470589, "pr_m": 24.585991191753045, "pr_j": 96.8915727163198, "ide": 0.5106735357104196}, {"depth": 0.7647058823529411, "pr_m": 23.858945207807764, "pr_j": 110.91745409057278, "ide": 0.5509441367337736}, {"depth": 0.7941176470588235, "pr_m": 22.602419780643167, "pr_j": 134.10417256054097, "ide": 0.6040646243179344}, {"depth": 0.8235294117647058, "pr_m": 22.687215233358355, "pr_j": 166.33159903554275, "ide": 0.646549832838522}, {"depth": 0.8529411764705882, "pr_m": 20.76308591015283, "pr_j": 179.84400116768097, "ide": 0.67550303253443}, {"depth": 0.8823529411764706, "pr_m": 21.495584101283512, "pr_j": 229.92026209523897, "ide": 0.711549227909962}, {"depth": 0.9117647058823529, "pr_m": 19.04014579463494, "pr_j": 234.6292402055509, "ide": 0.7321535856497321}, {"depth": 0.9411764705882353, "pr_m": 17.460542514514255, "pr_j": 277.97067362533414, "ide": 0.7661089751084622}, {"depth": 0.9705882352941176, "pr_m": 17.046664105897985, "pr_j": 366.2405069261914, "ide": 0.8033499908166315}, {"depth": 1.0, "pr_m": 5.326602506170642, "pr_j": 308.670883549309, "ide": 0.876291404570489}]}, {"name": "qwen3.5-0.8b", "d": 1024, "layers": 23, "peak_layer": 18, "peak_depth": 0.8181818181818182, "peak_PR": 140.19422732744607, "curve": [{"depth": 0.0, "pr_m": 65.8920010742438, "pr_j": 66.45029107284896, "ide": 0.03401545760912907}, {"depth": 0.045454545454545456, "pr_m": 55.644754642635945, "pr_j": 56.4160131325754, "ide": 0.034396833511529216}, {"depth": 0.09090909090909091, "pr_m": 83.47939598786766, "pr_j": 83.80419767762707, "ide": 0.04034344884162325}, {"depth": 0.13636363636363635, "pr_m": 89.67496866082197, "pr_j": 90.0257966275022, "ide": 0.0454685604079482}, {"depth": 0.18181818181818182, "pr_m": 95.62033029512713, "pr_j": 96.5373515726661, "ide": 0.052998728833265736}, {"depth": 0.22727272727272727, "pr_m": 103.61699222558096, "pr_j": 105.05153681075788, "ide": 0.061987230925057334}, {"depth": 0.2727272727272727, "pr_m": 105.97619338029648, "pr_j": 108.18239297285238, "ide": 0.06761463988695557}, {"depth": 0.3181818181818182, "pr_m": 113.51618917531982, "pr_j": 117.81449828821289, "ide": 0.08251081851236489}, {"depth": 0.36363636363636365, "pr_m": 117.10187958650224, "pr_j": 123.644442883994, "ide": 0.09657614496066533}, {"depth": 0.4090909090909091, "pr_m": 114.36616188651696, "pr_j": 123.76840495615978, "ide": 0.10829191587296484}, {"depth": 0.45454545454545453, "pr_m": 127.22721552567158, "pr_j": 139.44618195667084, "ide": 0.12714377950086386}, {"depth": 0.5, "pr_m": 129.09637855923322, "pr_j": 146.0392553981238, "ide": 0.14850738927469626}, {"depth": 0.5454545454545454, "pr_m": 133.8882821580068, "pr_j": 159.58021828182066, "ide": 0.17815409594360204}, {"depth": 0.5909090909090909, "pr_m": 138.7339407912441, "pr_j": 172.93803632264743, "ide": 0.20761387681970536}, {"depth": 0.6363636363636364, "pr_m": 130.48560673128227, "pr_j": 189.01915071166445, "ide": 0.28131354599356473}, {"depth": 0.6818181818181818, "pr_m": 124.24542934162476, "pr_j": 263.7880627737643, "ide": 0.4332017017477236}, {"depth": 0.7272727272727273, "pr_m": 125.73187978163625, "pr_j": 327.4500180636128, "ide": 0.508269411998706}, {"depth": 0.7727272727272727, "pr_m": 136.47515618003874, "pr_j": 386.8496200233517, "ide": 0.5547604953833597}, {"depth": 0.8181818181818182, "pr_m": 140.19422732744607, "pr_j": 435.2677459001615, "ide": 0.5999206638409411}, {"depth": 0.8636363636363636, "pr_m": 114.7938092353948, "pr_j": 480.52570837871986, "ide": 0.665738693097583}, {"depth": 0.9090909090909091, "pr_m": 101.74403568295563, "pr_j": 513.0817596789217, "ide": 0.7052859608926095}, {"depth": 0.9545454545454546, "pr_m": 74.827604579684, "pr_j": 509.80851079954436, "ide": 0.7385727415551202}, {"depth": 1.0, "pr_m": 49.213815559000764, "pr_j": 497.15420905099523, "ide": 0.7779447783842977}]}, {"name": "qwen3.5-4b-n1000", "d": 2560, "layers": 31, "peak_layer": 26, "peak_depth": 0.8666666666666667, "peak_PR": 344.97102278997306, "curve": [{"depth": 0.0, "pr_m": 12.291405058640418, "pr_j": 12.446287929329703, "ide": 0.007988408752231672}, {"depth": 0.03333333333333333, "pr_m": 9.347359197293672, "pr_j": 9.479462113719094, "ide": 0.007817341448865268}, {"depth": 0.06666666666666667, "pr_m": 15.187097886203379, "pr_j": 15.446161572771095, "ide": 0.010435268225722943}, {"depth": 0.1, "pr_m": 49.831494001620065, "pr_j": 50.33496962334242, "ide": 0.014977882148989072}, {"depth": 0.13333333333333333, "pr_m": 56.457418733183886, "pr_j": 56.92034661991278, "ide": 0.01690972645986466}, {"depth": 0.16666666666666666, "pr_m": 60.92240622741459, "pr_j": 61.444135482931685, "ide": 0.01973512624231823}, {"depth": 0.2, "pr_m": 67.76539211627839, "pr_j": 69.33079928980521, "ide": 0.02609960673117204}, {"depth": 0.23333333333333334, "pr_m": 70.11226953623559, "pr_j": 72.31776707917159, "ide": 0.031114850452845247}, {"depth": 0.26666666666666666, "pr_m": 74.63653873906178, "pr_j": 77.66131989343981, "ide": 0.03671555877056067}, {"depth": 0.3, "pr_m": 79.97706161202701, "pr_j": 83.97795532917472, "ide": 0.043461240270661276}, {"depth": 0.3333333333333333, "pr_m": 88.27608388877634, "pr_j": 93.53867109075182, "ide": 0.050464341089287185}, {"depth": 0.36666666666666664, "pr_m": 86.91704636814566, "pr_j": 93.82147015632441, "ide": 0.06007790025212587}, {"depth": 0.4, "pr_m": 80.25310767474389, "pr_j": 88.70524418720686, "ide": 0.07029678956549246}, {"depth": 0.43333333333333335, "pr_m": 81.18614995682603, "pr_j": 91.79059423427842, "ide": 0.0817326713587231}, {"depth": 0.4666666666666667, "pr_m": 80.89521922618084, "pr_j": 93.84542284380127, "ide": 0.09540473449649643}, {"depth": 0.5, "pr_m": 82.26910250193328, "pr_j": 98.20429920896169, "ide": 0.1099978195992288}, {"depth": 0.5333333333333333, "pr_m": 93.6708182317665, "pr_j": 117.22669277655157, "ide": 0.13732033951422745}, {"depth": 0.5666666666666667, "pr_m": 108.51073787729898, "pr_j": 144.61072201547674, "ide": 0.17165855272807748}, {"depth": 0.6, "pr_m": 163.1532487582019, "pr_j": 240.29125289314013, "ide": 0.235734973910759}, {"depth": 0.6333333333333333, "pr_m": 156.1305358285617, "pr_j": 286.8495963129346, "ide": 0.32379311744420897}, {"depth": 0.6666666666666666, "pr_m": 184.2074909333134, "pr_j": 392.77153502321636, "ide": 0.38964694260746907}, {"depth": 0.7, "pr_m": 233.55395371083338, "pr_j": 542.818996801834, "ide": 0.44117753033724383}, {"depth": 0.7333333333333333, "pr_m": 279.91431987108444, "pr_j": 706.7356222819541, "ide": 0.4943520613723084}, {"depth": 0.7666666666666667, "pr_m": 274.15316566794166, "pr_j": 805.00481873388, "ide": 0.5441301466179834}, {"depth": 0.8, "pr_m": 326.11667962579173, "pr_j": 986.9504223260211, "ide": 0.5832013355371145}, {"depth": 0.8333333333333334, "pr_m": 337.5895447200488, "pr_j": 1060.6555864321115, "ide": 0.6072173002066418}, {"depth": 0.8666666666666667, "pr_m": 344.97102278997306, "pr_j": 1115.1655231388488, "ide": 0.6294029774794258}, {"depth": 0.9, "pr_m": 311.11703588644707, "pr_j": 1191.193180780426, "ide": 0.6702782055244005}, {"depth": 0.9333333333333333, "pr_m": 262.5900581179403, "pr_j": 1249.069156276133, "ide": 0.7058859636112421}, {"depth": 0.9666666666666667, "pr_m": 194.55785769050496, "pr_j": 1273.4818405473125, "ide": 0.7417485027845224}, {"depth": 1.0, "pr_m": 124.36386107233511, "pr_j": 1328.4528418674586, "ide": 0.7895729218000651}]}, {"name": "qwen3-1.7b", "d": 2048, "layers": 27, "peak_layer": 19, "peak_depth": 0.7307692307692307, "peak_PR": 15.384050497118563, "curve": [{"depth": 0.0, "pr_m": 4.930753011202916, "pr_j": 4.958999860444958, "ide": 0.002858652600574761}, {"depth": 0.038461538461538464, "pr_m": 3.8970325206814564, "pr_j": 3.919675523696321, "ide": 0.0028984872066692125}, {"depth": 0.07692307692307693, "pr_m": 3.3301980248904166, "pr_j": 3.3510576063556785, "ide": 0.0031208438914146572}, {"depth": 0.11538461538461539, "pr_m": 4.3403895689092336, "pr_j": 4.387367849593165, "ide": 0.005340386522602998}, {"depth": 0.15384615384615385, "pr_m": 3.981979437151129, "pr_j": 4.040049565227017, "ide": 0.007260903324207299}, {"depth": 0.19230769230769232, "pr_m": 3.0663585076370894, "pr_j": 3.121034693720184, "ide": 0.008856509617938725}, {"depth": 0.23076923076923078, "pr_m": 3.0129217973884788, "pr_j": 3.080881382564033, "ide": 0.011171983270864926}, {"depth": 0.2692307692307692, "pr_m": 2.8438046642061385, "pr_j": 2.927028168692181, "ide": 0.014282255246820402}, {"depth": 0.3076923076923077, "pr_m": 3.2792717637177504, "pr_j": 3.4134651994939036, "ide": 0.019859438202418377}, {"depth": 0.34615384615384615, "pr_m": 3.939695454972865, "pr_j": 4.208557877934894, "ide": 0.03261190414534951}, {"depth": 0.38461538461538464, "pr_m": 6.302720263052924, "pr_j": 7.035068777471078, "ide": 0.054071835230344256}, {"depth": 0.4230769230769231, "pr_m": 4.835854346548585, "pr_j": 5.585822198461858, "ide": 0.06993797428069505}, {"depth": 0.46153846153846156, "pr_m": 4.625052145651289, "pr_j": 5.493070289704737, "ide": 0.0827126570705098}, {"depth": 0.5, "pr_m": 4.818383323354636, "pr_j": 5.917123758846018, "ide": 0.09777945695950169}, {"depth": 0.5384615384615384, "pr_m": 3.91261582299436, "pr_j": 4.913045526712967, "ide": 0.10788718750761654}, {"depth": 0.5769230769230769, "pr_m": 5.424235454052002, "pr_j": 7.604340639958027, "ide": 0.15603344591366605}, {"depth": 0.6153846153846154, "pr_m": 6.987976400535003, "pr_j": 12.183763498078042, "ide": 0.243616154058737}, {"depth": 0.6538461538461539, "pr_m": 7.449386808716158, "pr_j": 15.08370611601469, "ide": 0.2987957773718276}, {"depth": 0.6923076923076923, "pr_m": 10.186779949225052, "pr_j": 29.502875444494986, "ide": 0.4155080224297512}, {"depth": 0.7307692307692307, "pr_m": 15.384050497118563, "pr_j": 63.552440110766085, "ide": 0.5166914524285491}, {"depth": 0.7692307692307693, "pr_m": 13.770304087808842, "pr_j": 86.94952963413415, "ide": 0.6115509848162599}, {"depth": 0.8076923076923077, "pr_m": 11.579337568788842, "pr_j": 106.31946456968372, "ide": 0.6795369987278779}, {"depth": 0.8461538461538461, "pr_m": 11.684600749837653, "pr_j": 148.13323615135806, "ide": 0.7315408398778246}, {"depth": 0.8846153846153846, "pr_m": 10.286728169491274, "pr_j": 150.52209096259963, "ide": 0.7505492721880119}, {"depth": 0.9230769230769231, "pr_m": 10.231810152167958, "pr_j": 205.13881825167195, "ide": 0.7898654787169673}, {"depth": 0.9615384615384616, "pr_m": 7.884399661612864, "pr_j": 237.39862369360014, "ide": 0.829025020057704}, {"depth": 1.0, "pr_m": 2.397007153474264, "pr_j": 57.71865585839059, "ide": 0.7976615746251756}]}], "twofit": {"scale": 1.8433886011289595, "rows": [{"layer": 0, "rel_diff": 0.41718907332179883, "corr": 0.9192062295516445, "noise_floor": 13.241765928059259, "K_M": 11, "mean_cos": {"1": 0.8785490158793104, "10": 0.8629702423862657, "100": 0.9269523434816327, "400": 0.8587096777598117}}, {"layer": 12, "rel_diff": 0.15129307888970692, "corr": 0.9889764684371413, "noise_floor": 1.541592523505007, "K_M": 218, "mean_cos": {"1": 0.9809124489902233, "10": 0.9739865915776464, "100": 0.9854654586862168, "400": 0.990862412403906}}, {"layer": 30, "rel_diff": 0.03713533010615913, "corr": 0.9993197644424167, "noise_floor": 0.14366501749255783, "K_M": 1383, "mean_cos": {"1": 0.9984473941606277, "10": 0.9992704002216447, "100": 0.9989190775362904, "400": 0.9985313723517831}}]}, "cross": {"keep": 4096, "rows": [{"rel_depth": 0.0, "layer_a": 0, "layer_b": 0, "couple": 0.3702638485417258, "z": 58.4142740276073, "strength": 0.3702638485417258, "sign": 1.0, "tight": 0.5287444384538565, "keep": 4096}, {"rel_depth": 0.045454545454545456, "layer_a": 1, "layer_b": 1, "couple": 0.38721426082172056, "z": 57.54043356906647, "strength": 0.38721426082172056, "sign": 1.0, "tight": 0.4191109624775405, "keep": 4096}, {"rel_depth": 0.09090909090909091, "layer_a": 2, "layer_b": 3, "couple": 0.38564299351619125, "z": 58.643121292656865, "strength": 0.38564299351619125, "sign": 1.0, "tight": 0.34075976382464346, "keep": 4096}, {"rel_depth": 0.13636363636363635, "layer_a": 3, "layer_b": 4, "couple": 0.4208843701745726, "z": 58.891251794262836, "strength": 0.4208843701745726, "sign": 1.0, "tight": 0.43806196189180374, "keep": 4096}, {"rel_depth": 0.18181818181818182, "layer_a": 4, "layer_b": 5, "couple": 0.4321297652200511, "z": 56.82051455843624, "strength": 0.4321297652200511, "sign": 1.0, "tight": 0.4619210518877797, "keep": 4096}, {"rel_depth": 0.22727272727272727, "layer_a": 5, "layer_b": 7, "couple": 0.4600886123987788, "z": 58.00321999258253, "strength": 0.4600886123987788, "sign": 1.0, "tight": 0.4685327016952953, "keep": 4096}, {"rel_depth": 0.2727272727272727, "layer_a": 6, "layer_b": 8, "couple": 0.47887606690374285, "z": 57.11514953569388, "strength": 0.47887606690374285, "sign": 1.0, "tight": 0.4954732027072455, "keep": 4096}, {"rel_depth": 0.3181818181818182, "layer_a": 7, "layer_b": 10, "couple": 0.5034156514361393, "z": 62.14919810803157, "strength": 0.5034156514361393, "sign": 1.0, "tight": 0.4483042572480425, "keep": 4096}, {"rel_depth": 0.36363636363636365, "layer_a": 8, "layer_b": 11, "couple": 0.50263921471939, "z": 58.66395812051378, "strength": 0.50263921471939, "sign": 1.0, "tight": 0.486585356061079, "keep": 4096}, {"rel_depth": 0.4090909090909091, "layer_a": 9, "layer_b": 12, "couple": 0.49413909155005453, "z": 56.79633894126798, "strength": 0.49413909155005453, "sign": 1.0, "tight": 0.5071583815524987, "keep": 4096}, {"rel_depth": 0.45454545454545453, "layer_a": 10, "layer_b": 14, "couple": 0.49784646192743914, "z": 54.13090380431144, "strength": 0.49784646192743914, "sign": 1.0, "tight": 0.5881253782844115, "keep": 4096}, {"rel_depth": 0.5, "layer_a": 11, "layer_b": 15, "couple": 0.5139659742718966, "z": 53.22699868338318, "strength": 0.5139659742718966, "sign": 1.0, "tight": 0.6317381661453905, "keep": 4096}, {"rel_depth": 0.5454545454545454, "layer_a": 12, "layer_b": 16, "couple": 0.5368708032246703, "z": 51.309008641569406, "strength": 0.5368708032246703, "sign": 1.0, "tight": 0.7199704660126038, "keep": 4096}, {"rel_depth": 0.5909090909090909, "layer_a": 13, "layer_b": 18, "couple": 0.5480333501791453, "z": 46.16383307364525, "strength": 0.5480333501791453, "sign": 1.0, "tight": 0.7634222760905824, "keep": 4096}, {"rel_depth": 0.6363636363636364, "layer_a": 14, "layer_b": 19, "couple": 0.5810556528527525, "z": 45.25743972952236, "strength": 0.5810556528527525, "sign": 1.0, "tight": 0.794770681045559, "keep": 4096}, {"rel_depth": 0.6818181818181818, "layer_a": 15, "layer_b": 20, "couple": 0.6070837308619764, "z": 51.112206727719744, "strength": 0.6070837308619764, "sign": 1.0, "tight": 0.7122924980203712, "keep": 4096}, {"rel_depth": 0.7272727272727273, "layer_a": 16, "layer_b": 22, "couple": 0.6001665894072269, "z": 53.03189467688577, "strength": 0.6001665894072269, "sign": 1.0, "tight": 0.6184420047589414, "keep": 4096}, {"rel_depth": 0.7727272727272727, "layer_a": 17, "layer_b": 23, "couple": 0.5996474847355769, "z": 55.35732614637342, "strength": 0.5996474847355769, "sign": 1.0, "tight": 0.5686709227320312, "keep": 4096}, {"rel_depth": 0.8181818181818182, "layer_a": 18, "layer_b": 25, "couple": 0.6051994612200481, "z": 57.55309275516696, "strength": 0.6051994612200481, "sign": 1.0, "tight": 0.5409776595727871, "keep": 4096}, {"rel_depth": 0.8636363636363636, "layer_a": 19, "layer_b": 26, "couple": 0.6024139486692869, "z": 57.379581392880596, "strength": 0.6024139486692869, "sign": 1.0, "tight": 0.5419898460964648, "keep": 4096}, {"rel_depth": 0.9090909090909091, "layer_a": 20, "layer_b": 27, "couple": 0.6054659470837812, "z": 58.79392719124029, "strength": 0.6054659470837812, "sign": 1.0, "tight": 0.5388442075310921, "keep": 4096}, {"rel_depth": 0.9545454545454546, "layer_a": 21, "layer_b": 29, "couple": 0.6374935808495226, "z": 59.34845476846418, "strength": 0.6374935808495226, "sign": 1.0, "tight": 0.5518680420087253, "keep": 4096}, {"rel_depth": 1.0, "layer_a": 22, "layer_b": 30, "couple": 0.6922402511011619, "z": 60.09737298667641, "strength": 0.6922402511011619, "sign": 1.0, "tight": 0.5049927278196517, "keep": 4096}]}}</script>
+<script>
+const D = JSON.parse(document.getElementById("payload").textContent);
+const PAL = ["#C4832A","#2F8A8E","#6C5FC7","#B14A41","#3E7FC1","#7A8F2E"];
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function chart(el, series, o){
+  o = Object.assign({w:820,h:290,pad:58,log:false,xlab:"relative depth"}, o||{});
+  const w=o.w,h=o.h,pad=o.pad,log=o.log;
+  const vals = series.flatMap(s=>s.pts.map(p=>p[1])).filter(v=>log?v>0:true);
+  if(!vals.length){el.textContent="no data";return;}
+  const f = log?(v=>Math.log10(Math.max(v,1e-9))):(v=>v);
+  const lo = log?f(Math.min.apply(null,vals)):0, hi = f(Math.max.apply(null,vals));
+  const span=(hi-lo)||1;
+  const px=x=>pad+x*(w-pad-20), py=v=>h-pad-(f(v)-lo)/span*(h-pad-26);
+  let s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" role="img">';
+  for(let i=0;i<=4;i++){
+    const t=lo+span*i/4, y=h-pad-(i/4)*(h-pad-26), lab=log?Math.pow(10,t):t;
+    s+='<line x1="'+pad+'" y1="'+y.toFixed(1)+'" x2="'+(w-20)+'" y2="'+y.toFixed(1)+
+       '" stroke="'+css('--grid')+'"/>';
+    s+='<text x="'+(pad-9)+'" y="'+(y+4).toFixed(1)+'" fill="'+css('--mut')+
+       '" font-size="11" font-family="'+css('--mono')+'" text-anchor="end">'+
+       (+lab.toPrecision(2))+'</text>';
+  }
+  [0,.25,.5,.75,1].forEach(function(x){
+    s+='<text x="'+px(x).toFixed(1)+'" y="'+(h-pad+20)+'" fill="'+css('--mut')+
+       '" font-size="11" font-family="'+css('--mono')+'" text-anchor="middle">'+
+       x.toFixed(2)+'</text>';});
+  s+='<text x="'+(w/2)+'" y="'+(h-6)+'" fill="'+css('--mut')+'" font-size="11" font-family="'+
+     css('--mono')+'" text-anchor="middle">'+o.xlab+'</text>';
+  series.forEach(function(se,i){
+    const c=se.color||PAL[i%PAL.length];
+    const pts=se.pts.filter(p=>!log||p[1]>0)
+      .map(p=>px(p[0]).toFixed(1)+','+py(p[1]).toFixed(1)).join(' ');
+    s+='<polyline points="'+pts+'" fill="none" stroke="'+c+'" stroke-width="'+(se.w||2)+'"'+
+       (se.dash?' stroke-dasharray="4 4"':'')+'/>';});
+  el.innerHTML = s+'</svg>';
+}
+function legend(el, items){
+  el.innerHTML = items.map((t,i)=>'<span><i style="background:'+(t.color||PAL[i%PAL.length])+
+    '"></i>'+t.label+'</span>').join('');
+}
+const dep = D.depth.slice().sort((a,b)=>a.d-b.d);
+chart(document.getElementById("fig-depth"),
+  dep.map(p=>({label:p.name, pts:p.curve.map(r=>[r.depth,r.pr_m])})), {log:true});
+legend(document.getElementById("lg-depth"), dep.map(p=>({label:p.name+" (d="+p.d+")"})));
+
+const cov = D.coverage, n = cov[cov.length-1].layer||1;
+chart(document.getElementById("fig-cov"), [
+  {label:"real",   pts:cov.map(r=>[r.layer/n, r.real]),      color:PAL[0], w:2.6},
+  {label:"random", pts:cov.map(r=>[r.layer/n, r.random]),    color:PAL[1]},
+  {label:"chance", pts:cov.map(r=>[r.layer/n, r.real_null]), color:PAL[3], dash:true}],
+  {log:true});
+legend(document.getElementById("lg-cov"), [
+  {label:"real Jacobian lens", color:PAL[0]},
+  {label:"random rank-K control", color:PAL[1]},
+  {label:"analytic chance, k_t / d", color:PAL[3]}]);
+
+const st = D.streams.slice().sort((a,b)=>a.d-b.d);
+chart(document.getElementById("fig-et"),
+  st.map(s=>({label:s.name, pts:s.curve.map(r=>[r.depth,r.match])})), {log:true});
+legend(document.getElementById("lg-et"),
+  st.map(s=>({label:s.name+(s.monotone?" — monotone":"")})));
+
+const cx = D.cross.rows;
+chart(document.getElementById("fig-cx"),
+  [{label:"coupling", pts:cx.map(r=>[r.rel_depth, r.strength]), color:PAL[0], w:2.6}], {});
+legend(document.getElementById("lg-cx"), [{label:"measured coupling strength", color:PAL[0]}]);
+
+const reads = [
+ ["participation ratio / Shannon rank","ok","null-verified","compression sizing, LoRA rank, drift"],
+ ["identity decomposition","ok","null-verified","precondition for any residual-operator read"],
+ ["coverage (subspace overlap)","ok","null-verified","how much of a stream a readout spans"],
+ ["étendue ceiling","ok","null-verified","capacity bound, before any data"],
+ ["J-space energy share","ok","null-verified","reproduces the reported 6–10%"],
+ ["cross-model coupling","ok","null-verified","layer-specific agreement between models"]];
+document.getElementById("tbl-reads").innerHTML = reads.map(r=>
+ '<tr><td>'+r[0]+'</td><td><span class="chip '+r[1]+'">'+r[2]+'</span></td><td>'+r[3]+
+ '</td></tr>').join('');
+</script>
+</body>
+</html>

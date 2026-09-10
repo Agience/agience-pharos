@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Aperture Reads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson two &middot; the optics</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<section class="slide on" data-act="0">
+  <p class="eyebrow">Lesson two &middot; the optics</p>
+  <h1>The aperture<br><em>reads</em>.</h1>
+  <div class="two nr">
+    <div>
+      <p class="lead">The first lesson built a <strong>screen</strong> and split it into <strong>layers</strong>, then asked one question of them: <em>how much of this is real?</em> The answer was a count &mdash; K.</p>
+      <p>This lesson asks a different question of the same object, and gets back a handful of numbers that describe its shape:</p>
+      <div class="note">
+        <p style="font-size:17px"><strong>What <em>shape</em> is the signal?</strong></p>
+      </div>
+      <p>Not how big, not how strong &mdash; what shape. Is it concentrated or spread? Does one pattern dominate, or many? How much of the room it was given is it actually occupying?</p>
+      <p style="font-size:14px">And the surprise is that these turn out to be <strong>the same quantities an optician measures about a lens</strong> &mdash; not by analogy, but the identical arithmetic. That is where the name comes from.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>What you already have</h3>
+        <div class="eq">the screen   S      whitened, folded
+the layers   s&#8321; &ge; s&#8322; &ge; &hellip;
+the floor    &sigma;(&radic;N + &radic;F)
+the count    K</div>
+        <p style="margin-top:12px; font-size:14px">All of it from lesson one, and all of it built from squares, fractions, logs and square roots. Nothing new is needed here either.</p>
+        <div class="note cool" style="margin-top:12px">
+          <p><strong>Three symbols above, in case you have arrived here first.</strong></p>
+          <p style="margin-bottom:0"><span class="sym">&sigma;</span> is small <strong>sigma</strong>, the Greek <em>s</em>, used everywhere in statistics for <em>the typical size of one noisy value</em>.<br>
+          <span class="sym">&radic;</span> is the <strong>square root</strong> &mdash; <span class="mono">&radic;9 = 3</span>.<br>
+          <span class="sym">&ge;</span> is <strong>greater than or equal to</strong>, so the strengths never increase down the stack though two may tie.</p>
+        </div>
+      </div>
+      <div class="card sunk">
+        <h3>The same two records</h3>
+        <p style="margin:0; font-size:14.5px"><strong>A &middot; the scan</strong> &mdash; one handwritten 0, 8&nbsp;&times;&nbsp;8.<br>
+        <strong>B &middot; the market</strong> &mdash; eight companies, sixteen months of change, 16&nbsp;&times;&nbsp;8.<br>
+        Plus two larger ones to show the reads travelling: a planted radio flash and an MRI slice.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 2 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="1">
+  <p class="eyebrow">Act I &middot; The fill</p>
+  <h2>The same arithmetic, pointed at a new list.</h2>
+  <div class="two">
+    <div>
+      <p>In lesson one you did this four times without being told it was one procedure:</p>
+      <div class="eq">1  square everything      &rarr; power
+2  divide by the total   &rarr; shares
+3  entropy               &rarr; H bits
+4  raise 2 to it         &rarr; <b>2<sup>H</sup></b>, a count</div>
+      <p style="margin-top:14px">You fed it the <em>column powers</em> and it told you how many channels were in play. The procedure does not care what list you feed it. So feed it the <strong>layer strengths</strong>.</p>
+      <div class="note">
+        <p>Square them, turn them into shares, take the entropy, raise 2 to it. Out comes <strong>how many layers are really in play</strong> &mdash; which is a completely different question from how many channels are, and is answered by the identical four lines of arithmetic.</p>
+      </div>
+      <p>Then divide by how many layers there could have been. That fraction has a name and a symbol, and it is the centre of this whole lesson.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>The fill fraction</h3>
+        <div class="eq">&phi; = <b>2<sup>H</sup></b> &divide; <i>n</i>
+
+   H  from the LAYER strengths
+   n  how many layers there are</div>
+        <div class="note cool" style="margin-top:14px">
+          <p><strong>The symbol.</strong> <span class="sym">&phi;</span> is the Greek letter <strong>phi</strong> &mdash; most people rhyme it with &ldquo;fly&rdquo;. It is their letter <em>f</em>, and it is used here for <strong>fill</strong>.</p>
+          <p style="margin-bottom:0">In optics it is the standard name for how much of an aperture is actually letting light through, which is exactly what it is doing for us.</p>
+        </div>
+      </div>
+      <div class="note">
+        <p><strong>Careful &mdash; this is not the fraction from lesson one.</strong> That one, <span class="mono">2<sup>H</sup>/F</span>, came from the <em>column powers</em> and described the <em>axis</em>. This one comes from the <em>layer strengths</em> and describes the <em>modes</em>. Same recipe, different ingredient, different meaning. On the MRI they differ by more than twenty times.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 3 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="1">
+  <p class="eyebrow">Act I &middot; The fill</p>
+  <h2>What the two ends of &phi; look like.</h2>
+  <div class="two nr">
+    <div>
+      <p>Because <span class="mono">&phi;</span> is a fraction of a count, it is trapped between two values you can reason out without a calculator.</p>
+      <h3>The floor: one layer does everything</h3>
+      <p>If the grid <em>is</em> a single multiplication table, there is one non-zero strength and the rest are zero. The entropy of &ldquo;all the power in one place&rdquo; is 0 bits, so <span class="mono">2<sup>0</sup> = 1</span>, and</p>
+      <div class="eq">&phi; = 1 &divide; n     <u>the smallest it can be</u></div>
+      <p style="margin-top:12px">Built a rank-1 grid, 40&nbsp;&times;&nbsp;12, and measured it: <span class="mono amber">&phi; = 0.0833</span>. And <span class="mono">1 &divide; 12 = 0.0833</span>. Exactly the floor, as it must be.</p>
+      <h3 style="margin-top:18px">The ceiling: every layer equal</h3>
+      <p>If all <span class="mono">n</span> strengths are the same, the entropy is <span class="mono">log<sub>2</sub> n</span>, so <span class="mono">2<sup>H</sup> = n</span> and <span class="mono">&phi; = 1</span>. Nothing stands out; every direction is as good as every other.</p>
+      <p style="margin-top:12px">Pure noise, 40&nbsp;&times;&nbsp;12: <span class="mono amber">&phi; = 0.856</span> &mdash; near the ceiling, because noise has no preferred shape.</p>
+    </div>
+    <div class="stack">
+      <figure class="card">
+        <h3>The scale &phi; lives on</h3>
+        <svg viewBox="0 0 400 150" role="img" aria-label="A number line from 1 over n to 1, with one multiplication table at the far left, real signals in the middle, and pure noise near the right.">
+          <g font-family="IBM Plex Mono, monospace" font-size="10.5">
+            <line x1="30" y1="66" x2="376" y2="66" stroke="currentColor" stroke-opacity=".5" stroke-width="2"/>
+            <g stroke="currentColor" stroke-opacity=".5" stroke-width="2">
+              <line x1="30" y1="58" x2="30" y2="74"/><line x1="376" y1="58" x2="376" y2="74"/>
+            </g>
+            <text x="30" y="94" text-anchor="middle" fill="currentColor">1/n</text>
+            <text x="376" y="94" text-anchor="middle" fill="currentColor">1</text>
+            <text x="30" y="110" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".65">one layer</text>
+            <text x="376" y="110" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".65">all equal</text>
+            <text x="30" y="124" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".65">does it all</text>
+            <text x="376" y="124" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".65">nothing stands out</text>
+            <circle cx="36" cy="66" r="5" fill="#4d918b"/>
+            <text x="36" y="50" text-anchor="middle" font-size="9.5" font-weight="600" fill="#20635f">rank 1</text>
+            <circle cx="126" cy="66" r="5" fill="#d99a34"/>
+            <text x="126" y="50" text-anchor="middle" font-size="9.5" font-weight="600" fill="#a5620c">the scan .30</text>
+            <circle cx="192" cy="66" r="5" fill="#d99a34"/>
+            <text x="196" y="36" text-anchor="middle" font-size="9.5" font-weight="600" fill="#a5620c">the market .48</text>
+            <circle cx="266" cy="66" r="5" fill="#4d918b"/>
+            <text x="270" y="50" text-anchor="middle" font-size="9.5" font-weight="600" fill="#20635f">the flash .69</text>
+            <circle cx="330" cy="66" r="5" fill="currentColor" fill-opacity=".55"/>
+            <text x="330" y="36" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".7">noise .86</text>
+            <text x="200" y="144" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity=".7" font-family="Libre Franklin, sans-serif">coherent &mdash; one thing happening &nbsp;&rarr;&nbsp; disordered &mdash; many</text>
+          </g>
+        </svg>
+        <figcaption>Low means <strong>coherent</strong>: a few patterns explain the record. High means <strong>disordered</strong>: the power is spread over everything, which is what noise looks like.</figcaption>
+      </figure>
+      <div class="card sunk">
+        <h3>The same fact upside down: reach</h3>
+        <div class="eq" style="background:transparent; border:0; padding:0; font-size:13.5px">magnification = 1 &divide; &phi;
+
+  the scan    3.37      the flash   1.46
+  the market  2.10      an MRI     <b>54.52</b></div>
+        <p style="margin:11px 0 0; font-size:14px">If <span class="mono">&phi;</span> is the fraction in use, its reciprocal says <strong>how many times over the record is carrying the same information</strong>. The MRI at <span class="mono">54.5</span> is fifty-four-fold redundant &mdash; and that number, not any judgement about pictures, is why it compresses.</p>
+      </div>
+      <div class="note cool">
+        <p><strong>So &phi; reads backwards from what you might guess.</strong> A <em>small</em> fill is a <em>strong</em>, simple signal. A fill near 1 means there is no shape to find. The flash sits at 0.69 because most of its screen genuinely is noise &mdash; only three layers of it were signal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="2">
+  <p class="eyebrow">Act II &middot; Two axes, one area</p>
+  <h2>Do it down each axis, and you have a width and a height.</h2>
+  <div class="two nl">
+    <div>
+      <p>So far <span class="mono">&phi;</span> described the layers as a whole. But a layer has two halves &mdash; a pattern down the rows and a pattern across the columns &mdash; and each can be filled to a different degree.</p>
+      <p>So run the same read twice more: once on how the <strong>ordered axis</strong> is filled, once on the <strong>channels</strong>. Two fractions, each between 0 and 1:</p>
+      <div class="eq">&phi;<sub>T</sub>   how filled the ordered axis is
+&phi;<sub>F</sub>   how filled the channels are</div>
+      <p style="margin-top:14px">For the market:</p>
+      <div class="eq">&phi;<sub>T</sub> = <b>0.3161</b>    &phi;<sub>F</sub> = <b>0.4816</b></div>
+      <p style="margin-top:14px">Read that as a sentence. <strong>The market's sixteen months are more concentrated than its eight companies.</strong> A third of the available time-patterns are in play against nearly a half of the company-patterns &mdash; which is what you would expect of a record whose big events are a couple of months long and hit everybody.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Both records, both axes</h3>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>&nbsp;</th><th>&phi;<sub>T</sub> (time)</th><th>&phi;<sub>F</sub> (channels)</th><th>&phi; (layers)</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>A &middot; the scan</td><td>0.2942</td><td>0.3049</td><td>0.2967</td></tr>
+            <tr class="hi"><td>B &middot; the market</td><td>0.3161</td><td>0.4816</td><td>0.4765</td></tr>
+            <tr><td>the flash</td><td>0.3627</td><td>0.7186</td><td>0.6871</td></tr>
+            <tr><td>an MRI slice</td><td>0.0366</td><td>0.0242</td><td>0.0183</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <figcaption>The scan is almost square &mdash; 0.294 against 0.305 &mdash; which is a real statement about it: a handwritten digit is about as structured across as it is down. The MRI is tiny on both, at 0.037 and 0.024: an image is enormously ordered in every direction.</figcaption>
+      </div>
+      <div class="note">
+        <p><strong>The flash is the odd one, and correctly so.</strong> <span class="mono">&phi;<sub>F</sub> = 0.72</span> &mdash; nearly filled &mdash; because 125 of its 128 channels carry nothing but noise, and noise fills. Meanwhile <span class="mono">&phi;<sub>T</sub> = 0.36</span>, far lower, because the flash really did happen at one moment. <strong>Two numbers, and they have located the signal on one axis and not the other.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 5 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="2">
+  <p class="eyebrow">Act II &middot; Two axes, one area</p>
+  <h2>Multiply them, and the answer is an <em>area</em>.</h2>
+  <div class="two nr">
+    <div>
+      <p>You have a width and a height, both fractions. Multiply:</p>
+      <div class="eq">E = &phi;<sub>T</sub> &times; &phi;<sub>F</sub>
+
+market:  0.3161 &times; 0.4816 = <b>0.1522</b></div>
+      <div class="note cool" style="margin-top:12px">
+        <p><strong>The word.</strong> <span class="sym">E</span> here stands for <strong>étendue</strong> &mdash; a French word, said &ldquo;ay-TON-doo&rdquo;, meaning <em>extent</em> or <em>spread</em>. Opticians have used it for two centuries, and papers usually write it as a decorated capital E.</p>
+      </div>
+      <p style="margin-top:14px">It is an <strong>area</strong>, in the plainest sense: fraction of the time axis times fraction of the channel axis is the fraction of the whole rectangle the signal occupies. The market fills about <strong>15%</strong> of its available shape.</p>
+      <h3 style="margin-top:16px">Why opticians care</h3>
+      <p>Étendue is <em>conserved</em>. You cannot build a lens that makes a beam both narrower and less spread out &mdash; squeeze one and the other grows. It is the reason a magnifying glass cannot concentrate sunlight past a limit, and the reason you cannot funnel a room's light down a fibre without losing some.</p>
+      <p style="font-size:14px">Here it is the same statement about information: a record cannot be made both briefer and narrower-band without something being thrown away.</p>
+    </div>
+    <figure class="card">
+      <h3>The area each record occupies</h3>
+      <svg viewBox="0 0 420 260" role="img" aria-label="Four rectangles inside a unit square, showing the etendue of each record as an area: the MRI a sliver, the scan small, the market larger, the flash the largest.">
+        <g font-family="IBM Plex Mono, monospace" font-size="10">
+          <rect x="40" y="20" width="200" height="200" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="4 3"/>
+          <text x="140" y="14" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".6">the whole rectangle = 1</text>
+          <rect x="40" y="76.3" width="143.7" height="143.7" fill="#4d918b" fill-opacity=".18" stroke="#4d918b" stroke-width="1.5"/>
+          <rect x="40" y="123.7" width="96.3" height="96.3" fill="#d99a34" fill-opacity=".22" stroke="#d99a34" stroke-width="2"/>
+          <rect x="40" y="159" width="61" height="61" fill="#d99a34" fill-opacity=".35" stroke="#d99a34" stroke-width="2"/>
+          <rect x="40" y="215.2" width="4.8" height="4.8" fill="currentColor" fill-opacity=".7" stroke="currentColor"/>
+          <g text-anchor="start" font-size="9.5">
+            <text x="255" y="86" fill="#20635f" font-weight="600">the flash   0.261</text>
+            <text x="255" y="132" fill="#a5620c" font-weight="600">the market  0.152</text>
+            <text x="255" y="167" fill="#a5620c" font-weight="600">the scan    0.090</text>
+            <text x="255" y="222" fill="currentColor" fill-opacity=".75">an MRI      0.00088</text>
+          </g>
+          <line x1="248" y1="82" x2="188" y2="82" stroke="#4d918b" stroke-width="1"/>
+          <line x1="248" y1="128" x2="140" y2="128" stroke="#d99a34" stroke-width="1"/>
+          <line x1="248" y1="163" x2="105" y2="163" stroke="#d99a34" stroke-width="1"/>
+          <line x1="248" y1="218" x2="49" y2="218" stroke="currentColor" stroke-opacity=".6" stroke-width="1"/>
+          <text x="140" y="246" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity=".7" font-family="Libre Franklin, sans-serif">drawn to scale &mdash; the MRI really is that small</text>
+        </g>
+      </svg>
+      <figcaption>Each square is that record&rsquo;s étendue as a fraction of the whole. The MRI&rsquo;s is a speck: <strong>0.088%</strong> of the available shape. That is what &ldquo;this picture is highly structured&rdquo; looks like as a number, and it is why images compress and noise does not.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ══ 6 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="2">
+  <p class="eyebrow">Act II &middot; Two axes, one area</p>
+  <h2>How many spots could fit &mdash; and how many are filled.</h2>
+  <div class="two">
+    <div>
+      <p>The étendue is a <em>fraction</em>. Multiply it by how many cells the screen actually has and you get a <strong>count</strong> of independent things the record can hold.</p>
+      <div class="eq">capacity = n<sub>T</sub> &times; n<sub>F</sub>       <u>the space-bandwidth</u>
+filled   = E &times; capacity</div>
+      <p style="margin-top:14px">Opticians call the capacity the <strong>number of resolvable spots</strong>: how many separate points a lens can distinguish without them blurring into each other. It is the honest measure of what an instrument <em>could</em> record.</p>
+      <div class="note">
+        <p><strong>And the gap between the two is the story.</strong> Capacity is what the grid can carry; filled is what is on it. A record that fills most of its capacity is noise-like. One that fills almost none of it is highly structured &mdash; which is the same thing as saying it would compress well.</p>
+      </div>
+      <p style="font-size:14px">Note the capacity is a property of the <em>grid</em>, not the signal: an unfolded 256&nbsp;&times;&nbsp;148 screen reports 37&thinsp;888 spots whether it holds a photograph or static.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Capacity against content</h3>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>record</th><th>capacity</th><th>E</th><th>filled</th><th>using</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>A &middot; the scan</td><td>64</td><td>0.0897</td><td>5.7</td><td>9.0%</td></tr>
+            <tr class="hi"><td>B &middot; the market</td><td>128</td><td>0.1522</td><td>19.5</td><td>15.2%</td></tr>
+            <tr><td>the flash</td><td>32&thinsp;768</td><td>0.2606</td><td>8&thinsp;540</td><td>26.1%</td></tr>
+            <tr><td>an MRI slice</td><td>37&thinsp;888</td><td>0.00088</td><td>33.5</td><td>0.09%</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+      <div class="note">
+        <p><strong>Look at the last two rows.</strong> They are almost the same size of grid &mdash; 32&thinsp;768 spots against 37&thinsp;888 &mdash; and they could not be more different. The flash fills <strong>8&thinsp;540</strong> of its spots; the MRI fills <strong>33.5</strong> of its 37&thinsp;888.</p>
+        <p style="margin-bottom:0">The flash is mostly noise, and noise needs every spot it can get. The MRI is a picture, and a picture is enormously repetitive &mdash; the whole of it can be said with about thirty independent things. Two numbers said that, and neither one looked at a pixel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 7 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="3">
+  <p class="eyebrow">Act III &middot; Quality</p>
+  <h2>One more number: does a single pattern dominate?</h2>
+  <div class="two nl">
+    <div>
+      <p><span class="mono">&phi;</span> counts how many patterns are active. It does not say whether <em>one of them is enormous</em>. That is a separate question with a separate answer.</p>
+      <p>Take the ordered axis, list how much power sits in each of its patterns, and ask what share the biggest one holds:</p>
+      <div class="eq">S = <b>&lambda;<sub>1</sub></b> &divide; ( &lambda;<sub>1</sub> + &lambda;<sub>2</sub> + &hellip; )</div>
+      <div class="note cool" style="margin-top:12px">
+        <p><strong>The symbol.</strong> <span class="sym">&lambda;</span> is the Greek letter <strong>lambda</strong> &mdash; said &ldquo;LAM-da&rdquo;, their letter <em>l</em>. Here each <span class="mono">&lambda;</span> is the power in one pattern, and <span class="mono">&lambda;<sub>1</sub></span> is the biggest of them.</p>
+      </div>
+      <p style="margin-top:14px">Worked on the scan: its ordered patterns hold <span class="mono">5.7099</span> out of a total of <span class="mono">8.0000</span>, so</p>
+      <div class="eq">S = 5.7099 &divide; 8 = <b>0.7137</b></div>
+      <p style="margin-top:14px"><strong>71% of everything the scan does down the page is one single pattern.</strong> For the market it is <span class="mono">5.9988 &divide; 16 = 0.3749</span> &mdash; far less dominated, because eight companies over sixteen months genuinely do several things at once.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>What opticians use this for</h3>
+        <p style="margin:0 0 10px; font-size:14.5px">This ratio is the <strong>Strehl ratio</strong>, and in optics it is <em>the</em> number for lens quality. A perfect lens puts all the light from a star into one tight spot: Strehl 1. A flawed one smears it, and the peak drops.</p>
+        <p style="margin:0 0 10px; font-size:14.5px">Telescopes are specified by it. Above about <span class="mono">0.8</span> a lens is called <em>diffraction-limited</em> &mdash; as good as physics allows.</p>
+        <p style="margin:0; font-size:14.5px">Here the &ldquo;light&rdquo; is the record&rsquo;s power and the &ldquo;spot&rdquo; is its strongest pattern, so the number means: <strong>how much of what happened was one thing happening?</strong></p>
+      </div>
+      <div class="card">
+        <h3>All four</h3>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>record</th><th>Strehl</th><th>reads as</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>A &middot; the scan</td><td>0.7137</td><td>one dominant stroke</td></tr>
+            <tr><td>an MRI slice</td><td>0.4367</td><td>strong but not alone</td></tr>
+            <tr class="hi"><td>B &middot; the market</td><td>0.3749</td><td>several things at once</td></tr>
+            <tr><td>the flash</td><td>0.0504</td><td>no dominant pattern &mdash; it is mostly noise</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <figcaption>The flash's <span class="mono">0.05</span> is the honest reading of a record that is 83% noise by construction: no single time-pattern owns it, even though three real layers are in there and lesson one found them.</figcaption>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 8 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="3">
+  <p class="eyebrow">Act III &middot; Quality</p>
+  <h2>Four more, all of them shapes of the same spectrum.</h2>
+  <div class="two nr">
+    <div>
+      <p>Strehl asked what share the <em>biggest</em> pattern holds. Four further reads ask related questions of the same list of strengths, and each is a plain fraction or ratio you could work out yourself.</p>
+      <div class="eq"><b>top share</b>    biggest &divide; total
+<b>dominance</b>    how far the biggest stands
+             above an even spread
+<b>contrast</b>     biggest &divide; the noise floor
+<b>resolved power</b>  how much power sits
+             above that floor</div>
+      <p style="margin-top:14px">They separate cases that a single number would blur together. A record can have one large pattern and still be mostly noise; another can have no large pattern at all and still be entirely signal.</p>
+      <div class="note">
+        <p><strong>Contrast is the one to keep.</strong> It compares the biggest strength against the floor lesson one derived &mdash; so it is the only read here that knows what noise looks like. Below 1 there is nothing to see; the flash reads <span class="mono">2.34</span>, the MRI <span class="mono">26.10</span>.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>The spectral family, four records</h3>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>record</th><th>top share</th><th>dominance</th><th>contrast</th><th>resolved power</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>A &middot; the scan</td><td>0.6732</td><td>0.4342</td><td>0.93</td><td>0.00</td></tr>
+            <tr class="hi"><td>B &middot; the market</td><td>0.5892</td><td>0.5305</td><td>1.49</td><td>1.56</td></tr>
+            <tr><td>the flash</td><td>0.0542</td><td>0.0468</td><td>2.34</td><td>6.07</td></tr>
+            <tr><td>an MRI slice</td><td>0.6010</td><td>0.4109</td><td>26.10</td><td>124.40</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+      <div class="note cool">
+        <p><strong>Read the scan&rsquo;s row and you learn something the other numbers hid.</strong> Its top share is <span class="mono">0.67</span> &mdash; two thirds of the power in one pattern, the highest here. But its contrast is <span class="mono">0.93</span>, below 1, and its resolved power is <span class="mono">0.00</span>.</p>
+        <p style="margin-bottom:0">Both are true at once: the scan <em>is</em> dominated by one pattern, and that pattern still does not clear the floor for a grid holding only 64 numbers. Dominance is about shape; contrast is about evidence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 9 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="3">
+  <p class="eyebrow">Act III &middot; Quality</p>
+  <h2>Two different meanings of &ldquo;concentrated&rdquo;.</h2>
+  <div class="two nl">
+    <div>
+      <p>Here is a distinction worth the slide, because it is the kind of thing that quietly ruins a measurement.</p>
+      <p>Think of every row of the screen as an arrow. Ask &ldquo;are these arrows concentrated?&rdquo; and there are two completely different questions hiding in it:</p>
+      <ul>
+        <li><strong class="amber">Do they lie along one line?</strong> &mdash; the <em>axial</em> question. Call it <strong>focus</strong>.</li>
+        <li><strong class="teal">Do they point the same way?</strong> &mdash; the <em>directional</em> question. Call it the <strong>resultant</strong>: just the average arrow&rsquo;s length.</li>
+      </ul>
+      <p>These are not the same, and one example settles it. Take a cloud where half the arrows point one way and half point exactly the opposite way &mdash; all along one line.</p>
+      <div class="eq">focus     = <b>1.0000</b>   perfectly axial
+resultant = <b>0.000000</b>   they cancel</div>
+      <p style="margin-top:14px">Measured on exactly that cloud: 20 copies of an arrow and 20 of its opposite. <strong>Maximum focus, zero resultant.</strong> Anyone reporting a single &ldquo;concentration&rdquo; number would have to pick one and be wrong about the other.</p>
+    </div>
+    <div class="stack">
+      <figure class="card">
+        <h3>The cloud that separates them</h3>
+        <svg viewBox="0 0 400 190" role="img" aria-label="Left: arrows pointing both ways along one line, giving focus one and resultant zero. Right: arrows all pointing the same way, giving both high.">
+          <defs><marker id="oa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d99a34"/></marker>
+          <marker id="ob" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#4d918b"/></marker></defs>
+          <g font-family="IBM Plex Mono, monospace" font-size="10">
+            <text x="95" y="16" text-anchor="middle" font-size="10" font-weight="600" fill="#a5620c">half each way</text>
+            <g stroke="#d99a34" stroke-width="2" marker-end="url(#oa)">
+              <line x1="95" y1="70" x2="150" y2="45"/><line x1="95" y1="70" x2="150" y2="52"/>
+              <line x1="95" y1="70" x2="152" y2="48"/><line x1="95" y1="70" x2="40" y2="95"/>
+              <line x1="95" y1="70" x2="40" y2="88"/><line x1="95" y1="70" x2="38" y2="92"/>
+            </g>
+            <circle cx="95" cy="70" r="3" fill="currentColor"/>
+            <text x="95" y="126" text-anchor="middle" font-weight="600" fill="#a5620c">focus 1.00</text>
+            <text x="95" y="142" text-anchor="middle" font-weight="600" fill="#20635f">resultant 0.00</text>
+            <text x="95" y="164" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".65">one line, no direction</text>
+            <text x="300" y="16" text-anchor="middle" font-size="10" font-weight="600" fill="#20635f">all one way</text>
+            <g stroke="#4d918b" stroke-width="2" marker-end="url(#ob)">
+              <line x1="255" y1="70" x2="310" y2="45"/><line x1="255" y1="70" x2="312" y2="52"/>
+              <line x1="255" y1="70" x2="308" y2="48"/><line x1="255" y1="70" x2="313" y2="56"/>
+              <line x1="255" y1="70" x2="309" y2="43"/><line x1="255" y1="70" x2="311" y2="50"/>
+            </g>
+            <circle cx="255" cy="70" r="3" fill="currentColor"/>
+            <text x="300" y="126" text-anchor="middle" font-weight="600" fill="#a5620c">focus 1.00</text>
+            <text x="300" y="142" text-anchor="middle" font-weight="600" fill="#20635f">resultant 1.00</text>
+            <text x="300" y="164" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".65">one line AND one direction</text>
+          </g>
+        </svg>
+        <figcaption>Focus cannot tell these two apart; the resultant can. So the construction reports <strong>both</strong>, so the pair carries what one average would hide.</figcaption>
+      </figure>
+      <div class="note">
+        <p><strong>Why it matters here.</strong> A signal that swings symmetrically about zero &mdash; a market that goes down as hard as it goes up, an oscillation, an alternating pattern &mdash; is <em>strongly</em> concentrated on one axis and has <em>no</em> net direction at all. Reporting only the resultant would call it structureless. It is not.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 10 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="3">
+  <p class="eyebrow">Act III &middot; Quality</p>
+  <h2>Four records, five numbers, one line each.</h2>
+  <div class="scroll card tight">
+    <table>
+      <thead><tr><th>record</th><th>shape</th><th>&phi;<sub>T</sub></th><th>&phi;<sub>F</sub></th><th>&phi;</th><th>E</th><th>capacity</th><th>filled</th><th>Strehl</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td>A &middot; the scan</td><td>8 &times; 8</td><td>0.2942</td><td>0.3049</td><td>0.2967</td><td>0.0897</td><td>64</td><td>5.7</td><td>0.7137</td></tr>
+        <tr class="hi"><td>B &middot; the market</td><td>16 &times; 8</td><td>0.3161</td><td>0.4816</td><td>0.4765</td><td>0.1522</td><td>128</td><td>19.5</td><td>0.3749</td></tr>
+        <tr><td>the flash</td><td>256 &times; 128</td><td>0.3627</td><td>0.7186</td><td>0.6871</td><td>0.2606</td><td>32&thinsp;768</td><td>8&thinsp;540</td><td>0.0504</td></tr>
+        <tr><td>an MRI slice</td><td>256 &times; 256</td><td>0.0366</td><td>0.0242</td><td>0.0183</td><td>0.00088</td><td>37&thinsp;888</td><td>33.5</td><td>0.4367</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="three" style="margin-top:22px">
+    <div class="card tight">
+      <p class="exA" style="margin-bottom:6px">the scan</p>
+      <p style="margin:0; font-size:14.5px"><strong>Small, square, and dominated.</strong> Nearly the same fill on both axes &mdash; a digit is as structured across as down &mdash; and 71% of it is one stroke. Sixty-four spots available, fewer than six in use.</p>
+    </div>
+    <div class="card tight">
+      <p class="exB" style="margin-bottom:6px">the market</p>
+      <p style="margin:0; font-size:14.5px"><strong>Wider across than down.</strong> The companies are less concentrated than the months, which is the crash showing up: a few months did most of the work. No single pattern owns it &mdash; Strehl 0.37 &mdash; because there is a market factor <em>and</em> eight companies.</p>
+    </div>
+    <div class="card tight">
+      <p style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; color:var(--ink3); margin:0 0 6px">the two big ones</p>
+      <p style="margin:0; font-size:14.5px"><strong>Same size, opposite shape.</strong> The flash fills a quarter of its rectangle and has no dominant pattern; the MRI fills a thousandth of its and has a strong one. Noise spreads, pictures concentrate.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 11 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="4">
+  <p class="eyebrow">Act IV &middot; Why these names</p>
+  <h2>None of this was borrowed. It is the same arithmetic.</h2>
+  <div class="two nl">
+    <div>
+      <p>It would be easy to think the optical words are a decoration &mdash; a nice metaphor bolted onto some statistics. They are not. Each read is the <em>same formula</em> an optician writes about a real aperture, and each carries a named theorem behind it.</p>
+      <div class="scroll card tight" style="margin-top:14px">
+        <table>
+          <thead><tr><th>what we computed</th><th>what it is called in optics</th></tr></thead>
+          <tbody>
+            <tr><td>2<sup>H</sup> of the layer strengths, over n</td><td>aperture fill fraction</td></tr>
+            <tr><td>1 &divide; &phi;</td><td>reach, or oversampling</td></tr>
+            <tr class="hi"><td>&phi;<sub>T</sub> &times; &phi;<sub>F</sub></td><td><strong>étendue</strong> &mdash; the Lagrange invariant</td></tr>
+            <tr class="hi"><td>n<sub>T</sub> &times; n<sub>F</sub></td><td><strong>space&ndash;bandwidth product</strong> &mdash; resolvable spots</td></tr>
+            <tr class="hi"><td>&lambda;<sub>1</sub> &divide; &Sigma;&lambda; &nbsp;<span style="color:var(--ink3)">(big <strong>sigma</strong> means &ldquo;add them all up&rdquo;)</span></td><td><strong>Strehl ratio</strong> &mdash; lens quality</td></tr>
+            <tr style="opacity:.72"><td>the autocorrelation of the record</td><td>the point-spread function &nbsp;<span class="mono" style="color:var(--teal)">&rarr; lesson 3</span></td></tr>
+            <tr style="opacity:.72"><td>its entropy width</td><td>the diffraction limit, Abbe and Rayleigh &nbsp;<span class="mono" style="color:var(--teal)">&rarr; lesson 3</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px; font-size:14px">The right-hand column is a list of things measured in laboratories since the 1870s. The left-hand column is what you get by squaring numbers, turning them into shares and taking a logarithm.</p>
+      <div class="note cool">
+        <p><strong>The last two rows are not in this lesson.</strong> Every read here was taken with the record standing still &mdash; nothing above ever looked at the order the rows came in. The point-spread function and the diffraction limit both come from <em>comparing rows with later rows</em>, so they need the ordered axis and they get their own lesson.</p>
+        <p style="margin-bottom:0">That is <strong>lesson three: the point-spread</strong> &mdash; how long a record remembers, how finely it can resolve, and how fast each layer fades.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="note">
+        <p><strong>Why they coincide.</strong> An optical aperture is a finite window that light passes through, and what comes out the far side is limited by the window&rsquo;s size and shape. A record is a finite window too &mdash; so many rows, so many channels &mdash; and what you can learn from it is limited the same way.</p>
+        <p style="margin-bottom:0">The mathematics does not know whether the window is made of glass. It only knows the window is finite.</p>
+      </div>
+      <div class="card sunk">
+        <h3>What the whole thing bought</h3>
+        <p style="margin:0 0 10px; font-size:14.5px">Lesson one turned a grid into a screen and asked <em>how much is real</em>. It answered with a count.</p>
+        <p style="margin:0 0 10px; font-size:14.5px">Lesson two asked <em>what shape is it</em>, and answered with a handful of dimensionless fractions &mdash; every one of them between 0 and 1, every one of them comparable between a handwriting scan and a radio telescope.</p>
+        <p style="margin:0 0 10px; font-size:14.5px"><strong>That comparability is the entire point.</strong> Not one of these numbers carries a unit, a threshold, or a setting.</p>
+        <p style="margin:0; font-size:14.5px">Lesson three asks the one question neither of these two has touched: <em>what does the record do as you move down the ordered axis?</em></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 12 ═══════════════════════════════════════════════ -->
+<section class="slide" data-act="4">
+  <p class="eyebrow">Your turn</p>
+  <h2>Three problems, and one thing to notice.</h2>
+  <div class="two">
+    <div class="stack">
+      <div class="card">
+        <h3>1 &middot; Find the fill</h3>
+        <p style="font-size:14.5px">A screen has 5 layers. Their strengths are <span class="mono">6, 0, 0, 0, 0</span>. Without a calculator, what is <span class="mono">&phi;</span>?</p>
+        <details><summary>Answer</summary>
+          <p>All the power is in one layer, so the shares are <span class="mono">1, 0, 0, 0, 0</span> and the entropy is <span class="mono">0</span> bits. <span class="mono">2<sup>0</sup> = 1</span>, and <span class="mono">&phi; = 1 &divide; 5 = <strong>0.2</strong></span> &mdash; the floor for a 5-layer screen. The grid is one multiplication table.</p>
+        </details>
+      </div>
+      <div class="card">
+        <h3>2 &middot; Find the area</h3>
+        <p style="font-size:14.5px">A record measures <span class="mono">&phi;<sub>T</sub> = 0.25</span> and <span class="mono">&phi;<sub>F</sub> = 0.40</span>, on a grid whose capacity is 800 spots. What is its étendue, and how many spots is it filling?</p>
+        <details><summary>Answer</summary>
+          <p><span class="mono">E = 0.25 &times; 0.40 = <strong>0.10</strong></span> &mdash; it occupies a tenth of its available shape.<br>
+          Filled <span class="mono">= 0.10 &times; 800 = <strong>80</strong></span> spots of the 800 it could have used.</p>
+        </details>
+      </div>
+      <div class="card">
+        <h3>3 &middot; Read the shape</h3>
+        <p style="font-size:14.5px">Two records, same size grid. One reads <span class="mono">&phi; = 0.92</span>, the other <span class="mono">&phi; = 0.11</span>. Which one would compress well, and which is probably mostly noise?</p>
+        <details><summary>Answer</summary>
+          <p><span class="mono">&phi; = 0.11</span> compresses well: nearly all its power sits in a few layers, so a few layers describe it. <span class="mono">&phi; = 0.92</span> is close to the ceiling, meaning every direction carries about as much as every other &mdash; the signature of noise, and the reason noise cannot be compressed.</p>
+        </details>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="note">
+        <p><strong>And the thing to notice.</strong> Every number in this lesson is a <em>fraction</em>. Not one of them has a unit. Not one of them needed a threshold, a setting, or a decision from you.</p>
+        <p style="margin-bottom:0">That is what let a 64-number handwriting scan and a 37&thinsp;888-spot hospital image appear in the same table on the same scale &mdash; and it came from nothing more exotic than squaring, dividing by a total, and taking a logarithm.</p>
+      </div>
+      <div class="card sunk">
+        <h3>Where this came from</h3>
+        <p style="margin:0 0 8px; font-size:14px">Lesson one &mdash; the screen, the lens and the projection &mdash; builds everything used here: the screen, the layers, the noise floor and the count K.</p>
+        <p style="margin:0; font-size:13px; color:var(--ink3)">Data: UCI Optical Recognition of Handwritten Digits &middot; monthly closes from Yahoo Finance via matplotlib&rsquo;s <span class="mono">Stocks.csv</span> &middot; matplotlib sample data <span class="mono">s1045.ima</span> &middot; a planted flash whose truth is stated in lesson one. Reads computed with <span class="mono">entroptics 0.2.1</span>, August 2026.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-optics-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-optics-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

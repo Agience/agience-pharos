@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Ceiling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D5g &middot; the gap as one comparison</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+.ceil { font-variant-numeric: tabular-nums; }
+.ceil td.under { background: rgba(64,200,120,.14); }
+.ceil td.over  { background: rgba(255,140,90,.16); }
+</style>
+<section class="slide on" data-act="ceiling">
+<h1>The Ceiling</h1>
+<p class="lede">The whole argument comes down to <strong>one comparison between two numbers</strong>.
+Unit <strong>D5a</strong> worked out the first of them by counting. This page measures the second on
+records you already have and puts them side by side.</p>
+<p class="formula">&mu; &lt; &kappa;<sub>0</sub>
+&nbsp;&nbsp;&nbsp;which is the same as&nbsp;&nbsp;&nbsp;
+contrast &lt; 1.316074</p>
+<p><strong>Reading the two letters.</strong> <strong>&kappa;</strong>, said <em>kappa</em>, is the
+counting floor from unit D5a. <strong>&mu;</strong>, said <em>mu</em>, is what the record's own
+leading mode is worth. <strong>&sigma;</strong>, said <em>sigma</em>, will appear on the fourth
+slide as the size of a mode.</p>
+<table class="tab ceil"><thead><tr><th>the number</th><th>where it comes from</th>
+<th>value</th></tr></thead><tbody>
+<tr><td>&kappa;<sub>0</sub>, the floor</td><td>counting paths on a cube &mdash; unit D5a</td>
+<td class="hit"><strong>0.274653</strong></td></tr>
+<tr class="hi"><td>the ceiling</td><td>that floor, exponentiated</td>
+<td class="hit"><strong>1.316074</strong></td></tr>
+</tbody></table>
+<p class="note cool">Two counting quantities and a &lt; sign. Everything on the next six slides is
+that comparison being made, and the arithmetic on both sides is something a reader can repeat.</p>
+</section>
+
+<section class="slide" data-act="ceiling">
+<h2>The floor, turned into a ceiling</h2>
+<p>Unit <strong>D5a</strong> counts the ways a path can run along the edges of a cube and arrives at
+a floor of <strong>one quarter of the natural logarithm of 3</strong>:</p>
+<p class="formula">&kappa;<sub>0</sub> = &frac14; &times; ln 3 = <strong>0.274653</strong></p>
+<p>The comparison in the paper is written with logarithms on both sides. Raising
+<strong>e</strong> to each side turns it into a comparison of ordinary numbers, and the ceiling that
+comes out has a much simpler name:</p>
+<table class="tab ceil"><thead><tr><th>written this way</th><th>value</th></tr></thead><tbody>
+<tr><td>e raised to &kappa;<sub>0</sub></td><td class="hit"><strong>1.316074</strong></td></tr>
+<tr class="hi"><td>the fourth root of 3</td><td class="hit"><strong>1.316074</strong></td></tr>
+</tbody></table>
+<p><strong>The same number, to every decimal.</strong> Taking a quarter of a logarithm and then
+undoing the logarithm leaves a fourth root, so the ceiling is <strong>3<sup>&frac14;</sup></strong>
+&mdash; a number you can get on any calculator by typing 3, then square root, then square root
+again.</p>
+<p class="note">That is worth doing once by hand. The square root of 3 is about 1.732, and the
+square root of <em>that</em> is <strong>1.316074</strong>. Everything on this slide is a counting
+constant and a root.</p>
+</section>
+
+<section class="slide" data-act="ceiling">
+<h2>One inequality, two ways of writing it</h2>
+<p>The comparison can be made in logarithms or in plain numbers. Both columns below are the
+<em>same test</em>, and the point of the table is that they give the same verdict on every row:</p>
+<table class="tab ceil"><thead><tr><th>record</th><th>&mu;</th><th>&mu; against 0.274653</th>
+<th>contrast</th><th>contrast against 1.316074</th></tr></thead><tbody>
+<tr><td>noise, seed 2</td><td>-0.05487</td><td class="under">below 0.274653</td><td>0.94660</td><td class="under">below 1.316074</td></tr><tr><td>noise, seed 0</td><td>-0.03360</td><td class="under">below 0.274653</td><td>0.96695</td><td class="under">below 1.316074</td></tr><tr><td>noise, seed 1</td><td>-0.01507</td><td class="under">below 0.274653</td><td>0.98505</td><td class="under">below 1.316074</td></tr><tr><td>the market's prices</td><td>0.11679</td><td class="under">below 0.274653</td><td>1.12388</td><td class="under">below 1.316074</td></tr><tr><td>the EEG</td><td>0.22440</td><td class="under">below 0.274653</td><td>1.25157</td><td class="under">below 1.316074</td></tr><tr class="hi"><td>the scan</td><td>0.23177</td><td class="under">below 0.274653</td><td>1.26083</td><td class="under">below 1.316074</td></tr><tr><td>the market's monthly changes</td><td>0.86463</td><td class="over">above</td><td>2.37412</td><td class="over">above</td></tr><tr><td>the terrain grid</td><td>1.94930</td><td class="over">above</td><td>7.02379</td><td class="over">above</td></tr>
+</tbody></table>
+<p><strong>Eight records, eight agreements.</strong> That is guaranteed by how logarithms work
+&mdash; raising e to both sides of a comparison keeps it true &mdash; and it is checked here on
+every row, because a page that says "equivalently" should be able to show it.</p>
+<p><strong>Which form to use is a matter of convenience.</strong> The paper writes logarithms
+because the floor is naturally a logarithm. A reader with a record in front of them measures the
+ratio, and compares against <strong>1.316074</strong>.</p>
+</section>
+
+<section class="slide" data-act="ceiling">
+<h2>Measuring the other side</h2>
+<p><strong>Contrast</strong> is a ratio of two numbers the instrument already publishes. The first
+is the size of the record's largest mode, <strong>&sigma;</strong><sub>top</sub>. The second is the
+<em>edge</em> &mdash; how large a mode gets on a record of pure noise, which unit
+<strong>A7</strong> measured directly:</p>
+<p class="formula">contrast = &sigma;<sub>top</sub> &divide; edge</p>
+<table class="tab ceil"><thead><tr><th>record</th><th>&sigma;<sub>top</sub></th><th>edge</th>
+<th>contrast</th><th>modes above the edge</th></tr></thead><tbody>
+<tr><td>noise, seed 2</td><td>29.6689</td><td>31.3424</td><td class="hit"><strong>0.94660</strong></td><td>0</td></tr><tr><td>noise, seed 0</td><td>29.9337</td><td>30.9567</td><td class="hit"><strong>0.96695</strong></td><td>0</td></tr><tr><td>noise, seed 1</td><td>29.5305</td><td>29.9788</td><td class="hit"><strong>0.98505</strong></td><td>0</td></tr><tr><td>the market's prices</td><td>8.5429</td><td>7.6012</td><td class="hit"><strong>1.12388</strong></td><td>1</td></tr><tr><td>the EEG</td><td>38.9170</td><td>31.0946</td><td class="hit"><strong>1.25157</strong></td><td>2</td></tr><tr class="hi"><td>the scan</td><td>7.1231</td><td>5.6495</td><td class="hit"><strong>1.26083</strong></td><td>1</td></tr><tr><td>the market's monthly changes</td><td>28.8627</td><td>12.1572</td><td class="hit"><strong>2.37412</strong></td><td>2</td></tr><tr><td>the terrain grid</td><td>265.3916</td><td>37.7847</td><td class="hit"><strong>7.02379</strong></td><td>15</td></tr>
+</tbody></table>
+<p><strong>The three noise records sit below 1</strong> &mdash; 0.94660, 0.96695 and 0.98505 &mdash; and
+their last column is <strong>0</strong>. A pure-noise record's largest mode falls short of the
+edge, so the ratio lands under one.</p>
+<p class="note cool">Every other record clears the edge, and the ratio says by how much. That is the
+number the ceiling is a ceiling on.</p>
+</section>
+
+<section class="slide" data-act="ceiling">
+<h2>Which side each record falls</h2>
+<table class="tab ceil"><thead><tr><th>record</th><th>contrast</th>
+<th>against 1.316074</th></tr></thead><tbody>
+<tr><td>noise, seed 2</td><td class="hit"><strong>0.94660</strong></td><td class="under">under the ceiling</td></tr><tr><td>noise, seed 0</td><td class="hit"><strong>0.96695</strong></td><td class="under">under the ceiling</td></tr><tr><td>noise, seed 1</td><td class="hit"><strong>0.98505</strong></td><td class="under">under the ceiling</td></tr><tr><td>the market's prices</td><td class="hit"><strong>1.12388</strong></td><td class="under">under the ceiling</td></tr><tr><td>the EEG</td><td class="hit"><strong>1.25157</strong></td><td class="under">under the ceiling</td></tr><tr class="hi"><td>the scan</td><td class="hit"><strong>1.26083</strong></td><td class="under">under the ceiling</td></tr><tr><td>the market's monthly changes</td><td class="hit"><strong>2.37412</strong></td><td class="over">over it</td></tr><tr><td>the terrain grid</td><td class="hit"><strong>7.02379</strong></td><td class="over">over it</td></tr>
+</tbody></table>
+<p><strong>6 of the eight sit under it and 2 sit over.</strong> The closest to the line from below
+is <strong>the scan</strong> at <strong>1.26083</strong>, which leaves it <strong>0.05525</strong> short of the
+ceiling. The lowest one above is <strong>the market's monthly changes</strong> at <strong>2.37412</strong>.</p>
+<p><strong>The ceiling is a real dividing line on ordinary data.</strong> It was worked out by
+counting paths on a cube, before any record was measured, and it lands in the middle of the range
+these eight records occupy &mdash; between 0.94660 and 7.02379.</p>
+<p class="note">A record can sit either side of it. The next slide is about what putting a record on
+one side actually tells you, because two different questions are easy to confuse here and this
+course has spent several units on the difference.</p>
+</section>
+
+<section class="slide" data-act="ceiling">
+<h2>Shuffle the rows and watch which number moves</h2>
+<p>Take a record, put its rows in a random order <strong>20</strong> times, and measure both reads
+each time. Shuffling rows destroys any order along the record and leaves every column's
+relationship to the others exactly as it was:</p>
+<table class="tab ceil"><thead><tr><th>record</th><th>contrast</th><th>after shuffling</th>
+<th>coherence</th><th>after shuffling</th></tr></thead><tbody>
+<tr><td>the EEG</td><td class="hit"><strong>1.25157</strong></td><td>1.25157 to 1.25157</td><td>+41.287</td><td>-1.438 to +3.246</td></tr><tr><td>the market's monthly changes</td><td class="hit"><strong>2.37412</strong></td><td>2.37412 to 2.37412</td><td>-1.119</td><td>-1.125 to +3.170</td></tr>
+</tbody></table>
+<p><strong>Contrast comes back identical to every digit shown.</strong> Across 20 shuffles the EEG's
+spread is <strong>6.7e-16</strong>, which is the smallest difference the arithmetic can represent. The
+coherence read on the same record goes from <strong>+41.287</strong> to between <strong>-1.438</strong>
+and <strong>+3.246</strong>.</p>
+<p><strong>This is a fact about the arithmetic, and the table above is it happening.</strong>
+Reordering the rows of a table is a rigid motion of the numbers in it: every length survives it,
+so the size of the largest mode is exactly what it was. The row <em>order</em> carries no weight in
+that measurement, and coherence is the read that asks about order.</p>
+<p><strong>So the two answer different questions.</strong> The market's monthly changes are
+<strong>2.37412</strong> on contrast, above the ceiling, and <strong>-1.119</strong> on coherence,
+which sits inside the noise band. Eight stocks moving together within the same month gives one dominant mode across
+the columns; the months themselves arriving in any order is what coherence reports. Units
+<strong>A11</strong> and <strong>C3</strong> are about exactly this distinction.</p>
+</section>
+
+<section class="slide" data-act="ceiling">
+<h2>Where this lands</h2>
+<table class="tab ceil"><thead><tr><th>quantity</th><th>value</th><th>where it comes from</th>
+</tr></thead><tbody>
+<tr><td>&kappa;<sub>0</sub>, the counting floor</td><td class="hit"><strong>0.274653</strong></td>
+<td>paths on a cube, unit D5a. No record consulted</td></tr>
+<tr class="hi"><td>the ceiling on contrast</td><td class="hit"><strong>1.316074</strong></td>
+<td>that floor exponentiated: 3<sup>&frac14;</sup></td></tr>
+<tr><td>contrast</td><td>0.94660 to 7.02379 here</td>
+<td>&sigma;<sub>top</sub> &divide; edge, measured per record</td></tr>
+</tbody></table>
+<p><strong>What was done here.</strong> The paper's comparison was rewritten into a ratio, the
+ratio was measured on eight records, and both forms of the comparison were checked against each
+other. The arithmetic is complete and a reader can repeat every line of it.</p>
+<p><strong>Where it stops.</strong> The paper makes this comparison on a gauge screen as the
+screen is refined, and that is a statement about a field. An EEG landing under the ceiling says what
+that one record's leading mode is worth against a counting constant, and that is the whole of what
+it says. These eight records are here so the inequality becomes something a reader has evaluated
+with their own hands.</p>
+<p><strong>Where the pieces sit.</strong> Unit <strong>D5a</strong> supplies the floor,
+<strong>D5f</strong> says which theories the argument covers, and units <strong>B6</strong> and
+<strong>B7</strong> measure what a finite opening does to a decay. This page is the comparison those
+four are for.</p>
+<p class="note cool">The ceiling is <strong>3<sup>&frac14;</sup></strong>. Three, square root,
+square root: <strong>1.316074</strong>.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-ceiling-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-ceiling-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Constant in Front</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson B6 &middot; the shape factor</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+.shape { font-variant-numeric: tabular-nums; }
+.same td.hit { background: rgba(64,160,255,.14); }
+</style>
+<section class="slide on" data-act="constant">
+<h1>The Constant in Front</h1>
+<p class="lede">An instrument reads a <strong>width</strong>. A physicist asks for a
+<strong>gap</strong>. One number stands between them, and that number is fixed by the
+<em>shape</em> of the decay alone &mdash; the same way a telescope's resolution carries a 1.22 that
+belongs to the circle alone.</p>
+<p class="formula">&Delta; = g &times; a<sub>&delta;</sub></p>
+<p><strong>Reading the symbols.</strong> The width an instrument reports is written
+<strong>a<sub>&delta;</sub></strong>, said <em>a-delta</em>. A decay is written against
+<strong>&tau;</strong>, said <em>tau</em>, which counts how far apart along the record two points
+sit. The tick mark
+<strong>&radic;</strong> in the table below is a <em>square root</em>, and <strong>e</strong> is the
+number 2.718&hellip;, the one that turns up whenever something falls by the same fraction each
+step.</p>
+<p>Unit <strong>B5</strong> measured a<sub>&delta;</sub> on eight records. This unit measures
+<strong>g</strong>. It is one line of the mass-gap argument, and the four <strong>D5</strong> units
+that come later will each use it. Here it is worked out.</p>
+<table class="tab shape"><thead><tr><th>the decay's shape</th><th>g, measured</th>
+<th>what it is</th></tr></thead><tbody>
+<tr><td>flat out to a width, then finished</td><td class="hit"><strong>1.0000</strong></td>
+<td>1</td></tr>
+<tr><td>a bell, written exp(&minus;(&tau;/s)<sup>2</sup>)</td>
+<td class="hit"><strong>2.066366</strong></td><td>&radic;(&pi;e&divide;2)</td></tr>
+<tr class="hi"><td>a plain decay, exp(&minus;D&tau;)</td><td class="hit"><strong>2.718191</strong></td>
+<td>e</td></tr>
+</tbody></table>
+<p class="note cool">The first six slides hand the instrument an exact shape and read the
+constant straight back. Working from the shape itself is what lets these numbers arrive to six
+decimals; the seventh slide measures what it takes to recover one from real data.</p>
+</section>
+
+<section class="slide" data-act="constant">
+<h2>A shape whose constant is one</h2>
+<p>Start with the simplest decay there is: the correlation holds at full strength out to a width
+<strong>W</strong>, and beyond W it is finished. Two lengths can be read off it.
+<strong>&xi;</strong> is how far the correlation reaches, added up. <strong>a<sub>&delta;</sub></strong>
+is the width the instrument reports. Multiply them:</p>
+<table class="tab shape"><thead><tr><th>W</th><th>a<sub>&delta;</sub></th><th>&xi;</th>
+<th>&xi; &times; a<sub>&delta;</sub></th></tr></thead><tbody>
+<tr><td>50</td><td>0.020000</td><td>50.0</td><td class="hit"><strong>1.0000000000000004</strong></td></tr><tr><td>100</td><td>0.010000</td><td>100.0</td><td class="hit"><strong>1.0000000000000013</strong></td></tr><tr><td>200</td><td>0.005000</td><td>200.0</td><td class="hit"><strong>1.0000000000000009</strong></td></tr>
+</tbody></table>
+<p><strong>One, at every width, to fifteen decimal places.</strong> Double W and a<sub>&delta;</sub>
+halves, &xi; doubles, and the product holds. The instrument is reporting exactly the reach that is
+there.</p>
+<p>This is the anchor for everything that follows. A shape whose constant is <strong>1</strong> is a
+shape where the reported width <em>is</em> the reach. Every other shape is read against this one.</p>
+<p class="note">The instrument publishes this product as <code>rayleigh_shape_factor</code>. Unit
+<strong>B5</strong> checked that it equals <code>xi * a_delta</code> on two real records, agreeing to
+nine decimals. Here the same product is evaluated on a shape whose answer can be worked out by
+hand.</p>
+</section>
+
+<section class="slide" data-act="constant">
+<h2>The same number at every width</h2>
+<p>Now a bell-shaped decay, <strong>exp(&minus;(&tau;&divide;s)<sup>2</sup>)</strong>, measured at
+three widths. The width <strong>s</strong> runs from 20 to 80 &mdash; a factor of
+<strong>4</strong>. Watch a<sub>&delta;</sub> follow it, and watch the last column hold
+still:</p>
+<table class="tab shape same"><thead><tr><th>s</th><th>a<sub>&delta;</sub></th>
+<th>1 &divide; (s &times; a<sub>&delta;</sub>)</th></tr></thead><tbody>
+<tr><td>20</td><td>0.02419707</td><td class="hit"><strong>2.066366</strong></td></tr><tr><td>40</td><td>0.01209854</td><td class="hit"><strong>2.066366</strong></td></tr><tr><td>80</td><td>0.00604927</td><td class="hit"><strong>2.066366</strong></td></tr>
+</tbody></table>
+<p><strong>2.066366, three times, to every decimal shown.</strong> a<sub>&delta;</sub> moved by a
+factor of four, and the constant held at every decimal shown.</p>
+<p><strong>This is what makes it a shape factor.</strong> It carries the shape, and it holds at
+every size. Give the instrument a bell twice as wide and it reports a width twice as
+large, and the number connecting the two is the same number. That is why a single measurement of
+<strong>g</strong> is worth having: once, for a shape, and it holds for every record with that
+shape.</p>
+<p class="note cool">Three widths, because one width shows a number and two show a coincidence.
+A quantity that claims to ignore the scale gets tested across the scale.</p>
+</section>
+
+<section class="slide" data-act="constant">
+<h2>The plain decay gives e</h2>
+<p>A decay that falls by the same fraction every step &mdash;
+<strong>exp(&minus;D&tau;)</strong> &mdash; is the shape a gap produces. <strong>D</strong> is the
+gap. Hand the shape to the instrument and divide:</p>
+<table class="tab shape"><thead><tr><th>D</th><th>a<sub>&delta;</sub></th>
+<th>D &divide; a<sub>&delta;</sub></th><th>distance from e</th></tr></thead><tbody>
+<tr class="hi"><td>0.01</td><td>0.00367892</td><td class="hit"><strong>2.718191</strong></td><td>0.0033%</td></tr><tr><td>0.02</td><td>0.00735857</td><td class="hit"><strong>2.717920</strong></td><td>0.0133%</td></tr><tr><td>0.05</td><td>0.01840928</td><td class="hit"><strong>2.716021</strong></td><td>0.0832%</td></tr><tr><td>0.10</td><td>0.03690992</td><td class="hit"><strong>2.709299</strong></td><td>0.3305%</td></tr>
+</tbody></table>
+<p class="formula">e = 2.718282</p>
+<p><strong>2.718191 against 2.718282</strong> &mdash; agreement to <strong>0.0033%</strong>. The number that
+turns this instrument's width into a gap is <strong>e</strong>, the base of the natural logarithm,
+arriving out of a measurement handed one decay curve.</p>
+<p><strong>Why this row is the one that matters.</strong> A ladder of evenly spaced energy levels,
+warm, decays exactly this way. So for the system the mass-gap argument is about, the gap is the
+instrument's width times e. Unit <strong>D5c</strong> reads a<sub>&delta;</sub> off a real field;
+this is the number it is multiplied by.</p>
+<p class="note">The agreement is closest at the smallest D and widens as D grows: at D = 0.10 the
+decay falls by 9.5% in a single step, and a curve read at whole steps carries that coarseness. The
+constant belongs to the smooth shape, and the finer the sampling the closer the measurement
+sits.</p>
+</section>
+
+<section class="slide" data-act="constant">
+<h2>Write the shape two ways, and the constant moves</h2>
+<p>Here is the same bell, written the two ways it is usually written. Both are Gaussians. Both call
+their width <strong>s</strong>:</p>
+<table class="tab shape"><thead><tr><th>written</th><th>a<sub>&delta;</sub> at s = 20</th>
+<th>g</th><th>what it is</th></tr></thead><tbody>
+<tr><td>exp(&minus;(&tau;&divide;s)<sup>2</sup>)</td><td>0.02419707</td>
+<td class="hit"><strong>2.066366</strong></td><td>&radic;(&pi;e&divide;2)</td></tr>
+<tr class="hi"><td>exp(&minus;&tau;<sup>2</sup> &divide; 2s<sup>2</sup>)</td><td>0.01710991</td>
+<td class="hit"><strong>2.922282</strong></td><td>&radic;(&pi;e)</td></tr>
+</tbody></table>
+<p class="formula">2.922282 &divide; 2.066366 = <strong>1.41421356</strong>
+&nbsp;&nbsp;&middot;&nbsp;&nbsp; &radic;2 = 1.41421356</p>
+<p><strong>The ratio is &radic;2, to eight decimals.</strong> The two formulas describe one curve at
+two different values of s: putting a 2 under the square changes what the letter s names, and the
+constant carries that change exactly.</p>
+<p><strong>So a shape factor travels with its convention.</strong> Quote <strong>g</strong> and
+quote the formula the width was defined by, and any reader reproduces the number. Both rows above
+are correct, and they are answers to two different questions about the same bell.</p>
+<p class="note cool">Every entry in the mass-gap paper's shape table appears in this measurement:
+1, 2.066366, 2.922282, and 4.132731 &mdash; each one &radic;2 from its neighbour. Which one a calculation uses
+follows from how that calculation writes its width.</p>
+</section>
+
+<section class="slide" data-act="constant">
+<h2>This is the telescope's 1.22</h2>
+<p>Every optics text gives the resolution of a round telescope as</p>
+<p class="formula">&theta; = 1.22 &times; &lambda; &divide; D</p>
+<p><strong>&theta;</strong>, said <em>theta</em>, is the angle between two points just far enough
+apart to arrive as two. <strong>&lambda;</strong>, said <em>lambda</em>, is the wavelength of the
+light, and <strong>D</strong> is the width of the opening.</p>
+<p>and the 1.22 is a shape factor. It belongs to the <strong>circle</strong>. Light through a round
+opening lands in a bright disc whose first dark ring sits where a particular function first reaches
+zero, and the constant is that zero divided by &pi;:</p>
+<table class="tab shape"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody>
+<tr><td>first zero of J<sub>1</sub></td><td>3.8317059702</td></tr>
+<tr><td>&pi;</td><td>3.1415926536</td></tr>
+<tr class="hi"><td>the ratio</td><td class="hit"><strong>1.2196698913</strong></td></tr>
+</tbody></table>
+<p><strong>1.22 is a measured constant, and this is the measurement.</strong> A square opening gives
+a different number. A slit gives a different number again. The wavelength and the aperture size sit
+in the formula as &lambda; and D; the 1.22 is the <em>circle</em>, on its own.</p>
+<p><strong>The four constants on the previous slides are the same kind of number.</strong> A decay
+shape stands where the circle stands, a<sub>&delta;</sub> stands where &lambda;&divide;D stands, and
+<strong>g</strong> stands where 1.22 stands. Unit <strong>B5</strong> called a<sub>&delta;</sub> the
+oldest number in optics; this is the constant that has always travelled in front of it.</p>
+</section>
+
+<section class="slide" data-act="constant">
+<h2>Taking it to a record</h2>
+<p>The six slides above hand the instrument an exact shape. A real measurement hands it a
+<strong>record</strong>, and the record's decay is estimated from the columns it carries. Here is
+the same plain decay, D = 0.05, built as a record and read back at six column counts:</p>
+<table class="tab shape"><thead><tr><th>columns</th><th>a<sub>&delta;</sub></th>
+<th>D &divide; a<sub>&delta;</sub></th></tr></thead><tbody>
+<tr><td>4</td><td>0.01031523</td><td class="hit"><strong>4.8472</strong></td></tr><tr><td>16</td><td>0.02121406</td><td class="hit"><strong>2.3569</strong></td></tr><tr><td>64</td><td>0.03148269</td><td class="hit"><strong>1.5882</strong></td></tr><tr><td>256</td><td>0.03246434</td><td class="hit"><strong>1.5402</strong></td></tr><tr class="hi"><td>1024</td><td>0.03334490</td><td class="hit"><strong>1.4995</strong></td></tr>
+</tbody></table>
+<p><strong>The reading settles as the columns arrive:</strong> 4.8472 at 4 columns, 1.5882 at 64, and
+1.4995 by 1024, where it has been stable for two doublings.</p>
+<p><strong>The instrument states this requirement itself.</strong> Its documentation gives the
+numbers for a record whose answer is exactly 1: it returns <strong>0.43, 0.70, 0.90, 0.97</strong>
+and <strong>0.99</strong> at 4, 16, 64, 256 and 1024 columns. The decay is summed across the
+columns, so the scatter left in it falls as the count rises, and a wider record buys a tighter
+read.</p>
+<p><strong>This slide exists because the first attempt at this unit used four columns</strong> and
+read the plain decay's constant as <strong>4.85</strong>. Unit <strong>A12</strong> counts how many
+columns of a record are working and unit <strong>A13</strong> measures how much of a decay is the
+record's own scatter. Both of those are the reading to take before this one.</p>
+<p class="note cool">A shape factor is exact and a measurement of it is a measurement. The exact
+constants sit on the slides above, taken from the shape; this table is what it costs to recover one
+from data.</p>
+</section>
+
+<section class="slide" data-act="constant">
+<h2>What this buys</h2>
+<p class="formula">&Delta; = g &times; a<sub>&delta;</sub></p>
+<p>Four constants, each measured from the shape alone, each holding across every width tried:</p>
+<table class="tab shape"><thead><tr><th>shape</th><th>g</th><th>closed form</th>
+<th>held across</th></tr></thead><tbody>
+<tr><td>flat to a width</td><td class="hit"><strong>1.0000</strong></td><td>1</td>
+<td>W = 50, 100, 200</td></tr>
+<tr><td>exp(&minus;(&tau;&divide;s)<sup>2</sup>)</td><td class="hit"><strong>2.066366</strong></td>
+<td>&radic;(&pi;e&divide;2)</td><td>s = 20, 40, 80</td></tr>
+<tr><td>exp(&minus;&tau;<sup>2</sup>&divide;2s<sup>2</sup>)</td>
+<td class="hit"><strong>2.922282</strong></td><td>&radic;(&pi;e)</td><td>s = 20, 40, 80</td></tr>
+<tr class="hi"><td>exp(&minus;D&tau;)</td><td class="hit"><strong>2.718191</strong></td><td>e</td>
+<td>D = 0.01 to 0.10</td></tr>
+</tbody></table>
+<p><strong>Where it goes next.</strong> A warm ladder of evenly spaced levels decays by the fourth
+row, so its gap is <strong>e</strong> times the width the instrument reads. That single sentence is
+what units <strong>D5c</strong>, <strong>D5d</strong> and <strong>D5e</strong> carry from a
+measured width to a stated gap, and it is section 4 of the paper those units walk.</p>
+<p><strong>What to do with a new shape.</strong> Write the decay down, hand it to
+<code>diffraction_limit</code>, divide, and check the answer at three widths. Fifteen lines of the
+work above is the whole recipe, and it applies to any decay a reader can write.</p>
+<p class="note">The one thing to carry alongside <strong>g</strong> is the formula the width was
+defined by. Writing the same bell the two usual ways moves the constant by exactly
+<strong>1.41421356</strong>.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-constant-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-constant-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

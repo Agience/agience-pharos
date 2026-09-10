@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Signal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson nine &middot; where meaning becomes a number</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.big{font-family:"IBM Plex Mono",monospace; font-size:26px; color:var(--amber); font-weight:600; margin:6px 0}
+p.warn{border-left:3px solid var(--amber); padding-left:13px; color:var(--ink)}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:18px 0}
+table.tab{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:12.5px; margin:14px 0; width:100%}
+table.tab th,table.tab td{border:1px solid var(--rule); padding:5px 9px; text-align:right}
+table.tab th:first-child,table.tab td:first-child,table.tab td:last-child,table.tab th:last-child{text-align:left}
+table.tab td.hit{color:var(--amber)}
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:18px 0}
+pre.rec,pre.src{font-family:"IBM Plex Mono",monospace; font-size:12px; line-height:1.7; background:var(--sunk);
+  border:1px solid var(--rule); padding:11px 13px; overflow-x:auto; margin:14px 0; white-space:pre-wrap}
+pre.src{border-left:3px solid var(--teal-line)}
+pre.src .cm{color:var(--ink3)}
+blockquote{margin:14px 0; padding:2px 0 2px 15px; border-left:3px solid var(--amber-line); color:var(--ink2)}
+ul.pieces{line-height:1.9}
+</style><section class="slide on">
+<h1>Signal</h1>
+<p class="lede">Every unit so far started with a grid of numbers already in hand. Somebody had to
+make that grid. This is the first unit about the machinery that does &mdash; the part of the system
+whose whole job is turning something that is <em>not</em> numbers into something the instrument can
+read.</p>
+<p>The something here is <strong>words</strong>. And the striking part is what it does
+<em>without</em>: no model, no training, no learned weights, nothing fitted to a corpus. The
+geometry falls out of a dictionary's own shape.</p>
+</section>
+
+<section class="slide">
+<h2>Words already live in a tree</h2>
+<p>A dictionary of the right kind says which things are kinds of which other things. A <em>dog</em> is a kind of <em>canine</em>, which is a kind of
+<em>carnivore</em>, and so on up to <em>entity</em>, which everything is a kind of.</p>
+<pre class="rec">entity → physical entity → object → whole → living thing → organism
+       → animal → chordate → vertebrate → mammal → placental
+       → carnivore → canine → <strong>dog</strong></pre>
+<p>The tree used here holds <strong>82,115</strong> noun concepts.</p>
+<p>Now attach one number to each node: <strong>how specific is it?</strong> Count how many concepts
+sit underneath it. <em>Entity</em> has everything underneath, so it is the least specific thing
+there is. <em>Abyssinian cat</em> has almost nothing underneath, so it is very specific.</p>
+<p class="formula">specificity &nbsp;=&nbsp; 1 &nbsp;&minus;&nbsp; log(descendants + 1) &divide; log(total + 1)</p>
+<p class="note">The logarithm is there so that going from 10 descendants to 100 counts the same as
+going from 100 to 1000 &mdash; specificity changes by ratio, not by headcount. Nothing here was
+learned; it is arithmetic on the tree's shape.</p>
+</section>
+
+<section class="slide">
+<h2>So two words have a distance</h2>
+<p>Find the deepest node both words sit under &mdash; their nearest shared ancestor. The distance is
+how much specificity you throw away climbing to it from each side, added together.</p>
+<table class="tab"><thead><tr><th>pair</th><th>distance</th><th>nearest shared ancestor</th></tr></thead>
+<tbody><tr><td>sun / star</td><td>0.1989</td><td>star</td></tr><tr><td>piano / violin</td><td>0.6042</td><td>musical instrument</td></tr><tr><td>dog / cat</td><td>0.6909</td><td>animal</td></tr><tr><td>sun / moon</td><td>0.5295</td><td>celestial body</td></tr><tr><td>dog / wolf</td><td>0.8331</td><td>animal</td></tr><tr><td>dog / car</td><td>1.0321</td><td>whole</td></tr><tr><td>piano / hammer</td><td>1.1453</td><td>instrumentality</td></tr><tr><td>democracy / tyranny</td><td>1.7217</td><td>abstraction</td></tr></tbody></table>
+<p class="warn">Two of these should stop you.</p>
+<p><strong>dog and wolf (0.8331) are farther apart than dog and cat (0.6909)</strong> &mdash; even
+though a wolf is obviously more dog-like than a cat is. And <strong>democracy and tyranny are the
+farthest apart of all (1.7217)</strong>, though they are opposites, and opposites are about the same
+thing.</p>
+<p>Both are correct, because this distance measures <strong>shared ancestry, not
+similarity</strong>. Dog and cat both stop at <em>carnivore</em>; wolf is a more specific word, so
+there is more specificity to throw away getting to the meeting point. Democracy and tyranny share
+nothing until <em>abstraction</em>, near the very top.</p>
+<p class="note">Knowing what a number measures is not optional. This one is exactly as useful as it
+is &mdash; and using it as a similarity score would be wrong in a way nothing would flag.</p>
+</section>
+
+<section class="slide">
+<h2>Every word is a point</h2>
+<p>Give each word a <strong>position</strong>, and every pair distance follows from the two
+positions. Walk
+from the word up to the root, and at each step write down how much specificity that step cost. Those
+steps <em>are</em> the coordinates.</p>
+<table class="tab"><thead><tr><th>word</th><th>coordinates it uses</th><th>length&sup2;</th></tr></thead>
+<tbody><tr><td>entity</td><td>0</td><td>0.000000</td></tr><tr><td>dog</td><td>8</td><td>0.549939</td></tr><tr><td>abyssinian cat</td><td>15</td><td>0.952835</td></tr></tbody></table>
+<p><strong>&ldquo;Entity&rdquo; uses zero coordinates.</strong> It is the origin &mdash; the point
+the whole space is measured from. That is not a convention someone chose; it falls out, because
+there are no steps above it to record.</p>
+<p>And then this:</p>
+<div class="two">
+<div><span class="exA">length&sup2; of &ldquo;dog&rdquo;</span><p class="big">0.549939</p></div>
+<div><span class="exB">distance from dog to entity</span><p class="big">0.549939</p></div>
+</div>
+<p class="warn"><strong>A word's distance from the origin is its length</strong> &mdash; which is
+what it means to be a real position in a real space. The two agree exactly, to the last digit the
+machine carries.</p>
+</section>
+
+<section class="slide">
+<h2>And the whole thing is three lines</h2>
+<pre class="src">def sparse_vec(synset, ic):
+    <span class="cm">"""{node c : sqrt(IC(c) - IC(parent(c)))} over the path — the exact JC coordinate."""</span>
+    return {name: math.sqrt(d) for name, d in _path_edges(synset, ic) if d &gt; 0.0}</pre>
+<p>The claim in that comment is strong: the straight-line distance between two of these positions is
+<em>exactly</em> the tree distance from the previous slide &mdash; not an approximation of it.</p>
+<p>Checked on <strong>150</strong> randomly chosen pairs of deep words, drawn from the
+<strong>52,747</strong> concepts that sit at least 8 levels down:</p>
+<div class="two">
+<div><span class="exA">largest disagreement</span><p class="big">2.220e-16</p></div>
+<div><span class="exB">what that is</span><p class="note" style="margin-top:14px">One step of
+floating-point rounding &mdash; the smallest difference this machine can represent at that
+magnitude. There is no error, only arithmetic.</p></div>
+</div>
+<p>It works because the steps <strong>telescope</strong>: walking up from one word and down to the
+other, every shared step cancels, and what survives is precisely the two climbs to the meeting
+point.</p>
+<p class="warn">The identity is specific to the walk. The path taken here follows <em>one</em>
+parent per word, so there is exactly one climb from each and exactly one meeting point. Where the
+dictionary gives a word several parents there is no single path upward, and the quantity the
+identity is about has to be defined before it can be checked.</p>
+</section>
+
+<section class="slide">
+<h2>Squeezing it into a fixed size</h2>
+<p>There is a problem with those exact positions: every word uses a different set of coordinates, so
+the space has as many dimensions as there are concepts. The instrument needs a
+<strong>fixed-width</strong> frame.</p>
+<p>So each coordinate is assigned a slot by hashing its name, and slots are shared. Collisions are
+real and they cost accuracy &mdash; the question is how much.</p>
+<svg class="fig-bars" viewBox="0 0 520 172" width="520" height="172" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block"><text x="8.0" y="14.0" font-family="'Libre Franklin',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink,#1b1d22)" text-anchor="start">agreement with the exact distance, after squeezing into D numbers</text><rect x="34.4" y="28" width="319.5" height="19" fill="var(--teal,#20635f)" opacity="0.45"/><text x="26.4" y="42.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">256</text><text x="464.0" y="42.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.7390</text><rect x="34.4" y="56" width="366.4" height="19" fill="var(--teal,#20635f)" opacity="0.45"/><text x="26.4" y="70.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">512</text><text x="464.0" y="70.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.8476</text><rect x="34.4" y="84" width="401.3" height="19" fill="var(--teal,#20635f)" opacity="0.45"/><text x="26.4" y="98.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">1024</text><text x="464.0" y="98.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.9283</text><rect x="34.4" y="112" width="422.9" height="19" fill="var(--amber,#a5620c)" opacity="1.0"/><text x="26.4" y="126.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="end">2048</text><text x="464.0" y="126.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--amber,#a5620c)" text-anchor="start" opacity="0.9">0.9782</text><rect x="34.4" y="140" width="423.6" height="19" fill="var(--teal,#20635f)" opacity="0.45"/><text x="26.4" y="154.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="end">4096</text><text x="464.0" y="154.0" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="11" font-weight="normal" fill="var(--ink,#1b1d22)" text-anchor="start" opacity="0.9">0.9798</text></svg>
+<table class="tab"><thead><tr><th>width</th><th>agreement</th></tr></thead><tbody><tr><td>256</td><td>0.7390</td></tr><tr><td>512</td><td>0.8476</td></tr><tr><td>1024</td><td>0.9283</td></tr><tr><td>2048</td><td>0.9782</td></tr><tr><td>4096</td><td>0.9798</td></tr></tbody></table>
+<p>Monotone, and then <strong>flat</strong>. Going 2048 &rarr; 4096 buys +0.0017 &mdash; nothing. The
+code picks <strong>2048</strong>, and <strong>256</strong> for a small device, and those two numbers
+are where the curve says to put them.</p>
+<p class="note">The two widths do not mix: asking for a distance between a 2048-wide position and
+a 256-wide one raises. A dimension mismatch that passes silently is a wrong answer that looks
+fine.</p>
+</section>
+
+<section class="slide">
+<h2>Which nouns was that measured on?</h2>
+<p>Everything above draws its 150 pairs from one place: nouns sitting <strong>eight levels or more</strong>
+below the root. That is a reasonable sample and it is not the population either claim is about
+&mdash; neither &ldquo;the coordinate reproduces the distance&rdquo; nor &ldquo;the projection
+keeps the order&rdquo; says anything about depth. So both were run again on two more populations,
+same 150 pairs each, nothing else changed.</p>
+<table class="tab"><thead><tr><th>drawn from</th><th>pool</th><th>largest error</th><th>D = 256</th><th>D = 1,024</th><th>D = 4,096</th></tr></thead>
+<tbody><tr class='hi'><td>nouns at depth 8 or more</td><td>52,747</td><td>2.2e-16</td><td>0.7390</td><td>0.9283</td><td>0.9798</td></tr><tr><td>nouns at depth 4 or less</td><td>1,790</td><td>2.2e-16</td><td>0.9107</td><td>0.9699</td><td>0.9985</td></tr><tr><td>every noun in the dictionary</td><td>82,115</td><td>2.2e-16</td><td>0.6776</td><td>0.8428</td><td>0.9645</td></tr></tbody></table>
+<p class="note cool"><strong>The identity does not care.</strong> The largest disagreement between
+the coordinate's squared distance and the tree distance is <strong>2.2e-16</strong> on every
+population &mdash; machine epsilon, on shallow nouns, deep nouns and all 82,115 of them alike. That is
+what a structural claim looks like when it is actually structural.</p>
+<p class="warn"><strong>The ordering does care, and the sample was the flattering one.</strong> At
+D&nbsp;=&nbsp;256 the deep-only sample gives <strong>0.7390</strong>; across every noun in the
+dictionary it is <strong>0.6776</strong>. Quoting the first as the quality of the projection would
+overstate what it does on an arbitrary pair of words &mdash; which is the case a real caller has.</p>
+<p>The shape is worth a moment. Shallow nouns are the <em>easiest</em> of the three, and the mixed
+population is harder than either half, because mixing depths widens the range of distances the
+projection has to keep in order.</p>
+<p class="note">None of which changes the conclusion that enough dimensions preserve the ordering
+&mdash; at D&nbsp;=&nbsp;4,096 every population is above 0.96. What it changes is that
+<strong>&ldquo;enough&rdquo; depends on the population</strong>, and a figure quoted without one is
+a figure about somebody else's words.</p>
+</section>
+
+<section class="slide">
+<h2>What counts as a letter decides the record</h2>
+<p>Everything above assumes you can get from a word as written to the concept it names. That step
+looks trivial and is not. The code that does it once defined &ldquo;a letter&rdquo; as
+<code>A&ndash;Z</code> or <code>a&ndash;z</code>, and treated every other letter as a
+<strong>separator</strong>.</p>
+<table class="tab"><thead><tr><th>written</th><th>now</th><th>under the old rule</th></tr></thead>
+<tbody><tr><td>Zürich</td><td>Zurich</td><td class='hit'>Z &middot; rich</td></tr><tr><td>naïve</td><td>naive</td><td class='hit'>na &middot; ve</td></tr><tr><td>résumé</td><td>resume</td><td class='hit'>r &middot; sum</td></tr><tr><td>El Niño</td><td>El Nino</td><td class='hit'>El &middot; Ni &middot; o</td></tr><tr><td>café</td><td>cafe</td><td class='hit'>caf</td></tr><tr><td>Bjørn</td><td>Bjørn</td><td class='hit'>Bj &middot; rn</td></tr></tbody></table>
+<p class="warn">Those fragments are real words. The record kept by the code names where they landed:
+<strong>Z&uuml;rich</strong> became <code>rich</code> and was read as <em>rich people</em>.
+<strong>na&iuml;ve</strong> became <code>na</code> and was read as <em>sodium</em>. <strong>El
+Ni&ntilde;o</strong> became <code>ni</code> and was read as <em>nickel</em>. Across the
+<strong>40</strong> accented spellings tested here &mdash; place names, loanwords and personal
+names &mdash; the old rule broke <strong>40</strong>, and <strong>14</strong> of those landed on a
+concept the dictionary really holds: the wrong one, with no error and no log line.</p>
+<p>The fix is not a bigger list of letters. A character the rule does not recognise now
+<strong>stays inside the word</strong>, so <code>Bj&oslash;rn</code> folds to something the
+dictionary does not hold, matches nothing, and is <strong>reported as unplaced</strong>.</p>
+<blockquote>&ldquo;A wrong concept is worse than no concept, and nothing downstream can tell the two
+apart. <strong>Absence is a measurement and a mis-grounding is not.</strong>&rdquo;</blockquote>
+</section>
+
+<section class="slide">
+<h2>What decides the rows, the columns and the cells</h2>
+<p>A grid of numbers arrived in unit A1 ready to read. Something decided what the rows are, what
+the columns are, and what each cell means &mdash; and every read that follows inherits those
+decisions completely.</p>
+<ul class="pieces">
+<li><strong>The geometry is derived, not learned.</strong> One dictionary's shape, one logarithm,
+and a walk to the root. No corpus was fitted and no weights exist to go stale.</li>
+<li><strong>The coordinates are exact</strong> &mdash; agreeing with the closed form to
+<strong>2.220e-16</strong> &mdash; and only after they are squeezed into a fixed width does any
+approximation enter. The sweep says where to stop squeezing.</li>
+<li><strong>The hard part was not the mathematics.</strong> It was deciding what counts as a letter.
+The geometry was always exact while <code>Z&uuml;rich</code> was being read as <em>rich
+people</em>.</li>
+</ul>
+<p class="warn">That last one is the general lesson of the whole tier. The instrument is only ever
+as good as what was handed to it, and the handing-over is where the quiet mistakes live &mdash;
+because a mis-grounded word is still a perfectly valid number.</p>
+<p class="note">What these numbers are scoped to: the specificity table is derived from the
+dictionary's shape, so the figures are correct for that basis and differ from the corpus-derived one
+the running system uses. A small adapter supplies the interface the
+geometry expects, so crystal's own code produced every figure above.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-signal-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-signal-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

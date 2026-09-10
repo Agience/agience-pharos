@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How Many Are Working?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson A12 &middot; the count behind the shape</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+table.tab td.dim{opacity:0.62}
+</style><section class="slide on" data-act="working">
+<h1>How Many Are Working?</h1>
+<p class="lede">A record has a shape, and the shape gives one count: four sensors, eight companies,
+800 rows. This unit measures a second count &mdash; <strong>how many of them are carrying the
+record</strong> &mdash; and the two are different numbers.</p>
+<p class="formula">square it &nbsp;&middot;&nbsp; add down the axis &nbsp;&middot;&nbsp; divide by
+the total &nbsp;&rarr;&nbsp; a share per column</p>
+<p>Those shares are what the second count is built from. Three operations, no settings, and nothing
+to choose. Here they are on the EEG's four sensors:</p>
+<table class="tab"><thead><tr><th>sensor 1</th><th>sensor 2</th><th>sensor 3</th><th>sensor 4</th></tr></thead><tbody>
+<tr><td>0.2494</td><td>0.2502</td><td>0.2502</td><td>0.2502</td></tr>
+</tbody></table>
+<p>They are nearly equal, so all four sensors are carrying about a quarter of the record each. Hold
+on to that: <strong>evenly loaded</strong> is the case where the two counts agree, and the next
+slides make that exact.</p>
+<p class="note cool">Unit <strong>A1</strong> counted modes standing above a floor and unit
+<strong>A10</strong> asked how much record a read needs. This one asks about the record's
+<em>width</em>, and the answer is a number between 1 and the number of columns.</p>
+</section>
+
+<section class="slide" data-act="working">
+<h2>The count, and how to know the scale is honest</h2>
+<p>Take the shares and ask how spread out they are. The measure is <strong>entropy</strong>, in
+bits, and unit <strong>A5</strong> used the same quantity on letters. The leaning symbol below is a
+<strong>sigma</strong>, and it means <em>add up what follows</em> &mdash; one term per column:</p>
+<p class="formula">H = &minus;&sum; p log<sub>2</sub> p &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+the effective count = 2<sup>H</sup></p>
+<p>On the EEG's four shares that gives <span class="mono">H = 1.999998</span> bits and an effective
+count of <strong>3.999996</strong>. Which raises the only question worth asking of a new scale:
+<strong>how do you know it means anything?</strong></p>
+<p>Check it where you already know the answer. Silence one sensor and three equally loaded ones are
+left, so a scale that counts working columns should return exactly three:</p>
+<table class="tab"><thead><tr><th>the record</th><th>sensors left carrying</th>
+<th>effective count</th></tr></thead><tbody>
+<tr class="hi"><td>as recorded</td><td>4</td><td class="hit"><strong>3.999996</strong></td></tr><tr><td>1 silenced</td><td>3</td><td class="hit"><strong>3.000000</strong></td></tr><tr><td>2 silenced</td><td>2</td><td class="hit"><strong>2.000000</strong></td></tr><tr><td>3 silenced</td><td>1</td><td class="hit"><strong>1.000000</strong></td></tr>
+</tbody></table>
+<p><strong>3.000000, 2.000000, 1.000000.</strong> The scale lands on whole numbers in every case a
+reader can check by hand, which is what earns it the cases they cannot &mdash; like
+<strong>3.999996</strong> on the record as recorded, where the four shares differ in the fourth decimal
+place and the count comes in just under four.</p>
+<p class="note cool">A scale read against known values is a scale you can use. This one is
+calibrated by construction: give it <em>k</em> equal columns and it returns <em>k</em>.</p>
+</section>
+
+<section class="slide" data-act="working">
+<h2>Turn one sensor up, and the record counts for less</h2>
+<p>Take the EEG and multiply <em>sensor 1</em> by a gain. Nothing is removed, nothing is added, and
+the other three sensors are untouched. Then read the count again:</p>
+<table class="tab"><thead><tr><th>gain on sensor 1</th><th>H bits</th><th>effective count</th>
+<th></th></tr></thead><tbody>
+<tr class="hi"><td>&times;1.0</td><td>1.999998</td><td class="hit"><strong>4.0000</strong></td><td>as recorded</td></tr><tr><td>&times;1.5</td><td>1.891878</td><td class="hit"><strong>3.7112</strong></td><td></td></tr><tr><td>&times;2.0</td><td>1.666136</td><td class="hit"><strong>3.1736</strong></td><td></td></tr><tr><td>&times;3.0</td><td>1.209508</td><td class="hit"><strong>2.3126</strong></td><td></td></tr><tr><td>&times;5.0</td><td>0.662543</td><td class="hit"><strong>1.5829</strong></td><td></td></tr><tr><td>&times;10.0</td><td>0.236784</td><td class="hit"><strong>1.1784</strong></td><td></td></tr>
+</tbody></table>
+<p>From <strong>4.0000</strong> to <strong>1.1784</strong>. At a gain of 10 the record behaves as though
+it had barely more than <strong>one</strong> sensor, because one sensor's share has grown until the
+other three's have almost vanished.</p>
+<p><strong>Amplifying a channel adds nothing to a record.</strong> A share is a fraction of the
+whole, so raising one lowers the rest &mdash; and the count follows the shares. That is the same
+arithmetic unit <strong>B2</strong> uses when it changes volts to millivolts and the shares do not
+move: a share cannot see a change that hits every column equally, and it sees nothing else.</p>
+<p class="warn">Which is a practical fact about instruments. A sensor with the gain wound up makes
+the other channels contribute less, and the effective count is where that shows.</p>
+</section>
+
+<section class="slide" data-act="working">
+<h2>Both records, both axes</h2>
+<p>The same four lines of arithmetic, run on every axis of both records this course carries:</p>
+<table class="tab"><thead><tr><th>record</th><th>axis</th><th>how many</th><th>H bits</th>
+<th>most it could be</th><th>effective</th><th>fill</th></tr></thead><tbody>
+<tr class="hi"><td>the EEG</td><td>columns</td><td>4</td><td>1.999998</td><td>2.000000</td><td class="hit"><strong>4.0000</strong></td><td>1.0000</td></tr><tr><td>the EEG</td><td>rows</td><td>800</td><td>9.102256</td><td>9.643856</td><td class="hit"><strong>549.6068</strong></td><td>0.6870</td></tr><tr class="hi"><td>the market</td><td>columns</td><td>8</td><td>2.856899</td><td>3.000000</td><td class="hit"><strong>7.2446</strong></td><td>0.9056</td></tr><tr><td>the market</td><td>rows</td><td>70</td><td>5.612453</td><td>6.129283</td><td class="hit"><strong>48.9234</strong></td><td>0.6989</td></tr>
+</tbody></table>
+<p><strong>The EEG uses every sensor it has.</strong> 4.0000 of 4, a fill of 1.0000 &mdash; four
+electrodes on a head, each seeing about as much as the others.</p>
+<p><strong>The market uses 7.2446 of its 8 companies.</strong> The shares run from 0.0616 to 0.2684, so
+one name carries more than four times another, and the count reports the eight as behaving like
+seven and a quarter.</p>
+<table class="tab"><thead><tr><th>IBM</th><th>AAPL</th><th>MSFT</th><th>XRX</th><th>AMZN</th><th>DELL</th><th>GOOGL</th><th>ADBE</th></tr></thead><tbody>
+<tr><td>0.0858</td><td>0.1333</td><td>0.0616</td><td>0.2684</td><td>0.1313</td><td>0.1298</td><td>0.0799</td><td>0.1099</td></tr>
+</tbody></table>
+<p class="note">Both records fill about 69% of their <em>rows</em> &mdash; 0.6870 and 0.6989. That is
+a coincidence of these two records and it is stated here as one: two numbers landing close together
+is a fact about this table, and nothing on this slide makes it a fact about records in general.</p>
+</section>
+
+<section class="slide" data-act="working">
+<h2>Two counts, on one card</h2>
+<table class="tab"><thead><tr><th></th><th>the EEG</th><th>the market</th></tr></thead><tbody>
+<tr><td>columns the file has</td><td>4</td><td>8</td></tr>
+<tr class="hi"><td><strong>columns carrying the record</strong></td>
+<td class="hit"><strong>4.0000</strong></td><td class="hit"><strong>7.2446</strong></td></tr>
+</tbody></table>
+<p class="formula">p = column power &divide; total &nbsp;&middot;&nbsp;
+H = &minus;&sum; p log<sub>2</sub> p &nbsp;&middot;&nbsp; count = 2<sup>H</sup></p>
+<p>The instrument publishes both of these. Down the columns it is
+<code>H_F</code>, and down the rows it is <code>H_T</code> &mdash; the same entropy of the same
+power share, and they agree with the arithmetic above to six decimal places on both records. So a
+reader can compute the count by hand or ask for it, and get one number.</p>
+<ul class="pieces">
+<li><strong>The scale returns the count when the load is even.</strong> Three equal columns give
+3.000000 and two give 2.000000, measured on this record by silencing sensors. That is what makes
+4.0000 readable.</li>
+<li><strong>It never exceeds the number of columns and never falls below one.</strong> The most
+even case is all of them; the most concentrated is one carrying everything.</li>
+<li><strong>Gain lowers it.</strong> Turning one EEG sensor up by 10 takes the four to 1.1784. A
+share is a fraction, so raising one lowers the others.</li>
+<li><strong>It is four lines of arithmetic.</strong> Square, sum, normalise, take the entropy. No
+model, no fitting, and nothing to set.</li>
+</ul>
+<p class="note">What this count answers is <em>how many columns the record behaves as though it
+had</em>. Whether a company carrying 0.0616 of the record's power should be dropped from the study is
+a question about the study, and this number is one input to it.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-working-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-working-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

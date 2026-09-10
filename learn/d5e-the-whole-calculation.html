@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Whole Calculation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D5e &middot; end to end, on a calculator</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+p.formula{font-family:"IBM Plex Mono",monospace; font-size:16px; color:var(--amber); text-align:center; margin:16px 0}
+table.tab td.hit,table.tab th.hit{color:var(--amber)}
+table.tab td.typ{font-family:"IBM Plex Mono",monospace; font-size:13.5px}
+</style><section class="slide on" data-act="whole">
+<h1>The Whole Calculation</h1>
+<p class="lede">Eight lines, from a cube to a positive number. Each line is one operation on the
+line above it, and every value is printed to the places the next line uses &mdash; so a reader
+working down this deck with a calculator gets the printed answer.</p>
+<p class="note">The symbols here, said aloud: <strong>&kappa;</strong> is <em>kappa</em>, the floor; <strong>&mu;</strong> is <em>mu</em>, the cost; <strong>&Delta;</strong> is <em>delta</em>, the gap; <strong>&theta;</strong> is <em>theta</em>, an angle. <span class="mono">&ge;</span> is <em>greater than or equal</em> and <span class="mono">&le;</span> is <em>less than or equal</em>.</p>
+<p class="formula">&Delta; &nbsp;&ge;&nbsp; &kappa;<sub>0</sub> &minus; &mu; &nbsp;=&nbsp;
+0.274653 &minus; 0.124204 &nbsp;=&nbsp; <strong>0.150449</strong></p>
+<p>That is the destination. Units D5a to D5d established each piece; this unit runs them in order,
+end to end, with nothing carried in from outside.</p>
+<table class="tab"><thead><tr><th>line</th><th>what it says</th><th>where it was established</th>
+</tr></thead><tbody>
+<tr><td>1&ndash;3</td><td>how many surfaces there are, and how big</td><td>D5a, by counting</td></tr>
+<tr class="hi"><td>4&ndash;5</td><td>the floor, and the same floor as a ceiling</td><td>D5a</td></tr>
+<tr><td>6&ndash;7</td><td>what one vortex plaquette costs</td><td>D5b, at L&nbsp;=&nbsp;12</td></tr>
+<tr class="hi"><td>8</td><td>the floor less the cost</td><td>here</td></tr>
+</tbody></table>
+<p class="note">Nothing on these slides is quoted. Each number is recomputed by this file from its
+own definition, so a change anywhere upstream moves the line that depends on it.</p>
+</section>
+
+<section class="slide" data-act="whole">
+<h2>Lines 1 to 3: count the surfaces</h2>
+<p>A <strong>vortex</strong> is a closed sheet made of square faces. Take the simplest family of
+them: solids built by stacking cubes, each cube touching the last face to face, always stepping in
+<span class="mono">+x</span>, <span class="mono">+y</span> or <span class="mono">+z</span>. The
+outside of such a solid is a closed sheet, so every one of them counts.</p>
+<p><strong>Line 1 &mdash; one cube.</strong> Six faces, nothing to hide any of them:
+<span class="mono">A&nbsp;=&nbsp;6</span>.</p>
+<p><strong>Line 2 &mdash; each further cube.</strong> It brings six new faces, and the face where it
+meets its neighbour goes inside, which removes that face from <em>both</em> cubes. Six on, two off,
+so four each time:</p>
+<p class="formula">A(n) &nbsp;=&nbsp; 6n &minus; 2(n&minus;1) &nbsp;=&nbsp; 4n + 2</p>
+<p><strong>Line 3 &mdash; how many.</strong> A stack of <span class="mono">n</span> cubes is decided
+by its <span class="mono">n&minus;1</span> steps, and each step is a free choice among three:</p>
+<p class="formula">N(n) &nbsp;=&nbsp; 3<sup>n&minus;1</sup></p>
+<table class="tab"><thead><tr><th>cubes n</th><th>faces on the outside, 4n+2</th>
+<th>stacks, 3<sup>n&minus;1</sup></th></tr></thead><tbody>
+<tr class="hi"><td>1</td><td>6</td><td>1</td></tr><tr class="hi"><td>2</td><td>10</td><td>3</td></tr><tr><td>3</td><td>14</td><td>9</td></tr><tr><td>4</td><td>18</td><td>27</td></tr><tr><td>5</td><td>22</td><td>81</td></tr><tr><td>6</td><td>26</td><td>243</td></tr><tr><td>7</td><td>30</td><td>729</td></tr><tr><td>8</td><td>34</td><td>2,187</td></tr>
+</tbody></table>
+<p class="note cool">Two numbers come out of this table and they are the whole theorem:
+<strong>each cube adds four faces and carries three choices</strong>. Unit D5a enumerates the
+stacks face by face and checks that no two of them give the same sheet.</p>
+</section>
+
+<section class="slide" data-act="whole">
+<h2>Lines 4 and 5: three choices over four faces</h2>
+<p>Three choices arrive together with four faces, so ask what <em>one face</em> is worth. Spread the
+three evenly over the four:</p>
+<table class="tab"><thead><tr><th>step</th><th class="typ">what you type</th><th>result</th>
+</tr></thead><tbody>
+<tr><td>the entropy of a three-way choice</td><td class="typ">ln(3)</td><td>1.098612</td></tr>
+<tr class="hi"><td><strong>line 4</strong> &mdash; share it over four faces</td>
+<td class="typ">1.098612 &divide; 4</td><td class="hit"><strong>0.274653</strong></td></tr>
+</tbody></table>
+<p><span class="mono">&kappa;<sub>0</sub> = 0.274653</span> is a <strong>rate</strong>: how fast the
+number of sheets grows for every face of area. Physics writes growth as a rate because rates
+<em>add</em> along a path where factors <em>multiply</em>, and the natural logarithm is the tool
+that converts between the two.</p>
+<p><strong>Line 5</strong> turns the rate back into a factor, which is the form the measured tables
+are read against. A growth rate of <span class="mono">&kappa;<sub>0</sub></span> means a sheet's
+weight has to shrink by at least the same rate to stay outnumbered:</p>
+<table class="tab"><thead><tr><th>route</th><th class="typ">what you type</th><th>result</th>
+</tr></thead><tbody>
+<tr><td>through the rate</td><td class="typ">e^(&minus;0.274653)</td><td>0.759836</td></tr>
+<tr><td>through the root, the same fact</td><td class="typ">3^(&minus;0.25)</td><td>0.759836</td></tr>
+</tbody></table>
+<p class="note">Both routes land on <strong>0.759836</strong>, because <span class="mono">&kappa;<sub>0</sub>
+= ln(3<sup>1/4</sup>)</span> and <span class="mono">e</span> undoes <span class="mono">ln</span>.
+Check it the third way if you like: four of them multiplied together,
+<span class="mono">0.759836 &times; 0.759836 &times; 0.759836 &times; 0.759836</span>, give
+<span class="mono">0.333334</span> &mdash; which is <span class="mono">1 &divide; 3</span>. Four faces
+of shrinking exactly undo one three-way choice, which is what the counting said.</p>
+<p class="note cool"><strong>This number carries no physics.</strong> It came from stacking cubes.
+No coupling appears in it, no lattice spacing, nothing measured &mdash; which is what lets it stand
+as a floor at every coupling at once.</p>
+</section>
+
+<section class="slide" data-act="whole">
+<h2>Lines 6 and 7: what one plaquette costs</h2>
+<p>The other side of the inequality is <span class="mono">&mu;</span>, the cost of one face of
+vortex sheet. It comes from the <strong>aperture</strong>: a screen only resolves angles down to a
+finite step, and that step sets how far the field can turn between neighbouring points.</p>
+<p><strong>Line 6 &mdash; the aperture.</strong> A screen of side <span class="mono">L</span>
+resolves angles in steps of <span class="mono">2&pi;/(L+1)</span>. That is unit A9's finding in one
+line: a finite window resolves finite detail, and a wider window resolves finer.</p>
+<p><strong>Line 7 &mdash; the cost.</strong> The tension is an average of cosines, and a cosine is
+never below the parabola <span class="mono">1 &minus; x&sup2;/2</span>, so replacing it with the
+parabola can only make the bound looser. Then <span class="mono">&minus;log</span> turns the
+average into a rate. Working at <span class="mono">L&nbsp;=&nbsp;12</span> with the proof's uniform
+input <span class="mono">&lang;d&sup2;&rang; &le; 1</span>:</p>
+<table class="tab"><thead><tr><th>step</th><th class="typ">what you type</th><th>result</th>
+</tr></thead><tbody>
+<tr><td><strong>line 6</strong> &mdash; the angle a side-12 screen resolves</td>
+<td class="typ">2 &times; &pi; &divide; 13</td><td class="hit">0.483322</td></tr>
+<tr><td>square it</td><td class="typ">0.483322 &times; 0.483322</td><td>0.233600</td></tr>
+<tr><td>times the correlation moment</td><td class="typ">0.233600 &times; 1</td><td>0.233600</td></tr>
+<tr><td>the parabola step</td><td class="typ">1 &minus; 0.233600 &divide; 2</td><td>0.883200</td></tr>
+<tr class="hi"><td><strong>line 7</strong> &mdash; as a rate</td>
+<td class="typ">&minus;ln(0.883200)</td><td class="hit"><strong>0.124204</strong></td></tr>
+</tbody></table>
+<p class="note">Every inequality in that chain points the same way: the cosine bound makes
+<span class="mono">&mu;</span> <em>larger</em>, and the uniform input
+<span class="mono">&lang;d&sup2;&rang; &le; 1</span> is far above the 0.014 to 0.16 the runtime
+read measures. So <strong>0.124204</strong> is the pessimistic cost, and the margin below it is the
+pessimistic margin.</p>
+</section>
+
+<section class="slide" data-act="whole">
+<h2>Line 8: the answer</h2>
+<p>The floor is what the sheets gain from being numerous. The cost is what one of them pays. The
+gap is what is left over:</p>
+<table class="tab"><thead><tr><th>step</th><th class="typ">what you type</th><th>result</th>
+</tr></thead><tbody>
+<tr><td>the floor, from counting cubes</td><td class="typ">ln(3) &divide; 4</td><td>0.274653</td></tr>
+<tr><td>the cost, at L&nbsp;=&nbsp;12</td><td class="typ">&minus;ln(0.883200)</td><td>0.124204</td></tr>
+<tr class="hi"><td><strong>line 8</strong> &mdash; the margin</td>
+<td class="typ">0.274653 &minus; 0.124204</td><td class="hit"><strong>0.150449</strong></td></tr>
+</tbody></table>
+<p class="formula">&Delta; &nbsp;&ge;&nbsp; 0.150449 &nbsp;&gt;&nbsp; 0</p>
+<p><strong>A positive number is the whole result.</strong> The claim was that the decay rate of the
+field's correlations has a floor above zero, and eight lines of arithmetic put one there. The size
+of the number matters less than its sign: a gap of any positive size means the correlations die off
+at a definite rate, and a rate is what a mass is.</p>
+<p class="note cool">What each line contributed. Line 4 is <em>geometry</em> &mdash; it would read
+0.274653 in any theory built on this lattice. Line 7 is <em>the theory</em> &mdash; it is where the
+gauge field, its coupling and its aperture enter. Line 8 is the comparison, and it is the only
+place the two meet.</p>
+</section>
+
+<section class="slide" data-act="whole">
+<h2>The check: what the instrument measured</h2>
+<p>Line 8 is a <strong>bound</strong>: it says the gap is at least 0.150449. A bound earns its keep by
+being checked against a measurement of the same quantity, and unit D5c takes that measurement off
+real gauge configurations.</p>
+<p>The read returns one number &mdash; the fraction of a fluctuation that survives one step along
+the time axis, across the L&nbsp;=&nbsp;12&ndash;28 window:</p>
+<p class="formula">measured: &nbsp;<strong>0.3588</strong>&nbsp; survives each step</p>
+<p>Multiply it by itself to walk down the axis. This is exactly the arithmetic unit B3 used for
+travel across a distance and unit A3 measured along an ordered axis:</p>
+<table class="tab"><thead><tr><th>steps</th><th>what is left</th></tr></thead><tbody>
+<tr><td>1</td><td>0.358800</td></tr><tr><td>2</td><td>0.128737</td></tr><tr><td>5</td><td>0.005947</td></tr><tr class="hi"><td>10</td><td>3.54e-05</td></tr>
+</tbody></table>
+<p>Write that factor as a rate and it is directly comparable with line 8:</p>
+<table class="tab"><thead><tr><th></th><th class="typ">what you type</th><th>result</th>
+</tr></thead><tbody>
+<tr><td>the measured rate</td><td class="typ">&minus;ln(0.3588)</td><td class="hit">1.0250</td></tr>
+<tr><td>the bound from line 8</td><td class="typ">&mdash;</td><td>0.150449</td></tr>
+<tr class="hi"><td><strong>the measurement over the bound</strong></td><td class="typ">1.0250
+&divide; 0.150449</td><td class="hit"><strong>6.8&times;</strong></td></tr>
+</tbody></table>
+<p class="note cool">The measured rate is <strong>6.8 times</strong> the guaranteed one. Both are
+positive, and the bound is the smaller &mdash; which is the direction a bound is built to err in.
+Two routes, one sign, and the route that proves less is the one the argument rests on.</p>
+</section>
+
+<section class="slide" data-act="whole">
+<h2>The eight lines, on one card</h2>
+<table class="tab"><thead><tr><th>#</th><th>what it says</th><th class="typ">value</th>
+<th>kind</th></tr></thead><tbody>
+<tr><td>1</td><td>a cube has six faces</td><td class="typ">6</td><td>counting</td></tr>
+<tr><td>2</td><td>each further cube adds four</td><td class="typ">4n + 2</td><td>counting</td></tr>
+<tr><td>3</td><td>each further cube offers three ways</td><td class="typ">3<sup>n&minus;1</sup></td>
+<td>counting</td></tr>
+<tr class="hi"><td>4</td><td>three choices over four faces</td><td class="typ">0.274653</td>
+<td>geometry</td></tr>
+<tr><td>5</td><td>the same rate as a factor</td><td class="typ">0.759836</td><td>geometry</td></tr>
+<tr><td>6</td><td>a side-12 screen resolves 2&pi;/13</td><td class="typ">0.483322</td>
+<td>aperture</td></tr>
+<tr><td>7</td><td>cosine under a parabola, then &minus;log</td><td class="typ">0.124204</td>
+<td>the theory</td></tr>
+<tr class="hi"><td>8</td><td><strong>the floor less the cost</strong></td>
+<td class="typ hit"><strong>0.150449</strong></td><td>the answer</td></tr>
+</tbody></table>
+<ul class="pieces">
+<li><strong>Four of the eight lines are counting cubes.</strong> Lines 1 to 4 involve no field, no
+coupling and no measurement, and they produce the floor the whole argument is compared against.</li>
+<li><strong>One line carries the physics.</strong> Line 7 is where the gauge theory enters, through
+a bound on how far the field turns between neighbouring points.</li>
+<li><strong>The last line is a subtraction.</strong> Everything the argument does is establish two
+numbers well enough that subtracting them means something.</li>
+<li><strong>The measurement agrees and exceeds.</strong> The read gives 1.0250 where the bound
+guarantees 0.150449 &mdash; 6.8&times; the room, in the direction that leaves the bound standing.</li>
+</ul>
+<p class="note">Worked at L&nbsp;=&nbsp;12 with the proof's uniform input
+<span class="mono">&lang;d&sup2;&rang; &le; 1</span>, which is the smallest lattice size at which
+that input clears the floor. D5b carries the strong- and weak-coupling ends; D5d carries the step
+from this rate to a statement about the spectrum.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-whole-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-whole-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>

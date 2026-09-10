@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Both Sides of the Cut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eeefec; --surface:#f8f9f7; --sunk:#e5e7e3;
+  --ink:#1b1d22; --ink2:#565a63; --ink3:#8b909a;
+  --rule:#d2d5d0; --rule2:#bcc0ba;
+  --amber:#a5620c; --amber-bg:#f6e7ca; --amber-line:#d99a34;
+  --teal:#20635f; --teal-bg:#dbeae7; --teal-line:#4d918b;
+  --shadow:0 1px 0 rgba(27,29,34,.07), 0 8px 26px -18px rgba(27,29,34,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+    --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+    --rule:#2b2f37; --rule2:#3c414b;
+    --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+    --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131519; --surface:#1a1d23; --sunk:#0f1115;
+  --ink:#e8eaed; --ink2:#a4a9b2; --ink3:#767c87;
+  --rule:#2b2f37; --rule2:#3c414b;
+  --amber:#f0a63e; --amber-bg:#392b12; --amber-line:#a9741f;
+  --teal:#6bbdb5; --teal-bg:#12312e; --teal-line:#3d827b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{min-height:100vh; display:flex; flex-direction:column}
+
+.rail{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--rule); padding:10px 18px 9px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.mark{font-family:"Instrument Serif",Georgia,serif; font-size:19px; white-space:nowrap}
+.mark em{font-style:italic; color:var(--amber)}
+.ticks{display:flex; gap:10px; flex:1; min-width:180px; align-items:flex-end}
+.tickgroup{display:flex; gap:3px; align-items:flex-end}
+.tick{
+  width:9px; height:11px; border:0; padding:0; cursor:pointer; border-radius:1px;
+  background:var(--rule2); transition:background .18s, height .18s;
+}
+.tick:hover{background:var(--ink3)}
+.tick.seen{background:var(--ink3)}
+.tick[aria-current="true"]{background:var(--amber); height:18px}
+.tick:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.count{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--ink3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.stage{flex:1; display:flex; justify-content:center; padding:34px 20px 92px}
+.slide{display:none; width:100%; max-width:1080px; animation:in .32s ease}
+.slide.on{display:block}
+@keyframes in{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .slide{animation:none} .tick{transition:none} }
+
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--amber); margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--rule); max-width:170px}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(40px,6.4vw,72px); line-height:1.03; margin:0 0 18px; text-wrap:balance; letter-spacing:-.01em}
+h1 em{font-style:italic; color:var(--amber)}
+h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:clamp(28px,4vw,44px); line-height:1.09; margin:0 0 16px; text-wrap:balance}
+h3{font-size:12.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink2); margin:0 0 9px}
+p{margin:0 0 13px; max-width:66ch; color:var(--ink2)}
+p.lead{font-size:19px; color:var(--ink); max-width:60ch}
+strong{color:var(--ink); font-weight:600}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ul{margin:0 0 13px; padding-left:19px; color:var(--ink2); max-width:64ch}
+li{margin-bottom:6px}
+li::marker{color:var(--ink3)}
+
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:start}
+.two.nl{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.two.nr{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:880px){ .two,.two.nl,.two.nr,.three{grid-template-columns:1fr; gap:20px} }
+.stack{display:flex; flex-direction:column; gap:16px}
+.row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end}
+
+.card{background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.card.sunk{background:var(--sunk); box-shadow:none}
+.note{border-left:3px solid var(--amber-line); background:var(--amber-bg); padding:13px 16px; color:var(--ink)}
+.note.cool{border-left-color:var(--teal-line); background:var(--teal-bg)}
+.note p{color:var(--ink)}
+.note p:last-child{margin-bottom:0}
+
+.mono,code,.eq{font-family:"IBM Plex Mono",ui-monospace,"Cascadia Code",monospace; font-variant-numeric:tabular-nums}
+code{background:var(--sunk); padding:.08em .34em; font-size:.9em; border-radius:2px}
+.eq{
+  background:var(--sunk); border:1px solid var(--rule); padding:14px 16px;
+  font-size:14.5px; line-height:1.95; overflow-x:auto; white-space:pre;
+}
+.eq b{color:var(--amber); font-weight:600}
+.eq i{color:var(--teal); font-style:normal; font-weight:600}
+.eq u{color:var(--ink3); text-decoration:none}
+.big{font-family:"Instrument Serif",Georgia,serif; font-size:clamp(32px,4.6vw,50px); line-height:1; color:var(--amber); font-variant-numeric:tabular-nums}
+.big small{font-family:"Libre Franklin",sans-serif; font-size:13px; color:var(--ink3); display:block; margin-top:7px; letter-spacing:.02em; line-height:1.4}
+
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th,td{text-align:right; padding:6px 9px; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink2)}
+th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule2)}
+td:first-child,th:first-child{text-align:left; font-variant-numeric:normal; color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--amber-bg); color:var(--ink)}
+.scroll{overflow-x:auto}
+
+.grid8{border-collapse:collapse; width:auto; font-family:"IBM Plex Mono",monospace; font-size:13px}
+.grid8 td{width:30px; height:27px; text-align:center; padding:0; border:1px solid var(--rule); font-variant-numeric:tabular-nums; color:var(--ink)}
+.grid8 td.z{color:var(--ink3)}
+.grid8 td.lab{border:0; color:var(--ink3); font-size:10px; padding:0 7px; width:auto; text-align:right}
+.grid8 tr.sum td{border:0; border-top:2px solid var(--amber-line); color:var(--amber); font-weight:600; font-size:11.5px; height:23px}
+
+figure{margin:0}
+figcaption{font-size:12.5px; color:var(--ink3); margin-top:8px; line-height:1.45}
+.plate{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+.plate figure{display:flex; flex-direction:column; gap:6px}
+.plate img{display:block; background:#0b0b0b; border:1px solid var(--rule2); max-width:100%; height:auto}
+.plate figcaption{margin:0; font-family:"IBM Plex Mono",monospace; font-size:11px}
+svg{max-width:100%; height:auto; display:block}
+
+details{border-top:1px solid var(--rule); padding-top:10px; margin-top:8px}
+summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--amber); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8  "}
+details[open] summary::before{content:"\25BE  "}
+summary:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+details p, details ul{margin-top:9px; font-size:14.5px}
+
+.bar{
+  position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--bg);
+  border-top:1px solid var(--rule); padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.bar .hint{font-size:12px; color:var(--ink3)}
+.bar kbd{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--rule2); padding:1px 5px; border-radius:3px; color:var(--ink2)}
+.nav{display:flex; gap:8px}
+button.nb{
+  font-family:"Libre Franklin",sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--rule2); padding:7px 15px;
+}
+button.nb:hover:not(:disabled){border-color:var(--amber); color:var(--amber)}
+button.nb:disabled{opacity:.35; cursor:default}
+button.nb:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em; padding:3px 8px; border:1px solid var(--rule2); color:var(--ink2); margin:0 6px 6px 0}
+.chip.on{border-color:var(--amber-line); color:var(--amber); background:var(--amber-bg)}
+.ladder{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail">
+  <div class="mark">Entroptics <em>/</em> lesson D5i &middot; the entropy of a cut</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="count" id="count"></div>
+</nav>
+<main class="stage"><div id="deck">
+
+<style>
+.exA,.exB{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:600; margin:0 0 8px}
+.exA{color:var(--amber)} .exB{color:var(--teal)}
+.exA::before{content:"A \00b7 \00a0"} .exB::before{content:"B \00b7 \00a0"}
+.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; align-items:start}
+@media (max-width:880px){ .pair{grid-template-columns:1fr} }
+.sym{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--amber); font-weight:600}
+</style>
+
+<!-- ══ 1 ═══════════════════════════════════════════════ -->
+<style>
+.cut { font-variant-numeric: tabular-nums; }
+.cut td.same { background: rgba(64,200,120,.16); font-weight: 600; }
+.cut td.zero { background: rgba(140,140,160,.14); }
+</style>
+<section class="slide on" data-act="cut">
+<h1>Both Sides of the Cut</h1>
+<p class="lede">Draw a line through a system and you have two sides. Measure how much each side
+carries and you get <strong>the same number twice</strong> &mdash; even when one side is twenty
+times the size of the other.</p>
+<p><strong>What a cut is here.</strong> A table of numbers has rows and columns. Read the rows as
+one side of the line and the columns as the other. Each side gets its own square summary table, one
+2 by 2 and the other 64 by 64, and each has its own list of values to take an entropy of.</p>
+<table class="tab cut"><thead><tr><th>the cut</th><th>from the small side</th>
+<th>from the large side</th></tr></thead><tbody>
+<tr class="hi"><td>2 against 64</td><td class="same">0.894092706459</td>
+<td class="same">0.894092706459</td></tr>
+</tbody></table>
+<p><strong>2 and 64, and the answer is the same to twelve decimals.</strong> The larger side has
+64 values to the smaller side's 2, and it reports what the small side reports.</p>
+<p class="note cool">Unit <strong>A12</strong> already does this arithmetic: square the values,
+turn them into shares, take &minus;&Sigma; p log<sub>2</sub> p. <strong>&Sigma;</strong>, said
+<em>sigma</em>, means add up the list. Here those three steps are applied to a cut.</p>
+</section>
+
+<section class="slide" data-act="cut">
+<h2>Five cuts, five agreements</h2>
+<p>Each row is a different shape of table, from a nearly square one to a very lopsided one. The two
+middle columns are worked out from opposite sides of the same cut:</p>
+<table class="tab cut"><thead><tr><th>cut</th><th>from the small side</th>
+<th>from the large side</th><th>difference</th></tr></thead><tbody>
+<tr><td>4 against 16</td><td class="same">1.823963680735</td><td class="same">1.823963680735</td><td>2.22e-16</td></tr><tr class="hi"><td>3 against 20</td><td class="same">1.335035830154</td><td class="same">1.335035830154</td><td>0.00e+00</td></tr><tr><td>2 against 64</td><td class="same">0.894092706459</td><td class="same">0.894092706459</td><td>2.22e-16</td></tr><tr><td>8 against 8</td><td class="same">2.163098461227</td><td class="same">2.163098461227</td><td>4.44e-16</td></tr><tr class="hi"><td>5 against 100</td><td class="same">2.284916686668</td><td class="same">2.284916686668</td><td>0.00e+00</td></tr>
+</tbody></table>
+<p><strong>The worst disagreement anywhere on this table is 4.44e-16.</strong> That is the smallest
+difference the arithmetic can express &mdash; on 2 of the five cuts the two sides come out
+<em>exactly</em> equal, with a difference of precisely zero.</p>
+<p><strong>The shape of the table has nothing to do with it.</strong> A 8 against 8 cut and a
+2 against 64 cut both report one number from either side. What the two sides share is the list of
+values, and the next slide is that list.</p>
+<p class="note">A difference of 4.44e-16 means the two calculations went down completely different
+routes &mdash; one through a 2 by 2 table, the other through a 64 by 64 one &mdash; and landed on
+the same value.</p>
+</section>
+
+<section class="slide" data-act="cut">
+<h2>What the two sides share</h2>
+<p>Take the 4 by 16 cut and open it up. Every table of numbers can be written as a list of
+<strong>&sigma;</strong> values, said <em>sigma</em>, which say how much each independent pattern in
+it carries. This one has 4 of them:</p>
+<table class="tab cut"><thead><tr><th></th><th colspan="4">the four values</th></tr></thead><tbody>
+<tr><td>&sigma;</td><td>0.613939878</td><td>0.548141781</td><td>0.501436721</td><td>0.266795108</td></tr>
+<tr class="hi"><td>&sigma; squared</td><td class="same">0.376922174</td><td class="same">0.300459412</td><td class="same">0.251438785</td><td class="same">0.071179630</td></tr>
+<tr><td>from the small side's table</td><td class="same">0.376922174</td><td class="same">0.300459412</td><td class="same">0.251438785</td><td class="same">0.071179630</td></tr>
+</tbody></table>
+<p><strong>The last two rows are the same numbers.</strong> The largest difference between them is
+<strong>1.67e-16</strong>. Squaring the shared values gives exactly what the small side's own table
+reports, and the same squares come out of the large side's table too.</p>
+<p><strong>That is why both sides agree.</strong> They are reading one list. The two sides of a cut
+do not hold separate accounts to be reconciled; there is one set of values and each side sees all of
+it.</p>
+<p class="formula">the squares total 1.000000000
+&nbsp;&nbsp;&middot;&nbsp;&nbsp; &minus;&Sigma; p log<sub>2</sub> p = 1.823963681</p>
+<p class="note cool">The squares add to one because the table was scaled that way, so they are
+already shares and the entropy can be taken straight off them.</p>
+</section>
+
+<section class="slide" data-act="cut">
+<h2>The small side sets the limit</h2>
+<p>The large side's table is much bigger, so it has many more values in it. Count how many of them
+are above zero:</p>
+<table class="tab cut"><thead><tr><th>cut</th><th>values above zero</th><th>values at zero</th>
+<th>the smaller side</th></tr></thead><tbody>
+<tr><td>4 against 16</td><td class="same">4</td><td class="zero">12</td><td>4</td></tr><tr><td>3 against 20</td><td class="same">3</td><td class="zero">17</td><td>3</td></tr><tr><td>2 against 64</td><td class="same">2</td><td class="zero">62</td><td>2</td></tr><tr><td>8 against 8</td><td class="same">8</td><td class="zero">0</td><td>8</td></tr><tr class="hi"><td>5 against 100</td><td class="same">5</td><td class="zero">95</td><td>5</td></tr>
+</tbody></table>
+<p><strong>The count above zero is the smaller side, on every row.</strong> The 5 against 100 cut
+gives the large side <strong>100</strong> values in all, and <strong>95</strong> of them are exactly
+zero. Only <strong>5</strong> carry anything.</p>
+<p><strong>Making the far side larger adds nothing.</strong> Go from 100 columns to a thousand and
+the answer is still five values: the narrow side is the whole capacity of the cut. Everything the
+two sides can share has to pass through the smaller of them.</p>
+<p><strong>This is the bound the paper starts from, at a size you can check.</strong> A boundary of
+a given size carries a limited number of things, and enlarging what sits behind it changes that
+number by nothing. Units <strong>B6</strong> and <strong>B7</strong> measure what a limit like this
+does to a decay; this is where the limit comes from.</p>
+</section>
+
+<section class="slide" data-act="cut">
+<h2>Three steps, and where they lead</h2>
+<table class="tab cut"><thead><tr><th>step</th><th>on this page</th><th>in unit A12</th>
+</tr></thead><tbody>
+<tr><td>square the values</td><td>&sigma; squared</td><td>the power in each column</td></tr>
+<tr><td>turn them into shares</td><td>they total 1.000000000 already</td>
+<td>divide by the total power</td></tr>
+<tr class="hi"><td>&minus;&Sigma; p log<sub>2</sub> p</td><td class="same">1.823963681</td>
+<td>the same formula</td></tr>
+<tr><td>2 to that power</td><td class="same">3.540525926</td><td>how many columns are working</td></tr>
+</tbody></table>
+<p><strong>One arithmetic, two subjects.</strong> Unit A12 asks how many of a record's columns carry
+it. This page asks how much two sides of a cut share. The steps are identical and so is the meaning
+of the answer: <strong>3.540525926</strong> is an effective count, here of the patterns crossing the
+line.</p>
+<p><strong>What the paper takes from this.</strong> The entropy of the screen is the entropy of the
+cut, so the list of &sigma; values is the whole of what the screen has to work with. Every read in
+this course &mdash; the resolution limit of unit <strong>B5</strong>, the shape constant of
+<strong>B6</strong>, the contrast of <strong>D5g</strong> &mdash; is worked out from that one list,
+which is why they can be compared with each other at all.</p>
+<p class="note cool">The measurement to keep: a 2-row side and a 64-row side, 0.894092706459 from each, and
+a difference of 2.22e-16.</p>
+</section>
+
+</div></main>
+
+<div class="bar">
+  <div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &nbsp;&middot;&nbsp; <kbd>Home</kbd> to restart</div>
+  <div class="nav">
+    <button class="nb" id="prev" type="button">Back</button>
+    <button class="nb" id="next" type="button">Next</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ticks  = document.getElementById('ticks');
+  var count  = document.getElementById('count');
+  var prev   = document.getElementById('prev');
+  var next   = document.getElementById('next');
+  var i = 0, btns = [], lastAct = null, group = null;
+
+  slides.forEach(function(s, n){
+    var act = s.getAttribute('data-act');
+    if(!group || act !== lastAct){ group = document.createElement('div'); group.className = 'tickgroup'; ticks.appendChild(group); lastAct = act; }
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (n+1) + ' of ' + slides.length);
+    b.addEventListener('click', function(){ go(n); });
+    group.appendChild(b); btns.push(b);
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    btns.forEach(function(b, k){
+      if(k === i){ b.setAttribute('aria-current','true'); } else { b.removeAttribute('aria-current'); }
+      b.classList.toggle('seen', k < i);
+    });
+    count.textContent = (i+1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem('entroptics-cut-slide', String(i)); } catch(e){}
+  }
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key === ' ' && !e.shiftKey && e.target === document.body){ e.preventDefault(); go(i+1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem('entroptics-cut-slide') || '0', 10) || 0; } catch(e){}
+  go(saved >= 0 && saved < slides.length ? saved : 0);
+})();
+</script>
+</body>
+</html>
