@@ -124,9 +124,13 @@ company's documents — and it reports:
 
 And one more, which is the property that matters: **when there is nothing there, it says nothing.**
 
+*For the current state of any capability named here — running, built, or designed only — the
+canonical page is [`../vision/roadmap.md`](../vision/roadmap.md).*
+
 ### What is unusual is what is *absent*
 
-**There are no settings, parameters, or models.**
+**There is no trained model, and no manually fitted resolution or signal threshold. The reader
+supplies one number: the false-alarm tolerance they are willing to accept.**
 
 The working resolution comes from the material itself. The instrument reads how much detail the data
 can actually support and then operates at exactly that scale — finer would be invention, coarser would
@@ -292,8 +296,9 @@ The instrument-side inventions are the subject of pending patent applications an
 
 The pattern is the point: one instrument, any number of unrelated fields, nothing retuned in between
 — and a known rule for when it wins. It beats a simple summary whenever the thing being decided has
-several distinct explanations competing, and it ties when there is only one. Since it never does
-worse, adopting it risks nothing.
+several distinct explanations competing, and it ties when there is only one. **In the cases published
+here it never did worse than the baseline it was compared against.** That is a statement about those
+comparisons, not a guarantee for an untested one.
 
 ### What it costs to run
 

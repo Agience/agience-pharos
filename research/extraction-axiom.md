@@ -179,10 +179,12 @@ Gravity
 > **The Yang-Mills mass gap thread is superseded, and kept deliberately.**
 >
 > The current account of the mass gap is [`entroptics-mass-gap`](https://github.com/Agience/entroptics-mass-gap):
-> its paper and its `sorry`-free Lean 4 / Mathlib development establish the gap at every physical
-> coupling as a reduction to four named cited results, with the confinement read certified at 99.9%.
-> Where the thread calls the problem *"reduced to one open statement… the Millennium Prize
-> problem"*, that framing understates what was later established — read the current account instead.
+> its paper and its `sorry`-free Lean 4 / Mathlib development reduce the gap at every physical
+> coupling to four named cited results, with the axiom footprint printed and the confinement read
+> certified at 99.9%. It is a **candidate**: the Lean development checks the reduction, not the four
+> physical inputs it reduces to. Where the thread calls the problem *"reduced to one open statement…
+> the Millennium Prize problem"*, the current account states the reduction more precisely — read it
+> instead.
 >
 > **The prose is not rewritten, because its value is that it is dated.** Its *false shortcuts*
 > material records approaches that were tried and did not work, which the current paper does not

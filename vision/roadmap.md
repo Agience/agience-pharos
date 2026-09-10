@@ -12,6 +12,13 @@
 
 ---
 
+**This is the canonical status page.** Where another document in this corpus describes the state
+of something differently — the overview, the course, a design note — this one is correct and the
+other is drift. That precedence is about status, not about measurements: for a number, the paper
+that reports it is canonical.
+
+---
+
 ## 1 · Five states, and why the distinction is the point
 
 Most roadmaps have two states — done and not done — which is how "designed" quietly becomes
@@ -38,9 +45,10 @@ identity authority.** `origin.agience.ai` answers OIDC discovery and JWKS. ⬢ *
 a customer's own domain — ◧ *live, and serving a very small store; it is a deployed instance, not yet
 a populated one.*
 
-◧ **The instrument**, with its governing mathematics machine-verified in Lean 4. *It is not
-published: the PyPI name is registered and carries zero release files, and the repository is not
-publicly visible. Publishing it is unstarted work, not a completed step.*
+⬢ **The instrument**, published as `entroptics` on PyPI and public at
+[github.com/Agience/entroptics](https://github.com/Agience/entroptics). Its governing mathematics
+carries a `sorry`-free Lean 4 reduction with the assumptions printed. ◧ *Lean checks the reduction,
+not the physical inputs it reduces to.*
 ⬢ **Retrieval measured against the field's own yardstick** — 2–8× a lexical baseline where a question
 shares no words with its answer, with that baseline reproducing published BEIR within 0.016. ◧ *And
 where the query is the answer's own text, BM25 wins and should.*

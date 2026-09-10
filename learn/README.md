@@ -14,6 +14,9 @@ The table below is the complete set. [`index.html`](index.html) is the browsable
 | exercises | **34** |
 | reads in the reference | **49** |
 
+*These lessons teach the instrument. For what is running today versus designed, the canonical page
+is [`../vision/roadmap.md`](../vision/roadmap.md).*
+
 ## What makes these different from documentation
 
 **Every number on every slide is recomputed from the running code each time a page is built**, by the build that produces them, which fails if a single value has moved. The builders and the audits are held with the research code; `shared/verify_all.py` re-runs every audit.

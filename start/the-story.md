@@ -48,7 +48,7 @@ origin. What holds them together is a single guarantee: **measured, never set, n
 optical aperture and reads, from the signal itself, the resolution at which to trust it, whether
 coherent structure is present, and how many distinct modes rise above the noise. It is
 parameter-free — the only external input is the reader's own tolerance for a false alarm — and its
-governing mathematics is machine-verified. The same untuned instrument reads a radio waterfall, a
+governing mathematics carries a `sorry`-free Lean 4 reduction with its assumptions printed. The same untuned instrument reads a radio waterfall, a
 market stream, and a model's answer against its evidence. Meaning is measured, not modeled.
 
 **The memory — Mantle, the lattice.** The instrument of provenance. The model is universal:

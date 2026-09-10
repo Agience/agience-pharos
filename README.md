@@ -31,6 +31,17 @@ The one-line ontology, for orientation:
 | [`research/`](research/) — [index](research/README.md) | **the papers and the physics lineage** — [the instrument](research/paper-1-the-instrument.md) and [knowledge without weights](research/paper-2-knowledge-without-weights.md), the economy [position paper](research/the-economy.md), the information universe, the extraction axiom, and [how to claim a measurement](research/between-sample-variation.md) | current |
 | [`vision/`](vision/) — [index](vision/README.md) | **what is intended, and not yet built** — the guiding path, the sovereign stack, the corpus, the information model. Read it as direction, not as working software | future |
 
+## If two documents disagree
+
+[`vision/roadmap.md`](vision/roadmap.md) is the canonical statement of **what is running, what is
+built but not armed, and what is only designed**. Where its wording and any other document's — this
+overview, the course, a design note — describe the same thing differently, the roadmap is correct
+and the other is drift to be fixed. It carries a state marker per item and a completion test per
+stage, so a disagreement is checkable rather than a matter of tone.
+
+That precedence covers *status* only. For what a measurement says, the paper that reports it is
+canonical; for what a component is, `design/components.md` is.
+
 ## What is built, and what is intended
 
 The split is the tree a document sits in. **`design/`** and **`features/`** describe what exists:
@@ -63,3 +74,8 @@ The author used Anthropic's Claude Opus (versions 4.8 and 5) in the preparation 
 contribution was to write code, and to generate and validate content. The ideas, the construction
 and the claims are the author's. No other generative AI tool was used. The author reviewed and
 edited all output and takes full responsibility for the content of this publication.
+
+**Where the work ran matters, and the two are separate.** Model inference was hosted — the Claude
+API. Everything the numbers rest on ran locally on the author's own hardware: the measurements, the
+numerical experiments, and the Lean development. No result in this corpus was produced by a hosted
+model; a hosted model helped write the prose and the code that produced them.
