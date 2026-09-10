@@ -26,7 +26,7 @@ the observer is its origin. One guarantee holds them together: **measured, never
 
 ## Then
 
-- **[`../learn/`](../learn/)** — the Entroptics course, 50 lessons from grade-ten mathematics to a working instrument
+- **[`../learn/`](../learn/)** — the Entroptics course, 49 lessons from grade-ten mathematics to a working instrument
 - **[`../features/`](../features/)** — what works today, capability by capability
 - **[`../design/`](../design/)** — how it is built, and the vocabulary it is built in
 - **[`../research/`](../research/)** — the papers, and the measurements behind the claims
