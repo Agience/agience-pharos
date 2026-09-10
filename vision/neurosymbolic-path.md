@@ -40,28 +40,6 @@ interaction event. The same bound is what Entroptics reads as a **finite apertur
 not a metaphor borrowed for the instrument; the instrument and the platform are two readings of one
 constraint, which is why their properties line up without anyone arranging it.
 
-## The rule is enforced in code
-
-A principle stated in a README is a slogan. This one shapes the reasoning surface itself, and the
-place to check it is where a shortcut would have been easiest to take.
-
-In [`agience_chorus/lumen/server.py`](https://github.com/Agience/agience-chorus):
-
-- **`invoke_llm` raises.** Its registered description reads, in full: *"Raises. No-models rule,
-  universal and including BYOK. Grounded operators are the reasoning surface."* Universal, and
-  bring-your-own-key does not exempt a caller.
-- **`transcribe_artifact` raises** — *"a hosted speech recognizer is a trained model
-  (no-models rule)."* Speech recognition is the convenient exception almost every system grants
-  itself. It is refused here.
-- **`evaluate_output` is a stub, not a shortcut** — *"awaits a grounded verifier (LLM judge barred;
-  overlap ≠ quality)."* LLM-as-judge is barred outright, and the tool stays unimplemented rather
-  than being filled with a model call.
-
-Each of these is a place where importing an outside judgement would have been easy and invisible.
-Calling a model stays entirely legitimate as a deliberate act through a tekton outside the core,
-where a caller owns the decision and the provenance records it — the care goes into the route the
-system takes on its own.
-
 ## The three pieces
 
 **A symbolic substrate — Mantle.** Every artifact carries its identity, version history and
