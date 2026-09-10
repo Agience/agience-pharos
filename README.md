@@ -70,12 +70,11 @@ contributions: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Declaration of generative AI use
 
-The author used Anthropic's Claude Opus (versions 4.8 and 5) in the preparation of this work. Its
-contribution was to write code, and to generate and validate content. The ideas, the construction
-and the claims are the author's. No other generative AI tool was used. The author reviewed and
-edited all output and takes full responsibility for the content of this publication.
+Anthropic's Claude Opus (versions 4.8 and 5) was used throughout: to write code, and to generate
+and validate content. No other generative AI tool was used. The ideas, the construction and the
+claims are the author's, who reviewed and edited every output and is responsible for all of it.
 
-**Where the work ran matters, and the two are separate.** Model inference was hosted — the Claude
-API. Everything the numbers rest on ran locally on the author's own hardware: the measurements, the
-numerical experiments, and the Lean development. No result in this corpus was produced by a hosted
-model; a hosted model helped write the prose and the code that produced them.
+**Where the work ran matters, and the two are separate.** Model inference was hosted, through the
+Claude API. Everything the numbers rest on ran locally on the author's own hardware: the
+measurements, the numerical experiments, and the Lean development. No result in this corpus was
+produced by a hosted model; a hosted model helped write the prose and the code that produced them.
