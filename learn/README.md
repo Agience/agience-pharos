@@ -91,6 +91,7 @@ Three disciplines are enforced mechanically rather than by care:
 | [The words](glossary.html) | the course's terms, the unit that owns each, and how widely it is used |
 | [Every read, in one place](reference.html) | all 49 reads, with a live value on both records |
 | [Reading a Jacobian Lens](report-jacobian-lens.html) | the full research report behind unit D1, from before the course |
+| [Where to go next](next.html) | the handover: each read's identifier in the library, where the code and data live, and how to support the work — written by hand, carrying no measured figures |
 | [index.html](index.html) | the entry point, linking everything above |
 
 ## Provenance
