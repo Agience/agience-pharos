@@ -211,6 +211,12 @@ implementation detail.
 Agience's whole authorization model lives in principal-space. *"Share this Group with that group"* is
 the sentence that decides it.
 
+### 4.3 The persona roster is routing, not a public surface
+
+The persona names are internal routing. The host mounts each one at `/<name>` and holds no roster of
+its own, so the names describe where a request goes inside the system rather than what a reader is
+offered. A public surface leads with the capability, not with the name of the process that serves it.
+
 ## 5. The values, restated as mechanisms
 
 Seven values ship as iconography on `agience.ai` today and appear in none of the papers.

@@ -60,8 +60,8 @@ Two modes fall out of the same code:
 
 ## 4. Current state
 
-Authentication *and* authorization are both standalone; authorization is no longer routed to
-Origin. Most of §5–§6 below is therefore delivered rather than pending.
+Authentication *and* authorization are both standalone; authorization resolves locally rather than
+through Origin. Most of §5–§6 below is therefore delivered rather than pending.
 
 | Capability | Today | File anchor |
 |---|---|---|
@@ -87,7 +87,7 @@ exactly as written.
 
 Note: Mantle's Origin client is down to one call, `get_operator_id`, and it degrades gracefully
 (catch `HTTPError` → `None`). A standalone Origin-off Mantle names its operator via
-`AGIENCE_OPERATOR_ID` instead; grant-gated operations no longer deny without Origin.
+`AGIENCE_OPERATOR_ID` instead, and grant-gated operations succeed with Origin absent.
 
 ## 5. What changes
 

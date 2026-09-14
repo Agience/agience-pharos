@@ -16,9 +16,8 @@ The model is conceptual and implementation-driving. Where the code has since set
 different name for something described here, this document uses the code's name. What remains
 unbuilt is collected at the end.
 
-The store boundary the model was originally written against no longer exists: the lattice IS the
-store — one SQLite file plus FS-CAS content, opened in-process, zero external database processes, and
-the backend selector was deleted 2026-07-23.
+The lattice is the store: one SQLite file plus FS-CAS content, opened in-process, with no external
+database process and no backend selector.
 
 ---
 

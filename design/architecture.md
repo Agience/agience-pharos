@@ -375,6 +375,27 @@ nodes; the AGPL nodes, chorus and ember, point downward at Apache ones, which is
 direction. The one edge to settle is mantle's on prism: it is real, it is licence-clean, and it is
 absent from mantle's manifest.
 
+**The edges, counted. Measured 2026-09-13, not intended.**
+
+Every edge below points DOWNWARD. There are no sideways edges and no upward ones — that is the
+property §7 and §28 assert, and it is checked against the tree rather than asserted here.
+
+These are counts of distinct non-test **modules** that import across a repository boundary — one
+file that imports a sibling four times counts once. They are therefore smaller than the *import
+site* figures in the table above, which count occurrences; the two measure different things and
+both are stated so neither has to be inferred from the other.
+
+```
+chorus  -> crystal 36   mantle 30   prism 46
+ember   -> crystal 14   mantle 25   prism 29   entroptics 1
+crystal -> prism   13
+mantle  -> prism   24
+origin  -> prism    5
+```
+
+`ember -> entroptics 1` is the single aperture: `ember/optics.py` is the only module in the scanned
+repos permitted to name entroptics, and a suite in ember enforces that it stays one file.
+
 ## 30. Prism and capabilities — how an organon gets its light
 
 An organon is a real-world interface. It needs two things:
