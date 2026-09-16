@@ -17,6 +17,7 @@ been measured, [`../research/`](../research/).
 | [`information-model.md`](information-model.md) | Content, context, transform — the design spec for how information is typed and moved | reference |
 | [`device-mesh.md`](device-mesh.md) | **Every device is a host** — the four tiers, from a wearable to a stratospheric relay, and the blind key-borne link between them | Not built |
 | [`platform-vision.md`](platform-vision.md) | The earliest statement of platform direction, written 2026-03-05 | history |
+| [`information-gauge-db.md`](information-gauge-db.md) | A database schema earned from the SU(N) mass-gap result: store information as a gauge field, keep the physical content gauge-invariant, and use the measured gap as the coherence gate | unbuilt |
 
 ## Read `platform-vision.md` as history
 
