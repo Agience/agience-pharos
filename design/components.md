@@ -110,7 +110,7 @@ The rule that makes this consistent end-to-end: **core is Apache** so that both 
 
 ## Docs & site as artifacts (not static)
 
-- **pharos** = a docs **rendering host** that draws documentation from Mantle **artifacts** (versioned, provenance-carrying, searchable), not static pages. Docs are authored/committed as artifacts; pharos renders them.
+- **pharos** = a docs **rendering host** that draws documentation from Mantle **artifacts** (versioned, provenance-carrying, searchable), not static pages. Docs are authored as artifacts; pharos renders them.
 - **Private / scoped docs (pharos)** — because docs are artifacts, private sharing is the **native grant architecture**, no special mechanism: public docs are public-granted artifacts; a private/scoped section is a doc collection granted to specific people. Pharos renders per the viewer's Origin session + grants — anonymous sees public only; authenticated-with-a-grant sees their private collections too (the same light-cone / "grants are keys" model as search). *Design note; implement when pharos is built.*
 - **www** (market interface) is likewise **artifact-sourced**: blog, offerings, and the operator marketplace render from Mantle artifacts via invoke.
 - **Serve statically:** keep artifacts as the source of truth but **cache / SSG at the edge** for public pages — live per-request artifact renders hurt SEO and first-paint. Artifact-driven content, statically served.

@@ -70,7 +70,7 @@ contributions: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Declaration of generative AI use
 
-Anthropic's Claude Opus (versions 4.8 and 5) was used throughout: to write code, and to generate
+Anthropic's Claude Opus (versions 4.8, 5, and 5.5) was used throughout: to write code, and to generate
 and validate content. No other generative AI tool was used. The ideas, the construction and the
 claims are the author's, who reviewed and edited every output and is responsible for all of it.
 

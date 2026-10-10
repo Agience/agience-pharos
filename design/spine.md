@@ -37,11 +37,10 @@ load-bearing rather than decorative.
 
 ---
 
-## 2. The third axis — the definition that did not exist
+## 2. The third axis — the observer
 
-**This is new.** The observer had no public definition anywhere before the spine: no pillar,
-no diagram lane, no page. It has a *built surface* — `agience-chorus/src/agience_chorus/astra/web`, whose own README
-already calls it **"an observation plane"** — described until now in generation-behind vocabulary.
+**The spine is where the observer is defined.** Its *built surface* is
+`agience-chorus/src/agience_chorus/astra/web`, whose own README calls it **"an observation plane"**.
 
 **The observer is the seat: a bounded place to stand, from which what is reachable is decided, and
 at which judgment is staked.** Three properties, each mechanical rather than aspirational:
@@ -55,15 +54,18 @@ reach a thing cannot obtain the key to it. *Being finite is implemented, not mer
 **Authority is human, and delegation is narrow.** An agent acts on behalf of a person, through
 short-lived delegation, never as its own authority.
 
-**Existence comes in degrees — and there is no gate.** **`Commit` is
-stale, and nothing replaces it as a verb.** There is no binary boundary between a draft and the
-record. A thing has **mass** to the degree that observers agree on it, weighted by what their
-authority can support, and mass accrues continuously.
+**Existence comes in degrees.** An artifact is live from the moment it is written. **In the
+design, it joins the record continuously:** a thing has **mass** to the degree that observers agree
+on it, weighted by what their authority can support, and mass accrues continuously.
 
-The mechanism is concrete. **A new artifact is dark
-matter: mass, a timestamp, no edges.** It is unobserved rather than absent — it already bends
-routing, it already adds to its region's density, and it cannot yet be reasoned about. **Edges are
-observations that have been made**, so observing a thing is what turns dark matter luminous.
+**Dark matter, in the design, is a new artifact that has not been observed.** It is a valence-2
+vertex: it carries WHO and WHEN (`created_by`, `created_time`) and has no embedding, no event class
+and no operator (no WHERE, WHAT or HOW). It gravitates — it inherits grants, orders in time and
+counts toward provenance — and it stays dark until first access converts it (§4 of
+`information-gauge-db.md`). The design also has it bend routing and add to its region's density.
+**Observation is what turns dark matter luminous.** What is built is the storage half: with
+`MANTLE_LAZY_INDEX` on (the default indexes on write), a write leaves the artifact latent — stored,
+owned, timed and unindexed — and the first authorized read indexes it.
 
 Three consequences worth stating in that order:
 
@@ -77,10 +79,13 @@ Three consequences worth stating in that order:
   **chosen** threshold — somebody picks where the line falls. Mass is *measured*. Removing the gate
   is not a simplification of §3; it is §3 applied to the observer axis.
 
-**The lattice state `draft|committed|archived` still exists** and is load-bearing in code. It is an
-implementation detail of the store, **not a concept any surface names.** Where canon needs a word
-for the mechanism it says *"publishing IS commit + canonicalize + hash + sign"* — which is a
-description of an operation, not a product noun.
+**The stored artifact state is `live|archived`, and it is lifecycle.** Every write path stores
+`live`. `archived` marks a superseded version, or a card a user archived, and head resolution and
+default recall read past it. The state is an implementation detail of the store. An unobserved
+artifact is dark matter, as defined above. Mass is the design for how real a
+thing is. Creating an artifact or a container records the observer rung the write earned, derived
+server-side from the authenticated principal; no path computes mass from those rungs, and no read
+path consults it.
 
 **One line, for reuse:** *A seat is a bounded place to stand. Agience decides what you can reach,
 records what you stake, and never pretends you can see the whole.*
@@ -201,10 +206,11 @@ That definition does three things at once and all three are worth keeping:
   That is the seat, made concrete — and it is what connects the product noun to §2's third axis
   rather than leaving the axis as philosophy.
 
-**`Commit` is STALE, and nothing replaces it**. No surface uses the word, and
-no verb takes its place — **mass replaces the gate.** See §2 for what that means and why it makes the
-story more consistent rather than less. `draft|committed|archived` remains a lattice state and an
-implementation detail.
+**Mass is how a thing joins the record, in the design.** An artifact is live when written, and
+**mass carries how far it has joined** — see §2 for what that means and why it makes the story more
+consistent rather than less. The stored state `live|archived` is lifecycle and an implementation
+detail. The store has a Commit / CommitItem schema for collection membership changes and serves
+`GET /artifacts/{id}/commits` to list them; no served write path writes a commit record.
 
 **`Collection` is KEPT**. Not renamed to `Group`.
 `Group` is the industry's word for a set of **principals**, and

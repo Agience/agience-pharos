@@ -191,17 +191,19 @@ The weight derives from the rungs its past measurements earned and survived: unr
 
 ## 23. The Commit boundary dissolves into mass
 
-**Promotion is a continuous physical fact: an object joins the record to the degree that authority-weighted observers agree on it.** The only question asked of a signal is how much **mass** it has accrued, at the cut published in §21.1 of `paper-2-knowledge-without-weights.md`.
+**In the design, promotion is a continuous physical fact: an object joins the record to the degree that authority-weighted observers agree on it.** The question the design asks of a signal is how much **mass** it has accrued, at the cut published in §21.1 of `paper-2-knowledge-without-weights.md`.
 
-Mass carries the three jobs of a promotion boundary:
+In the design, mass carries the three jobs of a promotion boundary:
 
-- **Safety.** Draft output cannot become canonical: canonical status is a mass level and unwitnessed drafting earns none.
+- **Safety.** Canonical status is a mass level, and output no observer has staked on earns none.
 - **Staked judgment.** A human staking their judgment is provenance, entering as one authority-weighted agreement that raises mass.
-- **Entropy management.** Low-mass signals propagate and decay, so drafting never contaminates durable memory.
+- **Entropy management.** Low-mass signals propagate and decay, so durable memory is what observers have staked on.
 
-**"The record" is what has accrued enough mass, not a place you commit into.** The artifact's `state` field does not participate (§19 of `paper-2-knowledge-without-weights.md`).
+**The rung is recorded at creation; mass is designed, not computed.** Creating an artifact (`POST /artifacts`) or a container stamps the observer rung the write earned into its context, derived server-side from the authenticated principal: a claim the principal cannot earn is recorded as `assertion`. Edits, uploads and bulk writes carry no rung. No path aggregates rungs into mass, and ranking, filtering and recall read other fields. The three jobs above are the design that read will carry.
 
-The workspace/collection *mechanism* is graph structure — a workspace is a collection whose content type marks it as one, and there is one artifact table. Versions share a `root_id`, old versions are deleted only by policy, and the policy itself is the audit trail.
+**In the design, "the record" is what has accrued enough mass.** Every write path — notes, uploads, inbound, bulk, seeds, machine output — stores an artifact `live`. A new, unobserved artifact is dark matter as §2 of `spine.md` defines it: a valence-2 vertex carrying WHO and WHEN, with no WHERE, WHAT or HOW, dark until first access. Machine output weighs nothing until an observer stakes on it. The artifact's `state` field is lifecycle (§19 of `paper-2-knowledge-without-weights.md`).
+
+The workspace/collection *mechanism* is graph structure — a workspace is a collection whose content type marks it as one, and there is one artifact table. Versions share a `root_id`. The head of a lineage in the store is its newest non-archived version in proper-time order; a superseded version is `archived`, which keeps it out of head resolution and default recall. Old versions are deleted only by policy, and the policy itself is the audit trail.
 
 ## 24. The lattice — one store, no external database
 
@@ -209,7 +211,7 @@ The workspace/collection *mechanism* is graph structure — a workspace is a col
 
 Within Mantle the request flow is strictly layered — router (thin, validates), service (orchestration), lattice/S3 adapter — and routers never call adapters directly.
 
-**The operation dispatcher is one generic route, and it lives in the gateway.** Type-specific and lifecycle operations go through `POST /artifacts/{artifact_id}/op/{op_name}`, served by crystal: the type declares an `operations` block, mantle resolves it (`types_service.resolve_operation`), the dispatcher enforces the operation's `requires_grant` against mantle's audited access check before dispatching, and routes on `dispatch.kind` — `artifact_crud` to mantle's own API, `mcp_tool` to the owning persona, `native` refused with 501 because mantle exposes no direct primitive. Adding a new lifecycle operation adds no endpoint anywhere. The route is deliberately absent from mantle's own HTTP surface — a guard test in `mantle/db/` fails if it reappears there, because the auth, invoke, revert and nonce coverage it would need does not exist on mantle's side.
+**The operation dispatcher is one generic route, and it lives in the gateway.** Type-specific and lifecycle operations go through `POST /artifacts/{artifact_id}/op/{op_name}`, served by crystal: the type declares an `operations` block, mantle resolves it (`types_service.resolve_operation`), the dispatcher enforces the operation's `requires_grant` against mantle's audited access check before dispatching, and routes on `dispatch.kind` — `artifact_crud` to mantle's own API, `mcp_tool` to the owning persona, `native` refused with 501 because mantle exposes no direct primitive. Adding a new lifecycle operation adds no endpoint anywhere. The route is deliberately absent from mantle's own HTTP surface — a guard test in `mantle/db/` fails if it reappears there, because the auth, invoke and nonce coverage it would need does not exist on mantle's side.
 
 **Search is encrypted lexical.** Searchable Symmetric Encryption carries the keyword store: each term is lowercased, stopped and Porter-stemmed, then becomes an HMAC blind token under an owner-scoped key; posting lists and their manifests are encrypted per token with AES-256-GCM, bound to their slot by associated data. The store holds tokens and never words. A posting entry carries `{artifact_id, collection_id, field}` and nothing else — term frequency, document length and positions are gone, because the recall path scores no BM25: it answers membership and counts how much of the query each artifact covers.
 
@@ -375,7 +377,7 @@ nodes; the AGPL nodes, chorus and ember, point downward at Apache ones, which is
 direction. The one edge to settle is mantle's on prism: it is real, it is licence-clean, and it is
 absent from mantle's manifest.
 
-**The edges, counted. Measured 2026-09-13, not intended.**
+**The edges, counted. Measured 2026-09-30, not intended.**
 
 Every edge below points DOWNWARD. There are no sideways edges and no upward ones — that is the
 property §7 and §28 assert, and it is checked against the tree rather than asserted here.
@@ -388,7 +390,7 @@ both are stated so neither has to be inferred from the other.
 ```
 chorus  -> crystal 36   mantle 30   prism 46
 ember   -> crystal 14   mantle 25   prism 29   entroptics 1
-crystal -> prism   13
+crystal -> prism   14
 mantle  -> prism   24
 origin  -> prism    5
 ```
@@ -1273,7 +1275,7 @@ settlement split, and the inbound challenge token all have live callers now.
 - **Morphism composition.** `composed_of` written and read. The edge type is declared in the seed set and nothing writes it — the colimit's own write says so at the call site and leaves it out. **Buys:** merges that chain, so a duplicate resolved twice keeps one path back to both originals, and a derived composition becomes an artifact carrying its own fitness counter.
 - **Limits.** Pullback, equalizer, product, alongside the colimits already present. **Buys:** intersection and constraint, the dual of joining.
 - **Functors.** Analogy as a commuting square. **Buys:** the one categorical claim directly falsifiable against a standard baseline.
-- **The version-DAG parent pointer and a reconcile operator.** Head *resolution* is built and wired: there is no stored head, every revision commits and stands, and which one answers is measured at read time against the reader's own recall set — too little frame, an unmeasurable candidate, or nothing above the frame's own null each yield no reading and leave every revision standing. What is missing is the parent pointer that makes the lineage a DAG rather than a flat root grouping, and the operator that reconciles two disjoint frames. **Buys:** disjoint-frame reconciliation — one artifact, head resolved per observer.
+- **The version-DAG parent pointer and a reconcile operator.** Head *resolution* is built in two places. In the lattice store the head of a lineage is its newest non-archived version in proper-time order (§23). In Ember's local shard cache (`mantle.shard.cache.LocalCache`) every revision stands, and which one answers is measured at read time against the reader's own recall set — too little frame, an unmeasurable candidate, or nothing above the frame's own null each yield no reading and leave every revision standing. What is missing is the parent pointer that makes the lineage a DAG rather than a flat root grouping, and the operator that reconciles two disjoint frames. **Buys:** disjoint-frame reconciliation — one artifact, head resolved per observer.
 - **A payment rail.** **Buys:** settlement out to the world. Nothing in the workspace moves value: the finance persona's settlement tool computes a split and says in its own answer that it moved nothing.
 - **WebRTC/QUIC transports and streamed optics frames.** **Buys:** live frames on the wire at conversational latency.
 - **The condensation-event artifact type.** **Buys:** enforcement of the waveform/provenance boundary — cognition continuous, provenance discrete, with the discrete side recorded.

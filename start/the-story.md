@@ -73,7 +73,7 @@ no path that widens the set except explicit, revocable delegation.
 provider: it issues every identity. The grants and the keys live in the lattice, alongside the
 artifacts they govern. An agent acts only on behalf of a person, through short-lived delegation, never
 as its own authority. A person renders an artifact as a view; an agent reads the
-same artifact as structured form — one object, two faces. What puts a draft into the record is
+same artifact as structured form — one object, two faces. What puts an object into the record is
 **agreement**: an object has mass to the degree that observers agree on it, weighted by their
 authority, and a person staking judgment adds mass. Existence in degrees, corrigibility made
 mechanical.

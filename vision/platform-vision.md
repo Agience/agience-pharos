@@ -30,8 +30,8 @@ The Information OS Analogy maps Agience to filesystem and operating system conce
 | **File extensions** | Content types | Determines how an artifact opens, renders, and what actions apply |
 | **File handlers / viewers** | Content-type viewers | Pluggable UI components that render and interact with artifacts by type |
 | **Working directory** | Workspace | Ephemeral, high-churn editing layer — where entropy is shaped |
-| **Published filesystem** | Collection | Versioned, committed, durable memory — the system of record |
-| **Save / publish** | Commit | Explicit promotion from workspace to collection — the entropy boundary |
+| **Published filesystem** | Collection | Versioned, durable memory — the system of record |
+| **Save / publish** | Every write | An artifact is live the moment it is written; in the design, it joins the record continuously, by the mass observers' agreement gives it |
 | **File checksums** | Artifact stamps | Content hash — tamper-evident provenance (the on-chain block reference is research) |
 | **Signed certificates** | Validation records | Authority-signed, policy-bound proof of validation (chain anchoring is research) |
 | **Kernel services** | Persona servers (Aria, Astra, Iris, Lumen, Ophan, Sage, Seraph — seven, measured 2026-07-31; Verso was renamed Lumen, and Atlas and Nexus were never built) | Core platform capabilities — ingestion, retrieval, provenance, reasoning, presentation, security, finance |
@@ -123,7 +123,7 @@ This is the Mint model: Agience gets paid for the tooling. The currency, the eco
 The Open Operator Marketplace design enables three classes of tradeable resources:
 - **Host compute** — run workloads on community-operated execution nodes
 - **Server tools** — call MCP server capabilities published by operators
-- **Knowledge access** — read from committed, validated collections
+- **Knowledge access** — read from validated collections
 
 Marketplace transactions can be settled on-chain where that is useful. Cross-chain bridges enable settlement between authority currencies. Agience does not need to intermediate every payment; direct billing and optional network-level settlement can coexist.
 

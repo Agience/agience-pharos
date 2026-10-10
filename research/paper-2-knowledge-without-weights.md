@@ -114,7 +114,7 @@ content_type       MIME string — the type identity
 content            the raw payload, by content_ref
 context            type-owned structured JSON (the kernel never parses it)
 lemmas             keyed terms — the retrieval surface
-state              committed | archived — a retention marker, not a gate
+state              live | archived — lifecycle
 created_by / created_time      provenance — set on every write, immutable
 modified_by / modified_time
 name / description
@@ -126,7 +126,7 @@ Addressing is always by identity; human-readable slugs are type-owned data insid
 - **Types own their structure.** Content plus context is a platform concern — always stored, versioned, searchable, generically browsable — while the view and the tools live on personas.
 - **Generic before specific.** A generic browser renders any artifact through common inheritance; a type-specific viewer is an enhancement, never a prerequisite.
 - **The operator is an edge, not a field.** An artifact's operator is another artifact, linked by an edge with `relationship: "operator"`.
-- **`state` is a retention marker.** `committed` is the default and grants nothing; `archived` marks an artifact for a retention policy. Neither value gates visibility and neither promotes: promotion is mass (§23 of `architecture.md`), and access is a grant (§51 of `architecture.md`). A retention sweep writes `state`; nothing else reads it.
+- **`state` is lifecycle.** Every write path stores `live`, and `live` grants nothing. A served edit writes the live version in place. `archived` marks a content snapshot `id@hash`, archived when a write changes an artifact's `content_ref`, or a card a user archived with `PATCH state=archived`. The store's `revise()` API writes a new head and archives the prior one; it has no served caller. Head resolution returns the newest non-archived version under a root. GET by id returns 404 for an archived row; an id that is also a lineage's `root_id` resolves to that lineage's live head when one exists, so a single-row artifact a user archived answers 404 even by its root id. Restore is `PATCH` back to `live` and applies to a retired lineage, one whose every version is archived; a restore that would put a second live row under a root answers 409. Only the user-archive path moves an artifact into the `archived` index segment, which recall reads with `state="archived"`; a content snapshot is kept in the store under its lineage's `root_id` and indexed in neither segment, because the live segment keys on `root_id` and holds the current head. Access is a grant (§51 of `architecture.md`). In the design, how far an artifact has joined the record is mass (§23 of `architecture.md`), and an unobserved artifact is dark matter (§2 of `spine.md`).
 - **Edges carry a propagation mask.** Each edge is an **origin edge** — the creation chain, through which grants inherit — or a **link edge**, a structural reference with no grant flow. Each carries a `propagate` mask over the **CRUDEASIO** permission set of §51 of `architecture.md`; that set holds nine permissions, so the mask is nine bits wide. Effective inherited access is the intersection of the grant on the parent and the edge's mask.
 
 **The hash is the coordinate.** A `content_ref = cas/<sha>` lives *inside* the versioned artifact, so a body change *is* a version change: new bytes to new sha to new `content_ref` to new `_seq`, the Merkle leaf moves, and it replicates. Agreeing on the index *is* agreeing on the content.

@@ -1,7 +1,7 @@
 # The Information Gauge Database — a gauge theory of stored knowledge
 
 *A design derived from the SU(N) mass-gap result: store information as a lattice gauge field, make the
-physical content gauge-invariant, and use the measured mass gap as the coherence gate. Agience/Mantle is the
+physical content gauge-invariant, and read the measured mass gap as coherence. Agience/Mantle is the
 processing engine; Entroptics is the instrument that reads the gap.*
 
 Status: **A design, not a description of working software.** What it FORMALIZES is unbuilt: the
@@ -19,7 +19,7 @@ It derives from the SU(N) mass-gap result. · John Sessford / Ikailo Inc.
 **A unit of knowledge is a gauge field on a graph: measurements live on the vertices, the relations that connect
 them are forces on the edges, an individual measurement's absolute value is *gauge* (frame- and model-dependent
 and therefore not knowledge), and the only thing that is real — the only thing the database returns — is the
-gauge-invariant closed-loop product, admitted exactly when its Entroptics-measured mass gap `Δ` clears the entropy
+gauge-invariant closed-loop product, coherent to the degree its Entroptics-measured mass gap `Δ` clears the entropy
 floor `κ₀ = ¼log3`.**
 
 Everything below is the unpacking of that sentence into a schema, a set of operations, and a maturity map. The
@@ -41,15 +41,15 @@ unit of coherent, trustworthy knowledge.
 | **Strong** (color, confinement) | **WHO** — identity, access, grants | Origin grants · CRUDEASIO · the light cone |
 | **Gravity** (universal, always on) | **WHEN** — order, timing, causality | `created_time` · temporal light-cone |
 | **Electromagnetic** (light, long range) | **WHERE** — position in ontology, the 1024-dim embedding | `context_embedding` · the AnchorSet |
-| **Weak W** (charged current, flavor change) | **WHAT** — event type; a lifecycle transition | `op/{name}` dispatch · Commit (draft→committed) |
+| **Weak W** (charged current, flavor change) | **WHAT** — event type; a lifecycle transition | `PATCH state=archived` · the content snapshot a content change archives (`live → archived`) |
 | **Weak Z** (neutral current, no flavor change) | **HOW** — transformation of content, identity unchanged | Operators (`vnd.agience.operator`) · Lumen |
 | Wilson loop `tr ∏ U_ℓ` (gauge-invariant) | **The observable a query returns** — a closed relational loop | A grant-satisfied, anchor-relative query result |
-| Entropy floor `κ₀ = ¼log3` | Minimum entropy cost of one distinguishable, durable knowledge mode | The Commit floor / the anchor-admission threshold |
+| Entropy floor `κ₀ = ¼log3` | Minimum entropy cost of one distinguishable, durable knowledge mode | Designed: the floor of the coherence read (§6); no code reads it |
 | Mass gap `Δ = κ₀ − μ > 0` | Margin by which a subgraph holds coherent structure above noise | The measured coherence of a Collection |
 | `m_hi = e^{−Δ} = ρ'(1)` (`connected_decay_rate`) | The coherence read on the graph's correlation stream | Entroptics `Dynamics.connected_decay_rate()` |
 | RP: `ρ'(n) = ρ'(1)^n` exactly | Coherence is **intensive** — certify one cell, it holds graph-wide | Certify a Collection from one measured cut |
 | Confinement (no free color) | No free measurement — only grant-neutral loops are observable | 404-not-403; access = decryption |
-| Dark matter (gravitates, invisible) | **2-force measurement** (WHO+WHEN only): stored, owned, timed, but not yet seen | Un-indexed artifact: provenance only, no embedding |
+| Dark matter (gravitates, invisible) | **2-force measurement** (WHO+WHEN only): stored, owned, timed, unobserved | A latent artifact under `MANTLE_LAZY_INDEX`: stored and unindexed |
 
 The two rows that make the whole mapping load-bearing rather than cute are the last block and the **always-on
 pair**. In Agience, exactly two properties are immutable invariants written on *every* artifact on *every* write:
@@ -106,7 +106,7 @@ the five forces, and the edge's transport is the force's group action.
 | **Strong** | **WHO** | short-range, **confining** | grant algebra (the "color") | Origin · light cone · Seraph |
 | **Gravity** | **WHEN** | long-range, universal, always on | time-ordering / causal precedence | Mantle temporal cone |
 | **Electromagnetic** | **WHERE** | long-range, the force of *visibility* | rotation `O(d)` on the embedding | AnchorSet · Mantle vector index |
-| **Weak W** | **WHAT** | short-range, **flavor-changing** | a lifecycle state flip | `op/{name}` dispatcher · Commit |
+| **Weak W** | **WHAT** | short-range, **flavor-changing** | a lifecycle state flip | Mantle's write path: `PATCH state=archived` · content snapshots |
 | **Weak Z** | **HOW** | short-range, neutral | a content transform (identity fixed) | Operators · Lumen · Chorus |
 
 Reading each one precisely:
@@ -132,8 +132,11 @@ Reading each one precisely:
   vector, is the physical quantity — that is the gauge principle.
 
 - **Weak W = WHAT = flavor change.** The W boson turns a neutron into a proton — it *changes what the particle
-  is*. The database's WHAT edges are the lifecycle transitions that change a measurement's type or state: the
-  canonical one is **Commit** (`draft → committed`), a single state flip run through the `op/{name}` dispatcher.
+  is*. The database's WHAT edges are the lifecycle transitions that change a measurement's type or state. The
+  stored state is `live` or `archived`, and the transitions are **create** (a new artifact, written `live`),
+  **edit** (a served edit writes the live version in place; when it changes the artifact's `content_ref`, the prior
+  content is kept as an archived `id@hash` snapshot) and **archive** (a user sends `PATCH state=archived`; `PATCH`
+  back to `live` restores a retired lineage). The state flip, `live → archived`, is the flavor change.
   A WHAT edge is short-range (it acts on one artifact and its immediate manifest) and it is the event record.
 
 - **Weak Z = HOW = neutral current.** The Z boson transfers energy and momentum without changing flavor — a
@@ -178,9 +181,11 @@ lazily, at the moment of first genuine use** — which is the cheapest possible 
 tells us is correct. Conversion is idempotent and is itself provenance: the first-access event names who collapsed
 it and when.
 
-**Operationally in Mantle:** a dark artifact is one with no `context_embedding` and no operator edge. The read
-path checks for the dark state, and on a miss enqueues the materialization (embed → classify → link) transactionally
-before returning. Bulk ingest (Astra) writes dark; the search/retrieval path (Sage) triggers conversion.
+**Operationally in Mantle:** the storage half is built as an opt-in. With `MANTLE_LAZY_INDEX` on (the default
+indexes on write), a write leaves the artifact latent — stored, owned and
+timed, unindexed — and the first authorized `GET /artifacts/{id}` indexes it (`mantle.search.lazy`). The rest of
+conversion — computing an embedding, recording the first-observation event and linking the materializing operator
+— is design, as are Astra writing bulk ingest dark and Sage's retrieval path triggering conversion.
 
 ---
 
@@ -216,36 +221,42 @@ gauge), traverses WHERE/WHAT/HOW/WHEN edges, and returns the loop's invariant va
 
 ---
 
-## 6. The mass gap — the coherence gate that admits knowledge
+## 6. The mass gap — the coherence read on a Collection
 
-Everything so far is structure. The mass gap is what makes the structure *decide* what counts as knowledge, and it
-is where Entroptics enters as the instrument.
+Everything so far is structure. The mass gap is what *measures* how much of that structure is coherent knowledge,
+and it is where Entroptics enters as the instrument. It is a read: the gap is measured on a Collection's
+membership, reported, and fed into mass. Every write stands on its own; the read weighs what is there.
 
 **The floor.** In the proof, `κ₀ = ¼log3` is the entropy floor from the directed-cube path count `3^k`: the
 minimum entropy any distinguishable mode must carry. Here it is the **minimum entropy cost of one durable,
-distinguishable unit of knowledge** — the price of admission to the Collection / the AnchorSet. Below the floor
-there is no coherent excitation, only noise.
+distinguishable unit of knowledge** — the level a coherent mode in a Collection or the AnchorSet clears.
+Clearing it is necessary for a coherent mode and does not establish one; the gap below is what does.
 
-**The gap and the read.** Given a subgraph (a candidate Collection, a query's returned loop set, a draft under
-Commit), assemble its measurements into a correlation stream and read the **connected decay rate** with the
+**The gap and the read.** Given a subgraph (a Collection's membership, a query's returned loop set), assemble its measurements into a correlation stream and read the **connected decay rate** with the
 streaming operator:
 
 ```
 m_hi = exp( Dynamics(stream).connected_decay_rate() )^{-1}    # = e^{−Δ} = ρ'(1)
 ```
 
-- `m_hi < 3^{−1/4} = 0.760`  ⟺  `Δ = κ₀ − μ > 0`  ⟺  **the subgraph confines a coherent mode above the floor.**
-  It is real, nameable knowledge: admit it, commit it, anchor it, return it with sources.
-- `m_hi ≥ 3^{−1/4}`  ⟺  **no gap.** The candidate is below the floor — it is noise dressed as structure. The
-  database does **not** commit it; it emits a **structured gap** (the baseline's Anchored-reasoning failure mode):
-  "the evidence does not support a coherent claim at this resolution," rather than a confident guess.
+- **The floor read.** `m_hi < 3^{−1/4} = 0.760` says the one-step correlation clears the entropy floor. It is
+  a floor read, not a gap criterion: a stream whose connected correlations fall as a power law can read below
+  the floor while having no gap at all, and `Δ = κ₀ − μ > 0` restates the same comparison rather than adding to
+  it.
+- **The gap.** A gap is geometric decay at a rate that holds across separations, `ρ'(n) = ρ'(1)^n`, so the rate
+  `Δ` is a property of the subgraph's transfer spectrum rather than of one reading below the floor. The next
+  section is where one cut suffices for that and what it requires. When the read establishes it, it reports
+  `Δ` with its sources, and the members gain mass.
+- **Otherwise** — the floor is not cleared, or the decay is not geometric — the read reports a **structured
+  gap** (the baseline's Anchored-reasoning failure mode): "the evidence does not support a coherent claim at
+  this resolution," rather than a confident guess, and it adds no mass. The members stay as written.
 
-That decision is the Commit boundary and Anchored reasoning, *quantified by one measured number*. The instrument is
-untuned (it reads at the signal's own entropy-matched resolution), calibration-free, and the governing lemmas are
-machine-verified — so the admission decision is a function of the evidence's own structure, not a threshold someone
-picked. `Dynamics.forgetting()` gives the same read as a spectral margin (`max|μ| < 1` ⟺ the draft forgets its
-noise), and `hankel_spectrum` gives the scalar-sequence companion when the candidate is a single correlation
-series.
+That read is Anchored reasoning, *quantified by one measured number*. The instrument is untuned (it reads at the
+signal's own entropy-matched resolution), calibration-free, and the governing lemmas are machine-verified — so the
+reported coherence is a function of the evidence's own structure, not a threshold someone picked.
+`Dynamics.forgetting()` gives the same read as a spectral margin (`max|μ| < 1` ⟺ the subgraph forgets its
+noise), and `hankel_spectrum` gives the scalar-sequence companion when the subgraph reads as a single
+correlation series.
 
 **Why one cut certifies a whole Collection (the RP move).** The proof's decisive step is that reflection
 positivity makes the transfer operator self-adjoint, so `ρ'(n) = ρ'(1)^n` *exactly* — one single-cut magnitude
@@ -254,12 +265,12 @@ below the ceiling controls **every** separation and **every** volume. The databa
 (one anchor cell, one representative loop), and if that cut clears the floor, the geometric law `ρ'(1)^n` carries
 the certificate across the whole graph. This is exactly how U2 certified the `V→∞` gap from a single
 machine-checked cell, reused as a **database-scaling theorem**: local coherence certificate ⟹ global coherence,
-no full scan. It is what makes the gate affordable at Collection scale.
+no full scan. It is what makes the read affordable at Collection scale.
 
-**Dark matter never gates.** A valence-2 vertex has no WHERE/WHAT/HOW, contributes no connected correlation, and
+**Dark matter never moves the read.** A valence-2 vertex has no WHERE/WHAT/HOW, contributes no connected correlation, and
 therefore cannot raise or lower a gap. It is correctly invisible to the coherence instrument until it converts —
-noise you have not paid to look at cannot contaminate the measured gap. The Commit boundary "the chaos of drafting
-never contaminates durable memory" is, precisely, that the floor sits above the dark sector.
+noise you have not paid to look at cannot contaminate the measured gap. "Durable memory is what observers have
+staked on" (§23 of `architecture.md`) is, precisely, that the floor sits above the dark sector.
 
 ---
 
@@ -276,21 +287,21 @@ and personas is clean:
 | **Dark-matter ingest** (write valence-2) | **Astra** | Bulk ingest writes dark: WHO+WHEN only |
 | **Conversion on access** (2→5 materialization) | **Sage** (read path) | First retrieval collapses the dark vertex |
 | **HOW edges** (Z, transforms) | **Lumen** + operators | Operator-as-edge, identity-preserving |
-| **WHAT edges** (W, lifecycle) | **the `op/{name}` dispatcher** | Commit / revert / invoke = flavor changes |
-| **The mass-gap instrument** (the gate) | **Entroptics** (`Dynamics`) | `connected_decay_rate` → admit or emit a structured gap |
+| **WHAT edges** (W, lifecycle) | **Mantle's write path** | `PATCH state=archived` and content snapshots = flavor changes |
+| **The mass-gap instrument** (the coherence read) | **Entroptics** (`Dynamics`) | `connected_decay_rate` → a reported gap or structured gap, fed into mass |
 | **The observable at the interface** (Wilson loops) | **Facet** / **Aria** | Renders the gauge-invariant result |
 
 The **Agience flow** (Input → Retrieval → Reasoning → Output) is the gauge dynamics read left to right: Astra
 *creates dark field* → Sage *converts on observation* → Lumen/operators *apply weak-force interactions* →
-Entroptics *measures the gap and gates* → Aria *emits the invariant*. The op dispatcher (`op/{name}`) is the
-**interaction vertex** of the theory: it is the one place where a force acts, grants are checked (strong), an event
-fires (weak-W), and a handler runs (weak-Z) — before/after/error events are the interaction's incoming and outgoing
-legs. Formalizing "the Agience flow" is therefore: **declare each `op` as a typed force-interaction, and require
-the mass-gap gate on every transition that writes to a Collection.**
+Entroptics *measures the gap and reports it* → Aria *emits the invariant*. The op dispatcher (`op/{name}`) is the
+invoke path for type-declared operations and the **interaction vertex** for them: grants are checked (strong), an
+event fires, and a handler runs (weak-Z) — before/after/error events are the interaction's incoming and outgoing
+legs. Formalizing "the Agience flow" is therefore: **declare each `op` as a typed force-interaction, and read the
+mass gap on a Collection's membership as it changes, feeding the result into mass.**
 
 > **Build & accountability (information-centric).** The concrete build — with the physics translated to
 > information-centric names, the LLM-read semantics (observation vs. derivation vs. frame), and the
-> accountability model in which the AnchorSet is **human-staked** so the gate becomes a pure calculation —
+> accountability model in which the AnchorSet is **human-staked** so the coherence read becomes a pure calculation —
 > is held with the build, as a working document outside this repository. That stake is an economic
 > primitive (the platform's `node.bond`, one layer up).
 
@@ -334,7 +345,7 @@ transport           the group element: grant-delta (strong) | rotation ref (em) 
 | **relate** | add a force edge | typed transport + `propagate` mask |
 | **query** | close a Wilson loop | traverse the light cone; return the grant-neutral invariant |
 | **gauge-fix** | profile against the AnchorSet | store anchor-relative WHERE; model-agnostic |
-| **commit** | weak-W flavor change **through the gap gate** | admit to Collection **iff** `m_hi < 3^{−1/4}`, else emit a structured gap |
+| **read coherence** | mass-gap read on a Collection's membership | report the rate `Δ` when the decay is geometric and clears the floor, else a structured gap, and feed it into the members' mass; membership writes stand as written |
 | **certify** | one-cut RP read | local coherence read ⟹ Collection-wide certificate (no full scan) |
 
 ### 8.4 Indexes and cost
@@ -355,9 +366,10 @@ transport           the group element: grant-delta (strong) | rotation ref (em) 
 2. **Model-agnostic knowledge by construction.** Storing anchor-relative transports (gauge-fixed WHERE) instead of
    raw vectors makes the store survive an embedder swap and mix modalities in one index — because the observable is
    gauge-invariant. This is the AnchorSet, given its physical name.
-3. **A quantified Commit gate.** "Is this coherent enough to become durable truth?" stops being a policy knob and
-   becomes a measured number with a machine-verified floor: `m_hi < 3^{−1/4}` or a structured gap. Anchored
-   reasoning *is* the mass-gap gate applied to a claim.
+3. **A quantified coherence read.** "How coherent is this?" becomes a measured number with a machine-verified
+   floor and a rate — `m_hi` against `3^{−1/4}`, and whether the decay is geometric — reported as a gap or a
+   structured gap, and the answer feeds mass. Anchored
+   reasoning *is* the mass-gap read applied to a claim.
 4. **Collection-scale certification for free.** RP's `ρ'(n)=ρ'(1)^n` means coherence is intensive: certify a
    Collection from one local cut instead of a full scan — the same move that closed U2 across volume, reused as a
    database-scaling result.
@@ -380,13 +392,13 @@ transport           the group element: grant-delta (strong) | rotation ref (em) 
 | RP intensivity → one-cut Collection certificate | **◧ In progress** | Proven for the lattice; the DB-scaling wrapper is to build. |
 | Dark matter = valence-2 + conversion-on-access | **◇ Designed** | The lazy 2→5 materialization path is the main new build. |
 | The five forces as *typed* edge kinds | **◇ Designed** | Edges exist; typing them WHO/WHEN/WHERE/WHAT/HOW is the formalization. |
-| The gap gate wired into Commit / Anchored reasoning | **◇ Designed** | Commit runs; gating it on the measured `m_hi` is the new rule. |
+| The gap read on Collection membership, feeding mass / Anchored reasoning | **◇ Designed** | Collection membership is stored as edges; reading `m_hi` on a Collection's membership and feeding it into mass is the new build. |
 | `op/{name}` as the typed force-interaction vertex | **◧ In progress** | The dispatcher exists; the force-typing is the formalization. |
 
 **The build, in one line:** the field (vertices, edges, the strong/gravity/EM sectors, the instrument) is already
 running inside Mantle and Entroptics; what this design *formalizes* is (a) typing the edges as the five forces, (b)
-the dark-matter valence-2 store with conversion-on-first-access, and (c) wiring the measured mass gap in as the
-Commit / anchor-admission gate. That is the Agience flow, given a gauge theory.
+the dark-matter valence-2 store with conversion-on-first-access, and (c) wiring the measured mass gap in as a
+coherence read on Collection membership that feeds mass. That is the Agience flow, given a gauge theory.
 
 ---
 

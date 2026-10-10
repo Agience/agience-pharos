@@ -125,7 +125,7 @@ That closure is what lets the whole thing be legible, auditable, and self-improv
 ### 3.1 Vertex (artifact) types
 
 Every vertex is an artifact with a stable id, a `content_type`, a `state`
-(`committed`/`archived`), a `context` (its offer), `lemmas` (keyed terms), provenance, and — for
+(`live`/`archived`), a `context` (its offer), `lemmas` (keyed terms), provenance, and — for
 content — a `content_ref` into Garage. **Seed types** (extend freely):
 
 | Vertex type | `content_type` | Role |

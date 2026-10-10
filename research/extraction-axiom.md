@@ -107,7 +107,15 @@ Maldacena and Susskind (2013) proposed ER=EPR: entanglement between particles IS
 
 **Entangled particles share a single extraction budget, not two independent ones.**
 
-When you measure particle A, you have not sent a signal to B. You have resolved the shared extraction account — the joint state was one event with B bits distributed across two locations. The "collapse" at B is not transmitted; it is the simultaneous resolution of a shared budget.
+When you measure particle A, you have not sent a signal to B. The joint state was one event with B bits distributed across two locations, and measuring A resolves part of that shared account. Nothing is transmitted to B.
+
+### Non-locality: what fixes the Tsirelson bound
+
+A shared budget alone does not fix how strong the correlations can be. In the CHSH test the score S is at most 2 for any local account, 2√2 for quantum mechanics (Tsirelson), and 4 for the strongest correlations that still send no signal (the PR box). A shared budget resolved at two places with no further constraint permits the PR box: one bit per joint read reaches S = 4.
+
+The constraint that lands exactly on 2√2 is an extraction bound in the receiving direction: **an aperture can extract no more about remote data than the bits it actually receives.** This is Information Causality (Pawłowski et al., 2009). In the random-access-code construction it excludes every correlation above 2√2, for every finite budget; the size of the budget drops out and only its finiteness matters. Capping the bits an aperture reads per measurement does not do this: an output-entropy cap, a noisy read channel and a one-way register of capacity C each either stay at 2 or rise continuously to 4, passing 2√2 at an arbitrary capacity.
+
+So the extraction axiom yields the quantum bound when its budget is stated as a limit on what an aperture can learn about what lies beyond it, given what it receives. That recovers the number 2√2 and the set of correlations Information Causality admits; it does not by itself recover the full quantum state space. The toy that computes S(C) for each form, with the local (2), no-signalling (4) and NPA-1 (2√2) controls, is `_scratch/lab/nonlocality/aperture_chsh.py`; its findings are in `_scratch/CURRENT/NONLOCALITY-APERTURE-FINDINGS.md`.
 
 **The new falsifiable prediction:** entanglement entropy and wormhole throat area are related exactly linearly, with G as the conversion constant, and this holds outside AdS. This gives ER=EPR a specific experimental prediction it currently lacks, testable in AdS/CFT numerical simulations.
 
@@ -165,6 +173,7 @@ Gravity
 | Rovelli relational QM (1996) | Physics is observer-relative | Physical bound on B makes it falsifiable |
 | Verlinde entropic gravity (2010) | Force from entropy gradient | Same intuition, approached from extraction axiom |
 | ER=EPR (Maldacena & Susskind, 2013) | Entanglement = wormhole | Specific prediction: throat area = entanglement entropy × G, outside AdS |
+| Information Causality (Pawłowski et al., 2009) | Tsirelson's 2√2 from "m bits received give at most m bits about remote data" | The same bound read as the extraction axiom's budget in the receiving direction; the bound itself is theirs |
 | Holography (AdS/CFT, 1997) | Proven for AdS only | Extraction axiom makes it geometry-independent |
 | QBism | Observer-relative, no physical bound | Extraction axiom adds physical bound, falsifiable predictions |
 | Hastings (2007) | Area law ↔ spectral gap in 2D | Step 4 of Yang-Mills thread; open in 3+1D |
