@@ -262,12 +262,13 @@ host that gates on an entitlement does so in its own tool code, as `ophan` does.
   at `ORIGIN_URI` rather than importing it, and a test holds `crystal → origin` at zero import
   sites.
 - Crystal is not limited to the Agience vendor types. It ships builtin type skeletons under
-  `src/types/<top-level>/<subtype>/`, each with a `type.json` (identity, inheritance, embedded
+  `src/crystal/types/<top-level>/<subtype>/`, inside the package, each with a `type.json` (identity, inheritance, embedded
   `ui` display metadata) and optional `schema.json` and `behaviors.json`. A `type.json` may also
   carry an `offer`: the paths that give an artifact of that type its title, description and tags
   (`"title": ["title", "context.title", "name"]`). Crystal publishes every persona's definitions,
   and its own, to Mantle (`PUT /type-definitions/{server}`), whose indexer reads the nearest
-  declaration through `inherits`. Present are
+  declaration through `inherits`. Every type inherits from the root, `*/*` (Artifact): a workspace is a collection is an
+  artifact, and a type nothing declares resolves to Artifact. Present are
   `text/markdown`, `text/plain`, `application/json`, `application/pdf`, the
   `application/vnd.agience.*` set (anchor, authority, collection, grant-invite, issuer, package,
   prompt, resource, search, secret, type, workspace), and a `_wildcard` fallback for each of
