@@ -263,7 +263,11 @@ host that gates on an entitlement does so in its own tool code, as `ophan` does.
   sites.
 - Crystal is not limited to the Agience vendor types. It ships builtin type skeletons under
   `src/types/<top-level>/<subtype>/`, each with a `type.json` (identity, inheritance, embedded
-  `ui` display metadata) and optional `schema.json` and `behaviors.json`. Present are
+  `ui` display metadata) and optional `schema.json` and `behaviors.json`. A `type.json` may also
+  carry an `offer`: the paths that give an artifact of that type its title, description and tags
+  (`"title": ["title", "context.title", "name"]`). Crystal publishes every persona's definitions,
+  and its own, to Mantle (`PUT /type-definitions/{server}`), whose indexer reads the nearest
+  declaration through `inherits`. Present are
   `text/markdown`, `text/plain`, `application/json`, `application/pdf`, the
   `application/vnd.agience.*` set (anchor, authority, collection, grant-invite, issuer, package,
   prompt, resource, search, secret, type, workspace), and a `_wildcard` fallback for each of

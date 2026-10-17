@@ -65,13 +65,13 @@ does not.
 
 | # | gate | completion test | state |
 |---|---|---|---|
-| **G1** | **One promotion path that has actually run** | A gated deploy reaches the public node through the workflow, and the six post-deploy verifications pass — running digest equals requested, the store did not move, size floor held, root answers, unauthenticated write refused, no schema leak | **never completed end to end.** Three independent faults were found and fixed in the tree; none has been proven in a run |
-| **G2** | **One green cross-repo CI cycle** | The runner drains its queue and records a green cycle | last recorded cycle is **red** |
-| **G3** | **Backup armed** | A restore is performed from the backup, into a scratch node, and the restored store answers a query | ◧ **installed, not armed.** The worker, both installers and the tests exist; the buckets, keys and destinations are operator acts nobody has performed |
+| **G1** | **One promotion path that has actually run** | A gated deploy reaches the public node through the workflow, and the post-deploy verifications pass | **met.** Every release goes through `platform_release run`: the release candidate is proven on loopback beside production and by the browser journeys, then promoted service by service with health checks and automatic rollback, and recorded. Releases 2026.10.0 to 2026.10.11 went this way |
+| **G2** | **One green cross-repo CI cycle** | The runner drains its queue and records a green cycle | **met.** Cycles are green, and a release cannot push until its commits are measured green |
+| **G3** | **Backup armed** | A restore is performed from the backup, into a scratch node, and the restored store answers a query | ◧ **armed; restored at the store.** The accounts store and the lattice (with its indexes) are snapshotted daily, verified, and uploaded; key material is sealed with age into a separate bucket. On 2026-10-14 the newest snapshots were restored to scratch, passed the worker's restore check and answered queries matching production, and the sealed keys opened with the off-fleet key. Not yet done: a scratch node serving the restored store. Content bodies are not mirrored; they live in their own durable bucket |
 | **G4** | **Monitoring armed** | The checks run against the live surface and one deliberate failure pages someone | ◧ **configured, not armed.** And one configured check would fail today: the authority manifest endpoint answers 404 |
 | **G5** | **An install a stranger can complete** | Someone who did not write it installs from the published artifact, on their own hardware, unaided | ◧ **the CLI exists and is registered.** The end-to-end path has never been run by anyone who did not build it |
 
-**G1–G2 are engineering. G3–G5 are operator acts that no amount of code closes.** That is the
+**G1–G2 are met. G3–G5 are operator acts that no amount of code closes.** That is the
 shape of the near term, and it is why the six stages start where they do.
 
 ---
@@ -87,9 +87,9 @@ result can be relied upon to stay true.
 
 **Stage 2 — Arm durability (G3, G4).**
 *Test:* a restore that answers a query, and one deliberate failure that pages someone.
-*Unblocks:* holding customer data with a straight face. Note a specific exposure: the largest
-single corpus in the fleet sits outside every declared backup path, because nothing wrote down where
-it lives.
+*Unblocks:* holding customer data with a straight face. The public platform's stores are backed up
+(G3). The largest corpus is on a local node, outside the public platform's backups; where it is
+backed up is not yet recorded here.
 
 **Stage 3 — Fill the pilot.**
 *Test:* the customer instance serves their corpus, and they answer a question from it they could not

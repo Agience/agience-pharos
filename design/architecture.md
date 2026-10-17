@@ -203,7 +203,7 @@ In the design, mass carries the three jobs of a promotion boundary:
 
 **In the design, "the record" is what has accrued enough mass.** Every write path — notes, uploads, inbound, bulk, seeds, machine output — stores an artifact `live`. A new, unobserved artifact is dark matter as §2 of `spine.md` defines it: a valence-2 vertex carrying WHO and WHEN, with no WHERE, WHAT or HOW, dark until first access. Machine output weighs nothing until an observer stakes on it. The artifact's `state` field is lifecycle (§19 of `paper-2-knowledge-without-weights.md`).
 
-The workspace/collection *mechanism* is graph structure — a workspace is a collection whose content type marks it as one, and there is one artifact table. Versions share a `root_id`. The head of a lineage in the store is its newest non-archived version in proper-time order; a superseded version is `archived`, which keeps it out of head resolution and default recall. Old versions are deleted only by policy, and the policy itself is the audit trail.
+The workspace/collection *mechanism* is graph structure — a workspace is a collection whose content type marks it as one, and there is one artifact table. Versions share a `root_id`. The head of a lineage in the store is its newest non-archived version in proper-time order; a superseded version is `archived`, which keeps it out of head resolution and default recall. Old versions are deleted only by policy, and the policy itself is the audit trail. Delete as a person does it is one such policy: it archives the artifact into that person's Trash (`trashed_by`, `trashed_time` on the lineage head), restorable for 30 days, after which Mantle deletes it as that person.
 
 ## 24. The lattice — one store, no external database
 

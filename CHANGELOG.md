@@ -5,6 +5,14 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2026.10.12] - 2026-10-17
+
+### Changed
+
+- `vision/roadmap.md` records G1 and G2 as met and G3 as armed, with the 2026-10-14 restore of the newest backups to scratch; Stage 2 states that the largest corpus is on a local node outside the platform's backups.
+- `design/architecture.md` describes Trash as the deletion policy a person's Delete runs: archived into their Trash, restorable for 30 days, then deleted as them.
+- `features/prism-protocol.md` describes a type's `offer` (the paths that give its artifacts their title, description and tags) and how Crystal publishes type definitions to Mantle's indexer.
+
 ## [2026.10.0] - 2026-10-09
 
 ### Changed
