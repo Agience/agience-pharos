@@ -30,6 +30,7 @@ The one-line ontology, for orientation:
 | [`design/`](design/) — [index](design/README.md) | **how it is built** — the specification of record, the component map, the one-field substrate, how retrieval works, and the testing standard | current |
 | [`research/`](research/) — [index](research/README.md) | **the papers and the physics lineage** — [the instrument](research/paper-1-the-instrument.md) and [knowledge without weights](research/paper-2-knowledge-without-weights.md), the economy [position paper](research/the-economy.md), the information universe, the extraction axiom, and [how to claim a measurement](research/between-sample-variation.md) | current |
 | [`vision/`](vision/) — [index](vision/README.md) | **what is intended, and not yet built** — the guiding path, the sovereign stack, the corpus, the information model. Read it as direction, not as working software | future |
+| [`use-cases/`](use-cases/) — [index](use-cases/README.md) | **what the platform is for** — each use case, what it uses today, what has to be built for it, and the harness that checks it on a deployed release | current |
 
 ## If two documents disagree
 

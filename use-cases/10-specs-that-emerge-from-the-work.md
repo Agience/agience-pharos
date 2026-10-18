@@ -1,0 +1,32 @@
+# 10 — Specifications that emerge from the work
+
+**For:** software teams moving fast with coding tools, whose written specification falls behind the
+code within a week.
+
+## The story
+
+A team ships daily. Decisions are made in code review and chat, and the specification no longer
+describes the system. They want the specification to grow from the work — drafts while exploring,
+committed when agreed — and to be told when code and specification disagree.
+
+## How the platform does it
+
+- Draft specifications live in a workspace; agreed ones are committed into a collection, versioned.
+- Each specification artifact is typed (requirement, decision, interface) and points at the code or
+  review it came from.
+- A coherence pass compares what the code declares with what the specification says and files each
+  disagreement for a person to settle.
+
+## What it uses today
+
+Workspaces, collections, commits, typed artifacts, Astra's code and document indexes, grant keys
+for the agents doing the work.
+
+## To build
+
+- Specification types and the coherence pass as an operator.
+- **History view**.
+
+## Checked by
+
+Not yet.
