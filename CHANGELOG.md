@@ -8,6 +8,7 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 ## [2026.10.12] - 2026-10-17
 
 ### Changed
+- `vision/transport-security-roadmap.md`: a viewer's view and tool calls go through `POST /personas/{server}/...` on Crystal to the persona that served it, which exchanges the forwarded user token for a delegation.
 
 - `vision/roadmap.md` records G1 and G2 as met and G3 as armed, with the 2026-10-14 restore of the newest backups to scratch; Stage 2 states that the largest corpus is on a local node outside the platform's backups.
 - `design/architecture.md` describes Trash as the deletion policy a person's Delete runs: archived into their Trash, restorable for 30 days, then deleted as them.

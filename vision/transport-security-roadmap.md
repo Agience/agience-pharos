@@ -244,20 +244,25 @@ what the view can reach.
 ```
 Viewer (iframe)
   ── tools/call JSON-RPC postMessage ──>  McpAppHost (React)
-                                              ── POST /artifacts/{id}/op/invoke ──>  Crystal
-                                                                                            ── delegation JWT ──>  First-party server
+                                              ── POST /personas/{server}/tools/call ──>  Crystal
+                                                                                                ── user token ──>  First-party server
+                                                                                                                   (exchanged with Origin for a delegation)
 ```
 
 1. **Iframe → McpAppHost**: JSON-RPC `tools/call` postMessage. No token. The iframe owns no
    credentials.
 2. **McpAppHost → Crystal**: the host's `proxyToolCall` posts to
-   `POST /artifacts/{artifact_id}/op/invoke` with the user's session JWT as a Bearer header,
-   managed by the React app and never exposed to the iframe. The tool name travels in the body as
-   `name`; the artifact's type definition declares which server and tool the operation dispatches
-   to, so the frontend never names a server. Mantle separately mounts one JSON-RPC endpoint at
-   `/mcp` for MCP clients — `tools/call` is a method in the body, not a path segment, and there is
-   no `/mcp/servers` route — but the viewer path does not go through it.
-3. **Core → first-party server**: Delegation JWT (RFC 8693), minted by Origin at
+   `POST /personas/{server}/tools/call` with the user's session JWT as a Bearer header, managed by
+   the React app and never exposed to the iframe. `{server}` is the persona that served the view
+   (the type's `ui.resource_server`): a view calls its own server's tools, as an MCP App does. The
+   view itself was read the same way, `POST /personas/{server}/resources/read`. Crystal resolves the
+   name through its own persona map (`crystal/personas.py`), and a persona that is not registered or
+   does not answer is reported as not running (503). A view hosted without a serving persona calls
+   through the artifact's own `POST /artifacts/{id}/op/invoke`, as declared by its type. Mantle
+   separately mounts one JSON-RPC endpoint at `/mcp` for MCP clients, but the viewer path does not
+   go through it.
+3. **Crystal → first-party server**: Crystal forwards the user token; the persona's inbound
+   middleware exchanges it for a delegation JWT (RFC 8693), minted by Origin at
    `POST /internal/delegation-token` from a user token Origin has itself verified, defaulting to a
    300-second lifetime. Claims:
    - `sub`: user ID (the human on whose behalf the call is made)
