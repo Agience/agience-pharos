@@ -222,8 +222,16 @@ Recommended unification:
 
 A shipped workflow step is an object with a `transform_id` naming the child operator artifact, an
 optional `name`, an optional `condition` evaluated against a state artifact's context, and an
-optional `input_mapping`. The runner supports `run.type` values `mcp-tool`, `llm`, `workflow`,
-`transform-ref`, `webhook`, `palette-run`, `flow-run` and `host-script`, plus a `retry` block.
+optional `input_mapping`. The runner (Lumen's `execute_transform`, reached by invoking a Transform
+card) runs three `run.type` values: `mcp-tool` (a tool on a persona by name, or on an MCP server a
+person added, by its card's id), `transform-ref` (another Transform) and `workflow` (steps, each a
+child Transform, with an optional `retry` block). `llm` is refused by design: a model is reached
+through its own tekton, where the call is explicit. `webhook` is a declared placeholder.
+
+A Timer card (`vnd.agience.timer+json`, Lumen) runs any artifact's operation — usually a workflow's
+`invoke` — every N minutes, daily at a time, or once. It acts on a grant key its owner issues when
+they arm it, so each firing, through every step and persona, reaches exactly what that key was
+granted; disarming revokes the key.
 
 **Result**
 - Always produces **Information artifacts** (0..n output artifacts).

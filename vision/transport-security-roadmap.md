@@ -271,6 +271,11 @@ Viewer (iframe)
    - `principal_type`: `"delegation"`
    - `host_id`: the platform host that authorized the proxy call
 
+A grant key (`agk_…`) a person issued — to an agent, or to a Timer they armed — travels the same
+path without an exchange: there is no person to exchange it for. Every persona carries it to the
+store as-is, and Mantle decides each read and write against the key's grants alone, so a whole
+workflow on a key reaches exactly what the key was granted.
+
 > **R1 applies at step 3.** The delegation JWT must carry `aud=server_client_id`. The first-party
 > server must validate `aud` matches its own `client_id` (R2). This is not optional even for
 > first-party servers, and it is met: `ServerAuth.verify_origin_delegation` in `prism.trust`
