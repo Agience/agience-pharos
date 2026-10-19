@@ -360,7 +360,7 @@ them:
 | **crystal** | Apache-2.0 | **prism**, 20 sites, and that is the whole set. Storage arrives on an **injected mantle handle** or over HTTP, so crystal takes **no import edge on mantle** |
 | **bundle** | Apache-2.0 | *not a distribution* — a bundle is an artifact shape, not a package, and no manifest declares it |
 | **entroptics** | Apache-2.0 | *its own repository; the instrument these nouns are built on*, reached only through `ember.optics` |
-| **chorus** | AGPL-3.0-only | **crystal** (87 sites), **prism** (75) and **mantle** (44, twelve at module scope, across 30 modules) — all three declared — plus mcp, fastapi, starlette, uvicorn, cryptography, python-jose and pydantic. The mantle edge is direct: `mantle.clients.artifact_helpers`, `mantle.shard.local_store`, `mantle.db`, `mantle.mesh`. It reaches the instrument through the injected handle, and **may not import ember** — a suite in chorus enforces that |
+| **chorus** | AGPL-3.0-only | **crystal** (87 sites), **prism** (76) and **mantle** (46, twelve at module scope, across 31 modules) — all three declared — plus mcp, fastapi, starlette, uvicorn, cryptography, python-jose and pydantic. The mantle edge is direct: `mantle.clients.artifact_helpers`, `mantle.shard.local_store`, `mantle.db`, `mantle.mesh`. It reaches the instrument through the injected handle, and **may not import ember** — a suite in chorus enforces that |
 | **ember** | AGPL-3.0-only | **mantle** (76 sites), **prism** `[trust,vector,wire]` (64) and **crystal** `[ontology]` (62) — all three declared — plus numpy and cryptography. **Never chorus** — it reaches personas over the mount |
 | **origin** | AGPL-3.0-only | **is not a dependency of anything.** Nothing imports it, no package manifest lists it, and no component waits on it to answer |
 
@@ -388,11 +388,11 @@ site* figures in the table above, which count occurrences; the two measure diffe
 both are stated so neither has to be inferred from the other.
 
 ```
-chorus  -> crystal 36   mantle 30   prism 46
+chorus  -> crystal 36   mantle 31   prism 47
 ember   -> crystal 14   mantle 25   prism 29   entroptics 1
 crystal -> prism   14
 mantle  -> prism   24
-origin  -> prism    5
+origin  -> prism    7
 ```
 
 `ember -> entroptics 1` is the single aperture: `ember/optics.py` is the only module in the scanned
