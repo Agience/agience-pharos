@@ -14,8 +14,8 @@ to see where the sources disagree.
 - The reports are artifacts. Sage's retrieval (`op.retrieve`) finds the ones that bear on the
   question, under the asker's own grants, so nobody is answered from what they cannot read.
 - Lumen's `synthesize` returns those passages as the answer, each extract numbered and cited by the
-  artifact it came from, with a numeric reading when the question carries a series. It writes no
-  sentence of its own: with no evidence it returns a refusal that says which steps found nothing.
+  artifact it came from. It writes no sentence of its own: with no evidence it returns a refusal
+  that says which steps found nothing.
 - Where sources disagree, the differing extracts stand side by side.
 
 ## What it uses today
@@ -25,9 +25,16 @@ recall over the blind-token index; collections.
 
 ## To build
 
-- A composed answer: sentences that each cite the extracts they rest on, still writing nothing the
-  evidence does not carry.
-- Retrieval that finds passages sharing no words with the question.
+- A composed answer, through an **LLM connection** card: the cited extracts handed to the model the
+  person connected, which writes sentences that each cite the extracts they rest on. The card type
+  exists (provider, model, endpoint, a pointer to the stored key); it declares no operation yet,
+  so nothing can invoke it.
+- Ranking and cutting the evidence by measured reach toward the question (Mantle's `rank` and
+  `cut_for`), which finds notes sharing no words with it. It needs the ontology loaded on the node
+  (production holds none) and a measurement on a public labelled set first: a 12-note check found
+  it no better than keyword order once word weights were on (3 of 7), with an erratic cut.
+  Predicting the next embedding of a conversation was measured null in
+  `research/paper-2-knowledge-without-weights.md` §65 and is not the route.
 - A view that shows each sentence beside its source.
 
 ## Checked by
