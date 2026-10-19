@@ -19,13 +19,13 @@ is stamped with who contributed it and when, so sharing is safe.
 
 ## What it uses today
 
-Collections, grants, artifacts with provenance pointers, commit history, recall.
+Collections, grants, artifacts with provenance pointers, commit history (read in the app from a
+collection's History), recall.
 
 ## To build
 
 - **Inbound adapters** — filing from a chat group.
 - **Reconciliation operator** — grouping overlapping ideas and showing who came first.
-- **History view**.
 
 ## Checked by
 

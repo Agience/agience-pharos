@@ -19,13 +19,12 @@ committed when agreed — and to be told when code and specification disagree.
 
 ## What it uses today
 
-Workspaces, collections, commits, typed artifacts, Astra's code and document indexes, grant keys
-for the agents doing the work.
+Workspaces, collections, commits and the access log (a card's History in the app), typed
+artifacts, Astra's code and document indexes, grant keys for the agents doing the work.
 
 ## To build
 
 - Specification types and the coherence pass as an operator.
-- **History view**.
 
 ## Checked by
 

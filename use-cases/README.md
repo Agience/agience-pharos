@@ -40,4 +40,4 @@ Built once, used by many. Each is named on the pages that need it.
 | **Context encryption** | Titles, names and other `context` fields encrypted under the content key (today they are plaintext, protected by grants: `design/architecture.md` §24) | 07, 15, 16 |
 | **Transcription** | Speech to text for a stream, written into the stream's session | 03, 12 |
 | **Reconciliation operator** | Compares several artifacts about one thing and writes what agrees, what conflicts and why | 08, 11, 12 |
-| **History view** | A person reads an artifact's commits and the access log in the app | 07, 08, 09, 10, 11 |
+| **History view** | **Built.** A card's History, in its window: what was added to and removed from what it holds (its commits), for anyone who can read it; and who reached it — a person, a key, or a persona acting for a person — what they did, and whether it was allowed, for those who administer it | 07, 08, 09, 10, 11 |

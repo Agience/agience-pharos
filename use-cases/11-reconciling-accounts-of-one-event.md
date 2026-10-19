@@ -18,12 +18,11 @@ evidence supports which version — without anyone's original being overwritten.
 
 ## What it uses today
 
-Collections, grants, provenance pointers, commits.
+Collections, grants, provenance pointers, commits (a collection's History in the app).
 
 ## To build
 
 - **Reconciliation operator**.
-- **History view**.
 
 ## Checked by
 

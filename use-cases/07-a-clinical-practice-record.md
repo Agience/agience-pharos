@@ -19,12 +19,12 @@ record and nobody else's. Every read should be on record.
 
 ## What it uses today
 
-Collections, grants, invitations, per-principal encryption, the access log.
+Collections, grants, invitations, per-principal encryption, the access log, read in the app from a
+card's History.
 
 ## To build
 
 - **Context encryption** — titles and other `context` fields encrypted at rest.
-- **History view** — the clinic reads who opened what, in the app.
 - An import from standard health-record formats.
 - An install on the clinic's own hardware (roadmap gate G5).
 
