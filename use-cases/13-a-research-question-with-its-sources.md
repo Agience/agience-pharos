@@ -29,8 +29,9 @@ person connected when invoked.
 - A composed answer: `synthesize` handing its cited extracts to an **LLM connection** card the
   person names, so the model writes sentences that each cite the extracts they rest on. The card
   itself can be invoked today: it sends a conversation to the model it names (Anthropic, OpenAI or
-  Mistral) with the key it points at, read on the caller's own grant, only to the provider's own
-  address.
+  Mistral) with the key it points at, only to the provider's own address. A connection is shared
+  like any artifact: someone granted `invoke` on its key can use it without being able to read it,
+  and the platform's own connection is a card and key granted to everyone.
 - Ranking and cutting the evidence by measured reach toward the question (Mantle's `rank` and
   `cut_for`), which finds notes sharing no words with it. It needs the ontology loaded on the node
   (production holds none) and a measurement on a public labelled set first: a 12-note check found
@@ -44,5 +45,5 @@ person connected when invoked.
 `usecase_13_a_question_answered_from_your_notes.py`: a person's question is answered from their own
 note, cited by its id and carrying what it says; another person asking the same question gets none
 of it, and a refusal instead. An LLM connection card is reached through Crystal on the owner's key and refused to
-anyone who cannot read it (staging blocks outbound connections, so the provider is named as
+anyone who cannot read it; a teammate granted only `invoke` on its key uses it and cannot read the key (staging blocks outbound connections, so the provider is named as
 unreachable there).
