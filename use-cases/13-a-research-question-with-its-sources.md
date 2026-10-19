@@ -21,14 +21,16 @@ to see where the sources disagree.
 ## What it uses today
 
 Sage's `retrieve`, reached by Lumen through Crystal on the asker's own token; Lumen's `synthesize`;
-recall over the blind-token index; collections.
+recall over the blind-token index; collections; an LLM connection card, which calls the model the
+person connected when invoked.
 
 ## To build
 
-- A composed answer, through an **LLM connection** card: the cited extracts handed to the model the
-  person connected, which writes sentences that each cite the extracts they rest on. The card type
-  exists (provider, model, endpoint, a pointer to the stored key); it declares no operation yet,
-  so nothing can invoke it.
+- A composed answer: `synthesize` handing its cited extracts to an **LLM connection** card the
+  person names, so the model writes sentences that each cite the extracts they rest on. The card
+  itself can be invoked today: it sends a conversation to the model it names (Anthropic, OpenAI or
+  Mistral) with the key it points at, read on the caller's own grant, only to the provider's own
+  address.
 - Ranking and cutting the evidence by measured reach toward the question (Mantle's `rank` and
   `cut_for`), which finds notes sharing no words with it. It needs the ontology loaded on the node
   (production holds none) and a measurement on a public labelled set first: a 12-note check found
@@ -41,4 +43,6 @@ recall over the blind-token index; collections.
 
 `usecase_13_a_question_answered_from_your_notes.py`: a person's question is answered from their own
 note, cited by its id and carrying what it says; another person asking the same question gets none
-of it, and a refusal instead.
+of it, and a refusal instead. An LLM connection card is reached through Crystal on the owner's key and refused to
+anyone who cannot read it (staging blocks outbound connections, so the provider is named as
+unreachable there).
