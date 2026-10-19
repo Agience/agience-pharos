@@ -11,22 +11,27 @@ to see where the sources disagree.
 
 ## How the platform does it
 
-- The reports are artifacts; recall finds the passages that bear on the question, including those
-  that share no words with it.
-- Sage builds the answer from those passages, citing each one; a sentence with no source is not
-  written.
-- Disagreements between sources are reported as such, with both sides.
+- The reports are artifacts. Sage's retrieval (`op.retrieve`) finds the ones that bear on the
+  question, under the asker's own grants, so nobody is answered from what they cannot read.
+- Lumen's `synthesize` returns those passages as the answer, each extract numbered and cited by the
+  artifact it came from, with a numeric reading when the question carries a series. It writes no
+  sentence of its own: with no evidence it returns a refusal that says which steps found nothing.
+- Where sources disagree, the differing extracts stand side by side.
 
 ## What it uses today
 
-Recall (model-free retrieval over the blind-token index), Sage's research and lexicon tools,
-collections.
+Sage's `retrieve`, reached by Lumen through Crystal on the asker's own token; Lumen's `synthesize`;
+recall over the blind-token index; collections.
 
 ## To build
 
-- The cited-answer composer as a Sage operator.
+- A composed answer: sentences that each cite the extracts they rest on, still writing nothing the
+  evidence does not carry.
+- Retrieval that finds passages sharing no words with the question.
 - A view that shows each sentence beside its source.
 
 ## Checked by
 
-Not yet.
+`usecase_13_a_question_answered_from_your_notes.py`: a person's question is answered from their own
+note, cited by its id and carrying what it says; another person asking the same question gets none
+of it, and a refusal instead.

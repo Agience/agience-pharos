@@ -271,6 +271,11 @@ Viewer (iframe)
    - `principal_type`: `"delegation"`
    - `host_id`: the platform host that authorized the proxy call
 
+When one persona calls another through Crystal — a workflow step, `chain_tasks`, Lumen grounding on
+Sage — it sends the caller's own credential, never its own delegation: that delegation is addressed
+to it alone, and every other persona refuses it. The next persona exchanges the person's token for a
+delegation of its own, exactly as when the app calls it.
+
 A grant key (`agk_…`) a person issued — to an agent, or to a Timer they armed — travels the same
 path without an exchange: there is no person to exchange it for. Every persona carries it to the
 store as-is, and Mantle decides each read and write against the key's grants alone, so a whole

@@ -11,6 +11,7 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 - `use-cases/`: fifteen use cases, each with what it uses today, what has to be built for it, and how it is checked; and the components several of them need (Timer, Inbox, inbound adapters, data connectors, context encryption and others). Use cases 09 (an agent on a key you can revoke) and 16 (your data is yours alone) are checked by harnesses on staging.
 
 ### Changed
+- `use-cases/13`: what `synthesize` returns today (cited extracts from what the asker can read, or a refusal) and what is to build; `vision/transport-security-roadmap.md`: a persona calling another sends the caller's own credential.
 - `vision/information-model.md`: the workflow runner's step types are the three that exist (`mcp-tool`, `transform-ref`, `workflow`), and a Timer card runs a workflow on a grant key; `vision/transport-security-roadmap.md`: a grant key travels the persona path without an exchange.
 - `vision/transport-security-roadmap.md`: a viewer's view and tool calls go through `POST /personas/{server}/...` on Crystal to the persona that served it, which exchanges the forwarded user token for a delegation.
 

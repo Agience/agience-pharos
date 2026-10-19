@@ -22,7 +22,7 @@ platform cannot do yet fails the harness, or is carried in it as a named expecte
 | [10](10-specs-that-emerge-from-the-work.md) | Specifications that emerge from the work | not yet |
 | [11](11-reconciling-accounts-of-one-event.md) | Reconciling several accounts of one event | not yet |
 | [12](12-a-shared-map-from-a-crowd.md) | A shared map from a crowd at a live event | not yet |
-| [13](13-a-research-question-with-its-sources.md) | A research question answered with its sources | not yet |
+| [13](13-a-research-question-with-its-sources.md) | A research question answered with its sources | harness |
 | [14](14-a-personal-tasting-notebook.md) | A personal tasting notebook that recommends | not yet |
 | [15](15-sealed-logic-in-a-customers-install.md) | Proprietary logic delivered sealed into a customer's own install | not yet |
 | [16](16-your-data-is-yours-alone.md) | Your data is reachable by you and those you grant, no one else | harness |
