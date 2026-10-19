@@ -12,6 +12,7 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ### Changed
 - `vision/roadmap.md` §2 and `research/paper-2` §98: `mantle.agience.ai` serves the hosted store (870 records, 6.3 MB, no ontology); the 6.49M-record lattice is archived in object storage and not served. `start/overview.md`: Lumen runs workflows and timers and answers with cited evidence.
+- `use-cases/13`: a connection's key leaves the store only sealed to Lumen's own key, for that card.
 - `use-cases/13`: an LLM connection card can be invoked (it calls the model it names on the caller's grant to its key); a composed answer from `synthesize` through it is what remains.
 - `use-cases/` and `vision/information-model.md`: the Inbox is built (an Inbox item moves new → triaged → resolved; approving runs its action as the approver; a timer raises a failed run into its owner's Inbox); use cases 01, 02, 04 and 05 list the Timer and the Inbox under what they use today.
 - `use-cases/`: the History view is built (a card's commits and its access log, in the card's window); use cases 07–11 list it under what they use today.

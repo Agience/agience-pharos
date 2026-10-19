@@ -31,7 +31,8 @@ person connected when invoked.
   itself can be invoked today: it sends a conversation to the model it names (Anthropic, OpenAI or
   Mistral) with the key it points at, only to the provider's own address. A connection is shared
   like any artifact: someone granted `invoke` on its key can use it without being able to read it,
-  and the platform's own connection is a card and key granted to everyone.
+  and the platform's own connection is a card and key granted to everyone. The key leaves the store
+  only sealed to Lumen's own key, for that card, and is in clear only inside Lumen at the call.
 - Ranking and cutting the evidence by measured reach toward the question (Mantle's `rank` and
   `cut_for`), which finds notes sharing no words with it. It needs the ontology loaded on the node
   (production holds none) and a measurement on a public labelled set first: a 12-note check found
