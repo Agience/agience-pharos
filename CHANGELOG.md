@@ -11,6 +11,7 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 - `use-cases/`: fifteen use cases, each with what it uses today, what has to be built for it, and how it is checked; and the components several of them need (Timer, Inbox, inbound adapters, data connectors, context encryption and others). Use cases 09 (an agent on a key you can revoke) and 16 (your data is yours alone) are checked by harnesses on staging.
 
 ### Changed
+- `vision/roadmap.md` §2 and `research/paper-2` §98: `mantle.agience.ai` serves the hosted store (870 records, 6.3 MB, no ontology); the 6.49M-record lattice is archived in object storage and not served. `start/overview.md`: Lumen runs workflows and timers and answers with cited evidence.
 - `use-cases/13`: a composed answer is to come through an LLM connection card (the type exists; it declares no operation yet), and reach ranking needs the ontology on the node and a public-set measurement first; predicting embeddings is not the route (`research/paper-2` §65).
 - `use-cases/13`: what `synthesize` returns today (cited extracts from what the asker can read, or a refusal) and what is to build; `vision/transport-security-roadmap.md`: a persona calling another sends the caller's own credential.
 - `vision/information-model.md`: the workflow runner's step types are the three that exist (`mcp-tool`, `transform-ref`, `workflow`), and a Timer card runs a workflow on a grant key; `vision/transport-security-roadmap.md`: a grant key travels the persona path without an exchange.

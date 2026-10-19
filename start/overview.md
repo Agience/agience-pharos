@@ -783,7 +783,7 @@ to be read and forked rather than imported.
 | **aria** | presentation — responses, cards, views |
 | **astra** | ingestion — files, extraction, live streams |
 | **iris** | networking — routing, channels, webhooks, relay |
-| **lumen** | reasoning — grounded answers |
+| **lumen** | workflows, timers and grounded evidence — runs a person's workflows and scheduled timers, and answers a question with cited extracts from what they may read |
 | **ophan** | finance and licensing — ledger, transactions, entitlement |
 | **sage** | research — search, retrieval, synthesis |
 | **seraph** | security and governance — policy, audit, identity, signing |

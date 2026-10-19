@@ -40,8 +40,11 @@ run is not a backup. That distinction is why the five states exist rather than t
 
 ## 2 · What is running today
 
-⬢ **A public lattice.** `mantle.agience.ai` serves **6,493,319 records / 30.1 GB**. ⬢ **A public
-identity authority.** `origin.agience.ai` answers OIDC discovery and JWKS. ⬢ **A pilot instance** on
+⬢ **A hosted store.** `mantle.agience.ai` serves the hosted platform's store: every account's
+workspaces, cards, grants and keys — **870 records, 6.3 MB**, measured 2026-10-19. ◧ *It holds no
+ontology: the 6.49M-record lattice (encyclopedic content, WordNet, ConceptNet) is archived,
+encrypted, in object storage and is not served, so recall orders by coverage and recency rather
+than by measured reach.* ⬢ **A public identity authority.** `origin.agience.ai` answers OIDC discovery and JWKS. ⬢ **A pilot instance** on
 a customer's own domain — ◧ *live, and serving a very small store; it is a deployed instance, not yet
 a populated one.*
 

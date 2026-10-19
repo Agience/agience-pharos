@@ -865,12 +865,12 @@ The single emission predicate is the floor read of §63. A frame nobody absorbs 
 | holding | size | vertices | edges |
 |---|---|---|---|
 | **the lexicon holder** (serves the chat) | 5.7 GB | **2,151,729** | ~4.9 M |
-| **the content holder** | **30.1 GB** | **6,493,317** | 3,460,050 |
+| **the content holder** (archived, not served) | **30.1 GB** | **6,493,317** | 3,460,050 |
 | **the foundation holder** | **71.6 GB** | **7,421,604** | 9,812,572 |
 | **edge node** | 3.8 GB | 1,282,831 | 3,394,707 |
 | **edge node** | 3.8 GB | 1,282,829 | 3,394,705 |
 
-**The holdings are NOT subsets of one another — they are disjoint in kind**, and the edge nodes carry only a stage-0 lexicon *subset*.
+The content holder is archived, encrypted, in object storage; the hosted platform's store (`mantle.agience.ai`) is a separate, small holding of account data with no ontology. **The holdings are NOT subsets of one another — they are disjoint in kind**, and the edge nodes carry only a stage-0 lexicon *subset*.
 
 | | lexicon | content | foundation | edge |
 |---|---|---|---|---|
