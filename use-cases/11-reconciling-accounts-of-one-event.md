@@ -18,12 +18,22 @@ evidence supports which version — without anyone's original being overwritten.
 
 ## What it uses today
 
-Collections, grants, provenance pointers, commits (a collection's History in the app).
+Collections, grants, provenance pointers, commits (a collection's History in the app); Lumen's
+`reconcile` operator, which compares the facts each account states as `Label: value` lines (an
+incident form's shape) and writes the reconciliation beside them, with each difference raised as
+an Inbox item; a workflow card built from the "Reconcile accounts" recipe in the app; the Inbox.
+An account's `evidence` (artifact ids in its context) is carried to each version it supports.
 
 ## To build
 
-- **Reconciliation operator**.
+- Facts read out of free prose, through an operator on an LLM connection; today a narrative that
+  states no `Label: value` lines is kept and not compared.
 
 ## Checked by
 
-Not yet.
+`usecase_11_several_accounts_of_one_event.py`: a reviewer files three accounts, builds a workflow
+from the "Reconcile accounts" recipe in its card, and runs it; the reconciliation names the one
+agreement, the conflict with each version and its accounts, and the two single statements; no
+account changes; the conflict waits in the reviewer's Inbox and is settled from its card. A second
+check builds a two-step workflow in the builder, runs it, and schedules it with failures to the
+Inbox.

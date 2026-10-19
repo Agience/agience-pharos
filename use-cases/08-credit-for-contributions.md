@@ -25,7 +25,8 @@ collection's History), recall.
 ## To build
 
 - **Inbound adapters** — filing from a chat group.
-- **Reconciliation operator** — grouping overlapping ideas and showing who came first.
+- Grouping overlapping ideas and showing who came first: a reconciliation over free prose, which
+  needs an operator on an LLM connection (Lumen's `reconcile` compares stated facts only).
 
 ## Checked by
 

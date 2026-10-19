@@ -356,7 +356,7 @@ them:
 | node | licence | depends on |
 |---|---|---|
 | **prism** | Apache-2.0 | *nothing* — the base install declares **zero dependencies** and the contract is pure stdlib, with `trust`, `host`, `server`, `cli`, `vector` and `wire` as extras. Sixteen wire modules; nine of them import on the bare base, and a subprocess test with numpy and cryptography blocked holds that |
-| **mantle** | Apache-2.0 | **prism** — 36 import sites across 24 non-test modules, 13 of them at module scope: `prism.canonical` for the mesh manifest, `prism.mass` and `prism.grounding` for the provenance vocabulary, `prism.envelope` for the resource envelope, `prism.trust.key_manager` for the keys, `prism.rounding` and `prism.instrument` for the spectral read under `mantle/search/beacon/`, `prism.runner` for the ranking seams. **The manifest does not declare it** — it lists only `cryptography`. What that declaration actually covers is the **embeddable store surface**, `mantle/db/*` plus `services/acting_principal.py`, which an AST scan, a runtime import and a functional round trip hold to stdlib plus `cryptography` with no sibling Agience import. The mesh, the search stack and the HTTP app sit outside that surface |
+| **mantle** | Apache-2.0 | **prism** — 39 import sites across 25 non-test modules, 13 of them at module scope: `prism.canonical` for the mesh manifest, `prism.mass` and `prism.grounding` for the provenance vocabulary, `prism.envelope` for the resource envelope, `prism.trust.key_manager` for the keys, `prism.rounding` and `prism.instrument` for the spectral read under `mantle/search/beacon/`, `prism.runner` for the ranking seams. **The manifest does not declare it** — it lists only `cryptography`. What that declaration actually covers is the **embeddable store surface**, `mantle/db/*` plus `services/acting_principal.py`, which an AST scan, a runtime import and a functional round trip hold to stdlib plus `cryptography` with no sibling Agience import. The mesh, the search stack and the HTTP app sit outside that surface |
 | **crystal** | Apache-2.0 | **prism**, 20 sites, and that is the whole set. Storage arrives on an **injected mantle handle** or over HTTP, so crystal takes **no import edge on mantle** |
 | **bundle** | Apache-2.0 | *not a distribution* — a bundle is an artifact shape, not a package, and no manifest declares it |
 | **entroptics** | Apache-2.0 | *its own repository; the instrument these nouns are built on*, reached only through `ember.optics` |
@@ -391,7 +391,7 @@ both are stated so neither has to be inferred from the other.
 chorus  -> crystal 36   mantle 31   prism 47
 ember   -> crystal 14   mantle 25   prism 29   entroptics 1
 crystal -> prism   14
-mantle  -> prism   24
+mantle  -> prism   25
 origin  -> prism    7
 ```
 

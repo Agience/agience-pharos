@@ -20,12 +20,26 @@ platform cannot do yet fails the harness, or is carried in it as a named expecte
 | [08](08-credit-for-contributions.md) | Credit for contributions in an open collaboration | not yet |
 | [09](09-an-agent-on-a-key-you-can-revoke.md) | An agent works on a key you issue and can revoke | harness |
 | [10](10-specs-that-emerge-from-the-work.md) | Specifications that emerge from the work | not yet |
-| [11](11-reconciling-accounts-of-one-event.md) | Reconciling several accounts of one event | not yet |
+| [11](11-reconciling-accounts-of-one-event.md) | Reconciling several accounts of one event | harness |
 | [12](12-a-shared-map-from-a-crowd.md) | A shared map from a crowd at a live event | not yet |
 | [13](13-a-research-question-with-its-sources.md) | A research question answered with its sources | harness |
 | [14](14-a-personal-tasting-notebook.md) | A personal tasting notebook that recommends | not yet |
 | [15](15-sealed-logic-in-a-customers-install.md) | Proprietary logic delivered sealed into a customer's own install | not yet |
 | [16](16-your-data-is-yours-alone.md) | Your data is reachable by you and those you grant, no one else | harness |
+
+## Making your own
+
+A use case is a workspace with what it needs in it, made in the app:
+
+1. **Collections** for what it gathers, and grants on them for the people and agents taking part.
+2. **A workflow card** (a Transform). Its builder starts from a recipe or a blank: pick a tool from
+   any persona the person can use, fill in the form made from that tool's own inputs, and add
+   steps in order. **Run now** shows the answer.
+3. **A schedule**: the builder makes a Timer card beside the workflow, with failures sent to the
+   person's Inbox; the person arms it there, approving the key it runs on.
+4. **The Inbox**, where whatever needs a person waits, with why and what it came from.
+
+Use case 11's harness checks this path in the browser, recipe to settled difference.
 
 ## Components several use cases need
 
@@ -39,5 +53,5 @@ Built once, used by many. Each is named on the pages that need it.
 | **Data connectors** | Read access to accounting, CRM, calendar and similar sources, on a key the person issues | 04, 05, 09 |
 | **Context encryption** | **Title built:** the title is part of the content (the root type declares it) and is sealed under the content key. The other `context` fields are plaintext, protected by grants (`design/architecture.md` §24); a type will declare more of them `part: content` | 07, 15, 16 |
 | **Transcription** | Speech to text for a stream, written into the stream's session | 03, 12 |
-| **Reconciliation operator** | Compares several artifacts about one thing and writes what agrees, what conflicts and why | 08, 11, 12 |
+| **Reconciliation operator** | **Built for stated facts:** Lumen's `reconcile` compares the `Label: value` facts several accounts state and writes what all agree on, where they differ (with the accounts and evidence behind each version) and what only one states; each difference is an Inbox item. Reading facts out of free prose, or grouping overlapping ideas, needs an operator on an LLM connection | 08, 11, 12 |
 | **History view** | **Built.** A card's History, in its window: what was added to and removed from what it holds (its commits), for anyone who can read it; and who reached it — a person, a key, or a persona acting for a person — what they did, and whether it was allowed, for those who administer it | 07, 08, 09, 10, 11 |

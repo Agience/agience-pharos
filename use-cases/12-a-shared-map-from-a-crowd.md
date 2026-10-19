@@ -23,7 +23,8 @@ Collections, grants (including write-only shares), stream ingestion.
 ## To build
 
 - **Transcription** and media placement.
-- **Reconciliation operator**.
+- Reconciling what the crowd reports about one place: an operator over media and free text (Lumen's
+  `reconcile` compares stated `Label: value` facts only).
 - The map view.
 - Later: 3D reconstruction from many cameras, which needs heavy compute.
 
