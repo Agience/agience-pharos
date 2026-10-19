@@ -19,13 +19,14 @@ the routine ones — sent only when she approves.
 
 ## What it uses today
 
-Workspaces, describers, recall, Iris's `send_email` through an Authorizer artifact.
+Workspaces, describers, recall, Iris's `send_email` through an Authorizer artifact; the Timer
+for the morning digest; the Inbox for what needs her.
 
 ## To build
 
 - **Inbound adapters** — receiving mail as artifacts.
-- **Inbox** — items for outliers and approvals, with their states.
-- **Timer** — the digest and any follow-up reminders.
+- A draft reply as an Inbox item whose approval sends it through Iris (an item's action is an
+  artifact's operation; sending is a persona tool, so it needs a Transform card that sends).
 
 ## Checked by
 

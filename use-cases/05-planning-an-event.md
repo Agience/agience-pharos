@@ -18,12 +18,12 @@ are due and RSVPs that arrive by themselves.
 
 ## What it uses today
 
-Workspaces and collections, grants, invitations, recall.
+Workspaces and collections, grants, invitations, recall; the Timer for reminders and the Inbox for
+what is overdue.
 
 ## To build
 
 - **Inbound adapters** — a public RSVP form and replies by mail.
-- **Timer** and **Inbox**.
 
 ## Checked by
 

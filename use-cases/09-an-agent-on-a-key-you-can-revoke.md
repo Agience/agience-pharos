@@ -25,7 +25,8 @@ where she can read it, and she can cut it off in one step.
 Collections, grant keys, the Key card (Seraph's view in the app), the store's MCP tools
 (`create_artifact`, `get_children`, `recall`), revocation. For the agent's routine checks: a workflow
 (Transform cards, run by Lumen) on a Timer card the owner arms, which runs on a key over the
-workspace and records each run in the log. An agent may also be an MCP server Dana adds herself;
+workspace and records each run in the log; a run that fails waits in Dana's Inbox as an item, and
+approving it runs the routine again, as her. An agent may also be an MCP server Dana adds herself;
 the platform reaches it through Iris and its egress guard. A card's History shows Dana who reached
 it — her, a key, a persona acting for her — and what was refused.
 
@@ -42,5 +43,7 @@ the app; an MCP client holding only the key records a deployment into the log, i
 else, and is refused entirely once the owner revokes the key from the card; the card it was
 refused shows that refusal, by the key, in its History. A workflow runs every
 minute on a Timer the owner arms from its card, recording each run in the log, until the owner
-disarms it and the timer's key is revoked. A server card pointing at the node's own address is
+disarms it and the timer's key is revoked. A routine whose step fails is raised into the owner's
+Inbox; the owner fixes the step and approves the item from its card, and the routine runs again
+as the owner and the item is resolved with what it returned. A server card pointing at the node's own address is
 refused, and a server card is reached only by those who can read it.

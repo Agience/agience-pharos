@@ -17,12 +17,12 @@ a week of spreadsheet work.
 
 ## What it uses today
 
-Collections, grant keys, recall, Lumen for drafting.
+Collections, grant keys, recall, Lumen for drafting; the Timer to read the figures on a schedule
+and the Inbox for a change that needs the owner.
 
 ## To build
 
 - **Data connectors** — accounting, CRM, advertising.
-- **Timer** and **Inbox**.
 - A change-detection operator that reports a shift with its evidence rather than a threshold.
 
 ## Checked by

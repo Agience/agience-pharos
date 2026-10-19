@@ -34,7 +34,7 @@ Built once, used by many. Each is named on the pages that need it.
 | component | what it is | needed by |
 |---|---|---|
 | **Timer** | **Built.** A Timer card (Lumen) runs an artifact's operation — a workflow, an operator — every N minutes, daily, or once, and records each run. Its owner arms it from the card, which issues the grant key it acts on; disarming revokes the key | 01, 02, 04, 05, 07, 09 |
-| **Inbox** | Items that need a person — an outlier, a draft to approve — with `new → triaged → resolved` | 01, 02, 04, 05 |
+| **Inbox** | **Built.** An Inbox item card (Lumen) holds what needs a person — an outlier, a failed routine, a draft to approve — with why and what it came from, moving `new → triaged → resolved`. An item may carry an action; approving runs it as the approver. A Timer raises a failed run into its owner's Inbox, and any workflow step can raise one | 01, 02, 04, 05 |
 | **Inbound adapters** | Receiving mail, chat messages and form posts as artifacts. Iris sends mail; nothing receives it | 01, 02, 05, 08 |
 | **Data connectors** | Read access to accounting, CRM, calendar and similar sources, on a key the person issues | 04, 05, 09 |
 | **Context encryption** | Titles, names and other `context` fields encrypted under the content key (today they are plaintext, protected by grants: `design/architecture.md` §24) | 07, 15, 16 |

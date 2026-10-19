@@ -18,12 +18,12 @@ and be messaged first when something needs him.
 
 ## What it uses today
 
-Workspaces and collections, recall, grant keys, Lumen for composing a reply.
+Workspaces and collections, recall, grant keys, Lumen for composing a reply; the Timer and the
+Inbox for what is worth raising unasked.
 
 ## To build
 
 - **Inbound adapters** — a chat channel (for example, a messaging bot) in both directions.
-- **Timer** and **Inbox** — for messages he did not ask for.
 
 ## Checked by
 

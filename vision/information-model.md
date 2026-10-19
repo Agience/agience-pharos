@@ -231,7 +231,15 @@ through its own tekton, where the call is explicit. `webhook` is a declared plac
 A Timer card (`vnd.agience.timer+json`, Lumen) runs any artifact's operation — usually a workflow's
 `invoke` — every N minutes, daily at a time, or once. It acts on a grant key its owner issues when
 they arm it, so each firing, through every step and persona, reaches exactly what that key was
-granted; disarming revokes the key.
+granted; disarming revokes the key. A run that fails is raised, where the owner names
+(`inbox_to`, usually their Inbox), as an Inbox item.
+
+An Inbox item (`vnd.agience.inbox-item+json`, Lumen) is what needs a person: it says why, names the
+artifacts it came from, and moves `new → triaged → resolved` (a resolved item can be reopened),
+each move recorded with who made it. An item may carry an action — an artifact and operation —
+and approving the item runs it on the approver's own credential and records what it returned; a
+failed run's item carries the routine itself, so approving reruns it. Anything that can write
+where the item goes raises one (Lumen's `raise_item`, a workflow step calling it, a timer).
 
 **Result**
 - Always produces **Information artifacts** (0..n output artifacts).
