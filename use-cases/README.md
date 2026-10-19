@@ -37,7 +37,7 @@ Built once, used by many. Each is named on the pages that need it.
 | **Inbox** | **Built.** An Inbox item card (Lumen) holds what needs a person — an outlier, a failed routine, a draft to approve — with why and what it came from, moving `new → triaged → resolved`. An item may carry an action; approving runs it as the approver. A Timer raises a failed run into its owner's Inbox, and any workflow step can raise one | 01, 02, 04, 05 |
 | **Inbound adapters** | Receiving mail, chat messages and form posts as artifacts. Iris sends mail; nothing receives it | 01, 02, 05, 08 |
 | **Data connectors** | Read access to accounting, CRM, calendar and similar sources, on a key the person issues | 04, 05, 09 |
-| **Context encryption** | Titles, names and other `context` fields encrypted under the content key (today they are plaintext, protected by grants: `design/architecture.md` §24) | 07, 15, 16 |
+| **Context encryption** | **Title built:** the title is part of the content (the root type declares it) and is sealed under the content key. The other `context` fields are plaintext, protected by grants (`design/architecture.md` §24); a type will declare more of them `part: content` | 07, 15, 16 |
 | **Transcription** | Speech to text for a stream, written into the stream's session | 03, 12 |
 | **Reconciliation operator** | Compares several artifacts about one thing and writes what agrees, what conflicts and why | 08, 11, 12 |
 | **History view** | **Built.** A card's History, in its window: what was added to and removed from what it holds (its commits), for anyone who can read it; and who reached it — a person, a key, or a persona acting for a person — what they did, and whether it was allowed, for those who administer it | 07, 08, 09, 10, 11 |

@@ -20,13 +20,13 @@ same platform — and not the platform's operator — should be able to read the
 
 ## What it uses today
 
-Grants, per-principal content encryption, the blind-token search index, recall.
+Grants, per-principal content encryption (the title included: it is part of the content), the
+blind-token search index, recall.
 
 ## To build
 
-- **Context encryption** — titles, names and other `context` fields are plaintext at rest today,
-  protected by grants only (§24, residual risk in §56). Measured: a note's title is in the store's
-  document row and event log.
+- **Context encryption** beyond the title: descriptions, tags and the other `context` fields are
+  plaintext at rest, protected by grants only (§24, residual risk in §56).
 - An install on the team's own hardware that a stranger can complete (roadmap gate G5), for teams
   that cannot use any shared node.
 
@@ -34,5 +34,5 @@ Grants, per-principal content encryption, the blind-token search index, recall.
 
 `usecase_16_your_data_is_yours_alone.py`: three accounts. The owner's search finds the note; the
 other two reach it by no surface; a grant gives one colleague read and search, and revoking it takes
-both away. On the node, the note's content is in no file the store wrote. Titles at rest are carried
-as a strict expected failure until context encryption is built.
+both away. On the node, neither the note's content nor its title is in any file the store wrote, and the
+owner still reads the title back.

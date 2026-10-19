@@ -24,7 +24,7 @@ card's History.
 
 ## To build
 
-- **Context encryption** — titles and other `context` fields encrypted at rest.
+- **Context encryption** beyond the title (sealed with the content) — the other `context` fields encrypted at rest.
 - An import from standard health-record formats.
 - An install on the clinic's own hardware (roadmap gate G5).
 
