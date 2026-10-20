@@ -12,6 +12,7 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ### Changed
 - `vision/roadmap.md` §2 and `research/paper-2` §98: `mantle.agience.ai` serves the hosted store (870 records, 6.3 MB, no ontology); the 6.49M-record lattice is archived in object storage and not served. `start/overview.md`: Lumen runs workflows and timers and answers with cited evidence.
+- `vision/information-model.md` and `use-cases/`: every workflow run is a Run card in the workflow's Runs collection, and a step's inputs can name an earlier step's output (`$.previous`, `$.steps.<name>`).
 - `use-cases/`: use case 11 is checked by a harness (Lumen's `reconcile`, built from a recipe in the workflow builder); the README says how a person makes their own use case in the app; the reconciliation operator is built for stated facts.
 - `design/architecture.md` and `use-cases/`: the title is part of an artifact's content, sealed at rest; the other context fields remain plaintext.
 - `use-cases/13`: a connection's key leaves the store only sealed to Lumen's own key, for that card.

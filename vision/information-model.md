@@ -228,6 +228,14 @@ person added, by its card's id), `transform-ref` (another Transform) and `workfl
 child Transform, with an optional `retry` block). `llm` is refused by design: a model is reached
 through its own tekton, where the call is explicit. `webhook` is a declared placeholder.
 
+Every run of a workflow is a Run card (`vnd.agience.run+json`), written into the workflow's own
+Runs collection (`context.runs_to`, made on its first run): when it ran, its status, and each
+step's status, output and error. It is the run's record, open to anyone who can read it, and the
+state a step's `condition` and a `retry` read. A step's inputs can name what an earlier step
+returned: `$.previous` (the step just before), `$.steps.<name>`, and a field inside either
+(`$.previous.reconciliation_id`, `$.steps.List.items[0].id`); a path that leads nowhere leaves the
+argument out.
+
 A Timer card (`vnd.agience.timer+json`, Lumen) runs any artifact's operation — usually a workflow's
 `invoke` — every N minutes, daily at a time, or once. It acts on a grant key its owner issues when
 they arm it, so each firing, through every step and persona, reaches exactly what that key was

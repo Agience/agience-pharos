@@ -35,5 +35,6 @@ An account's `evidence` (artifact ids in its context) is carried to each version
 from the "Reconcile accounts" recipe in its card, and runs it; the reconciliation names the one
 agreement, the conflict with each version and its accounts, and the two single statements; no
 account changes; the conflict waits in the reviewer's Inbox and is settled from its card. A second
-check builds a two-step workflow in the builder, runs it, and schedules it with failures to the
-Inbox.
+check builds a two-step workflow in the builder whose second step takes the first one's output
+(the reconciliation's id, chosen in the form), runs it, finds the run recorded step by step in the
+workflow's Runs collection, and schedules it to record there with failures to the Inbox.
