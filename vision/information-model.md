@@ -89,7 +89,7 @@ are used below where they name different things in the code.
 - A reproducible *operational meaning* for how information is processed.
 - An operator's body is **addressed rather than carried inline**: the pattern goes to the CAS and
   the artifact row keeps `content_ref = cas/<sha256>`. Every *use* of an operator is likewise a
-  reference — a typed `operator` edge, or a `transform_id` in a workflow step.
+  reference — a typed `operator` edge, or an `operator_id` in a workflow step.
 
 Transform can be represented either as:
 - an **executable operator** (an external or internal process that maps inputs → outputs given context), or
@@ -220,13 +220,28 @@ In this model, a workflow is an operator whose implementation is **decomposed in
 Recommended unification:
 - Treat each Step as an **Operator invocation** plus optional wiring (Connection/Host selection).
 
-A shipped workflow step is an object with a `transform_id` naming the child operator artifact, an
-optional `name`, an optional `condition` evaluated against a state artifact's context, and an
-optional `input_mapping`. The runner (Lumen's `execute_transform`, reached by invoking a Transform
-card) runs three `run.type` values: `mcp-tool` (a tool on a persona by name, or on an MCP server a
-person added, by its card's id), `transform-ref` (another Transform) and `workflow` (steps, each a
-child Transform, with an optional `retry` block). `llm` is refused by design: a model is reached
-through its own tekton, where the call is explicit. `webhook` is a declared placeholder.
+A workflow step names the operator it invokes (`operator_id`), with a `name`, a `key` and its
+`arguments`, and an optional `condition` evaluated against the run's state. A step is invoked
+through Crystal (`/artifacts/{operator}/op/invoke`), so it runs only for someone holding `invoke`
+on that operator. The platform's own operators — reconcile accounts, answer from my notes, raise
+an Inbox item, list my collections, ask a model — sit in a "Platform operators" collection and
+are granted to every account one by one, so each can be withheld or metered on its own; which
+operators are the platform's is said by the node (`GET /artifacts/platform-operators`), never by
+what an operator says of itself. Anyone offers an operator the same way: a card of their own,
+bound to their own server or authorizer by a link, shared by their grants.
+
+An argument naming an artifact (`"format": "artifact-id"` in the operator's `input_schema`, with
+the content types it accepts) is chosen with the app's picker and kept as a typed link from the
+workflow (`@link.<key>.<argument>`): a relationship edge, which confers nothing and is read as the
+person running it. An operator's own argument map resolves the same way — `$.body.params.<name>`
+from the invoke request (`?` when it may be absent) and `@relationship.<name>` from the
+operator's links.
+
+The runner (Lumen's `execute_transform`, reached by invoking a Transform card) runs `workflow`
+(steps, with an optional `retry` block). A card made before steps were operators — `mcp-tool`, a
+`transform-ref`, or steps naming a `transform_id` — still runs, and its builder offers to rebuild
+it as operator steps. `llm` is refused by design: a model is reached through its own tekton,
+where the call is explicit. `webhook` is a declared placeholder.
 
 Every run of a workflow is a Run card (`vnd.agience.run+json`), written into the workflow's own
 Runs collection (`context.runs_to`, made on its first run): when it ran, its status, and each
@@ -238,8 +253,11 @@ argument out.
 
 A Timer card (`vnd.agience.timer+json`, Lumen) runs any artifact's operation — usually a workflow's
 `invoke` — every N minutes, daily at a time, or once. It acts on a grant key its owner issues when
-they arm it, so each firing, through every step and persona, reaches exactly what that key was
-granted; disarming revokes the key. A run that fails is raised, where the owner names
+they arm it, over the timer's workspace and target, where it records runs and raises failures, and
+each operator and linked artifact of the workflow it runs. Each firing, through every step and
+persona, reaches exactly what that key was granted; Mantle clamps the key on each resource to what
+the owner holds there, and narrows it at each use to what they hold then, so withholding an
+operator from an account reaches the keys it already issued. Disarming revokes the key. A run that fails is raised, where the owner names
 (`inbox_to`, usually their Inbox), as an Inbox item.
 
 An Inbox item (`vnd.agience.inbox-item+json`, Lumen) is what needs a person: it says why, names the

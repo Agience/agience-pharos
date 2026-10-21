@@ -32,9 +32,12 @@ An account's `evidence` (artifact ids in its context) is carried to each version
 ## Checked by
 
 `usecase_11_several_accounts_of_one_event.py`: a reviewer files three accounts, builds a workflow
-from the "Reconcile accounts" recipe in its card, and runs it; the reconciliation names the one
-agreement, the conflict with each version and its accounts, and the two single statements; no
-account changes; the conflict waits in the reviewer's Inbox and is settled from its card. A second
-check builds a two-step workflow in the builder whose second step takes the first one's output
-(the reconciliation's id, chosen in the form), runs it, finds the run recorded step by step in the
-workflow's Runs collection, and schedules it to record there with failures to the Inbox.
+from the "Reconcile accounts" recipe in its card — the platform's operator — picking the accounts
+with the app's picker, and runs it; the accounts are a link from the workflow; the reconciliation
+names the one agreement, the conflict with each version and its accounts, and the two single
+statements; no account changes; the conflict waits in the reviewer's Inbox and is settled from its
+card. A second check builds a two-step workflow from operators whose second step takes the first
+one's output (the reconciliation's id, chosen in the form), runs it, finds the run recorded step by
+step in the workflow's Runs collection, and schedules it to record there with failures to the
+Inbox, on a key that reaches each operator and link. A third finds the builder offers operators,
+not tools, and that an operator calling itself the platform's is listed as shared.

@@ -32,13 +32,17 @@ platform cannot do yet fails the harness, or is carried in it as a named expecte
 A use case is a workspace with what it needs in it, made in the app:
 
 1. **Collections** for what it gathers, and grants on them for the people and agents taking part.
-2. **A workflow card** (a Transform). Its builder starts from a recipe or a blank: pick a tool from
-   any persona the person can use, fill in the form made from that tool's own inputs, and add
-   steps in order; a step's input can be what an earlier step returned. **Run now** shows the
-   answer, and every run is a Run card in the workflow's Runs collection, listed in the builder
-   with each step's output or error.
+2. **A workflow card** (a Transform). Its builder starts from a recipe or a blank: pick an
+   operator the person may invoke — one of the platform's own, granted to every account one by
+   one, one of their own, or one shared with them — fill in the form made from its inputs,
+   choosing each artifact it works on with the app's picker (kept as a link from the workflow),
+   and add steps in order; a step's input can be what an earlier step returned. **Run now** shows
+   the answer, and every run is a Run card in the workflow's Runs collection, listed in the
+   builder with each step's output or error.
 3. **A schedule**: the builder makes a Timer card beside the workflow, with failures sent to the
-   person's Inbox; the person arms it there, approving the key it runs on.
+   person's Inbox; the person arms it there, approving the key it runs on, which reaches the
+   workspace and each operator and linked artifact the workflow uses, and no more than the person
+   holds there.
 4. **The Inbox**, where whatever needs a person waits, with why and what it came from.
 
 Use case 11's harness checks this path in the browser, recipe to settled difference.
