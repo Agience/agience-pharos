@@ -227,13 +227,17 @@ on that operator. The platform's own operators — reconcile accounts, answer fr
 an Inbox item, list my collections, ask a model — sit in a "Platform operators" collection and
 are granted to every account one by one, so each can be withheld or metered on its own; which
 operators are the platform's is said by the node (`GET /artifacts/platform-operators`), never by
-what an operator says of itself. Anyone offers an operator the same way: a card of their own,
-bound to their own server or authorizer by a link, shared by their grants.
+what an operator says of itself. The tool a platform operator runs is reached only by someone who
+may invoke that operator, whether called directly on its persona or through any operator card
+naming it, so withholding an operator withholds its tool. Anyone offers an operator the same way:
+a card of their own, bound to their own server or authorizer by a link, shared by their grants;
+running a person's own MCP server needs `invoke` on its card, and reading the card shows only what
+it offers.
 
 An argument naming an artifact (`"format": "artifact-id"` in the operator's `input_schema`, with
 the content types it accepts) is chosen with the app's picker and kept as a typed link from the
 workflow (`@link.<key>.<argument>`): a relationship edge, which confers nothing and is read as the
-person running it. An operator's own argument map resolves the same way — `$.body.params.<name>`
+person running it. Removing the step removes its links, and nothing they named. An operator's own argument map resolves the same way — `$.body.params.<name>`
 from the invoke request (`?` when it may be absent) and `@relationship.<name>` from the
 operator's links.
 
