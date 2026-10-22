@@ -37,10 +37,14 @@ This is already true in the product architecture today:
   `content_type == "application/vnd.agience.workspace+json"`; artifacts live in one table and
   carry a `state` in `{live, archived}`.
 - Every write path stores an artifact `live`; in the design it joins the record by mass, which
-  no read path consults. A served edit writes the live version in place. `archived` is
-  lifecycle: a content snapshot `id@hash`, archived when a write changes the artifact's
-  `content_ref`, or a card a user archived with `PATCH state=archived`. The store's `revise()`
-  API, which writes a new head and archives the prior one, has no served caller. Head
+  no read path consults. A served edit writes the live version in place, and when it changes
+  the artifact's content — the body, or the title, which is part of the content (declared on the
+  root type `*/*` and inherited by every type) — the version it replaces is kept first as a
+  snapshot `id@hash`, archived, which the live version names as its `parent_id`. Any other edit
+  (description, placement, bindings, lifecycle) is written in place. `archived` is lifecycle: a
+  snapshot, or an artifact a user archived with `PATCH state=archived`. The store's `revise()`
+  API, which writes a new head naming its parent and archives the prior one, has no served
+  caller. Head
   resolution returns the newest non-archived version under a root; a root with no live version
   resolves to nothing, so a single-row artifact a user archived answers 404 even by its root id.
   Restore is `PATCH` back to `live`, and it applies to a retired lineage — one whose every
@@ -307,11 +311,8 @@ For L4 (training/eval-ready), also capture:
 
 Where each of these lives today: `steps`, `parameters` and operator identity are in the operator's
 own `run` / `operator` block; `actor` is the artifact's `created_by` / `modified_by` and the
-principal on each access event. `environment` has a schema and no served writer: the Commit /
-CommitItem schema declares `author_id`, `subject_user_id`, `presenter_type`, `presenter_id`,
-`client_id`, `host_id`, `server_id`, `agent_id`, `grant_key_id` and `confirmation` on a
-collection membership change, and `GET /artifacts/{id}/commits` lists commit records, but no
-served write path writes one. Model config is on an LLM connection artifact
+principal on each access event, which also records the acting server or client and the grant key
+when there is one. `environment` has no store of its own. Model config is on an LLM connection artifact
 (`provider`, `model`, `endpoint`, `tier`, `rate_limits`); prompts are artifacts
 (`application/vnd.agience.prompt+json`); and a scoring rubric is an evaluation artifact
 (§8 of `paper-1-the-instrument.md`). `outputs` is the one entry with no uniform home.
@@ -376,16 +377,13 @@ Layer A is in force for reads and for writes, by different mechanisms. Every art
 allow *and* deny — appends an access event naming the principal, action, result, timestamp and
 context, emitted from inside the authorization layer so that an artifact cannot be touched without
 being witnessed; the log is append-only, has no update or delete surface, and is retained
-indefinitely unless an age bound is configured. The Commit schema (§4.3) holds a fuller actor
-and environment record; no served write path writes one.
+indefinitely unless an age bound is configured.
 
 Layer B is per-tool rather than platform-wide. Derived artifacts carry a `derived_from` block
 naming their sources, and a grounded-answer tool produces a citation receipt giving each cited
 card's sha256, length and title, and reporting the ones it could not resolve.
 
-The receipt schema for Layer C is unspecified. The nearest thing in the code is the Commit
-schema's `confirmation` field (default `human_affirmed`) and its `grant_key_id` field; no served
-write path writes a commit record.
+The receipt schema for Layer C is unspecified.
 
 ### 5.3 Identity and version lineage
 
@@ -394,6 +392,10 @@ on the first version, and the same value on every version after — and `root_id
 membership edges point at, so a reference survives revision. The workspace/collection split is a
 `content_type` distinction, not two identity schemes: there is one artifact table, and `state`
 carries only the live/archived lifecycle distinction.
+
+Each version names the version it was made from (`parent_id`), so a lineage is a DAG: when
+several lines of one artifact part, a reconciliation can find where. No version points forward to
+the one that replaced it, since a version may have more than one successor.
 
 Two fields exist so that lineage survives the storage round trip and are worth naming: `origin_root`,
 the collection's immutable key root, inherited from parent to child rather than walked; and
@@ -496,8 +498,8 @@ grant on the resource.
 A **Server** is an MCP server: a code package that provides tools/resources.
 Stored as `application/vnd.agience.mcp-server+json`.
 
-Server identity matters for auditing which code produced which result. The Commit schema has a
-`server_id` field; no served write path writes a commit record.
+Server identity matters for auditing which code produced which result; the access log records
+the acting server or client on each decision.
 
 A server is *not* a principal. The store registers no servers, issues no server credentials and
 keeps no server JWK plane; a token presenting `principal_type: server` is refused by name. So
@@ -721,8 +723,8 @@ Once those are chosen, we can produce a phased delivery plan with minimal churn.
 | # | Outstanding | What exists today |
 |---|---|---|
 | 1 | No `context.semantic` classification vocabulary — `kind` / `sources` / `evidence` have no producer, consumer or schema. | Typing by `content_type`; classification by membership edge, since a tag, collection, group and attribute are all the same edge; ontology placement by anchor artifacts. |
-| 2 | No single provenance envelope emitted by every operator run; the design rule that the output artifact *is* the audit record is not enforced anywhere. | Per-tool `context.derived_from` blocks written by hand; a workflow state artifact patched with status, current step and error; the Commit schema's actor fields, which no served write path fills; the append-only access-event log. |
-| 3 | No receipt schema for Layer C, and no "validated under policy" certification path. | The Commit schema's `confirmation` and `grant_key_id` fields, which no served write path fills; evaluation artifacts carrying criteria, scores and an evaluator; a citation receipt tool giving per-source sha256, length and title. |
+| 2 | No single provenance envelope emitted by every operator run; the design rule that the output artifact *is* the audit record is not enforced anywhere. | Per-tool `context.derived_from` blocks written by hand; a workflow's Run artifacts with each step's status, output and error; the append-only access-event log. |
+| 3 | No receipt schema for Layer C, and no "validated under policy" certification path. | The access log's grant-key field; evaluation artifacts carrying criteria, scores and an evaluator; a citation receipt tool giving per-source sha256, length and title. |
 | 4 | The access gate does not walk the context lattice, so a context edge confers no reach and context is not yet a unit of sharing. | The context artifact type, the nesting edge, and a bounded walk that narrows and cannot widen an authority set. |
 | 5 | No resource-provider registry, so "Agience itself is a resource provider" has no interface to enumerate. | `application/vnd.agience.resource+json` for MCP resources materialized as artifacts; collections and workspaces reachable as containers. |
 | 6 | No Knowledge artifact type. | Tools, resources, authorizers, LLM connections and grants each as their own artifact type. |

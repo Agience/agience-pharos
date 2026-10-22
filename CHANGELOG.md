@@ -34,6 +34,7 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 - Use case 14 is checked by a harness; its page names the Upload button and the operator it answers through, and what is not built (label reading, ranking by taste and price).
 - Use case 08 is checked by a harness; its page names the `contributor` role and the access log as the record of who added what, in place of a commit history the current paths do not write.
 - Use cases 10 and 11 name versions and the access log where they named commits, which are not part of the model; 10 no longer describes specifications as committed.
+- `architecture.md` §23–§24 and §110, `spine.md` and `information-model.md` §4, §5.3: a version names its parent and a lineage is a DAG; a change of content — body or title — keeps the version it replaced; commits are gone. The reconcile operator is what remains to build.
 
 ## [2026.10.0] - 2026-10-09
 

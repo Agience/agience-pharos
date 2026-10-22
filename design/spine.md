@@ -80,7 +80,7 @@ Three consequences worth stating in that order:
   is not a simplification of §3; it is §3 applied to the observer axis.
 
 **The stored artifact state is `live|archived`, and it is lifecycle.** Every write path stores
-`live`. `archived` marks a superseded version, or a card a user archived, and head resolution and
+`live`. `archived` marks a superseded version, or an artifact a user archived, and head resolution and
 default recall read past it. The state is an implementation detail of the store. An unobserved
 artifact is dark matter, as defined above. Mass is the design for how real a
 thing is. Creating an artifact or a container records the observer rung the write earned, derived
@@ -209,8 +209,7 @@ That definition does three things at once and all three are worth keeping:
 **Mass is how a thing joins the record, in the design.** An artifact is live when written, and
 **mass carries how far it has joined** — see §2 for what that means and why it makes the story more
 consistent rather than less. The stored state `live|archived` is lifecycle and an implementation
-detail. The store has a Commit / CommitItem schema for collection membership changes and serves
-`GET /artifacts/{id}/commits` to list them; no served write path writes a commit record.
+detail. An artifact's changes are its versions; there are no commit records.
 
 **`Collection` is KEPT**. Not renamed to `Group`.
 `Group` is the industry's word for a set of **principals**, and
