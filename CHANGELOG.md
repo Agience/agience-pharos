@@ -33,6 +33,7 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 - Use cases 05 and 07 are checked by harnesses; 07 states that a single card can be shared on its own and that History names each reader by the name the clinic gave them.
 - Use case 14 is checked by a harness; its page names the Upload button and the operator it answers through, and what is not built (label reading, ranking by taste and price).
 - Use case 08 is checked by a harness; its page names the `contributor` role and the access log as the record of who added what, in place of a commit history the current paths do not write.
+- Use cases 10 and 11 name versions and the access log where they named commits, which are not part of the model; 10 no longer describes specifications as committed.
 
 ## [2026.10.0] - 2026-10-09
 

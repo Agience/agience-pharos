@@ -18,7 +18,7 @@ evidence supports which version — without anyone's original being overwritten.
 
 ## What it uses today
 
-Collections, grants, provenance pointers, commits (a collection's History in the app); Lumen's
+Collections, grants, provenance pointers, the access log (a card's History in the app); Lumen's
 `reconcile` operator, which compares the facts each account states as `Label: value` lines (an
 incident form's shape) and writes the reconciliation beside them, with each difference raised as
 an Inbox item; a workflow card built from the "Reconcile accounts" recipe in the app; the Inbox.
