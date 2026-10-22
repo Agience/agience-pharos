@@ -30,6 +30,7 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 - `features/prism-protocol.md` describes a type's `offer` (the paths that give its artifacts their title, description and tags) and how Crystal publishes type definitions to Mantle's indexer.
 - `use-cases/README.md`, use case 11 and `vision/information-model.md` §4.2: a workflow's steps are operators invoked through their grants, the platform's own granted to every account one by one; an artifact a step works on is a typed link from the workflow; a timer's key reaches each operator and link, narrowed at each use to what its owner holds.
 - `vision/information-model.md` §4.2: a platform operator's tool is reached only by those granted the operator, directly or through any operator card; running a person's own MCP server needs `invoke` on its card; removing a step removes its links.
+- Use cases 05 and 07 are checked by harnesses; 07 states that a single card can be shared on its own and that History names each reader by the name the clinic gave them.
 
 ## [2026.10.0] - 2026-10-09
 

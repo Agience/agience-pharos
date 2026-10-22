@@ -15,8 +15,8 @@ platform cannot do yet fails the harness, or is carried in it as a named expecte
 | [02](02-an-assistant-you-message.md) | An assistant you message from your phone | not yet |
 | [03](03-meetings-into-notes-and-actions.md) | Meetings into notes, decisions and actions | not yet |
 | [04](04-watching-the-business.md) | Watching the business: cash, pipeline and campaigns | not yet |
-| [05](05-planning-an-event.md) | Planning an event with many people and dates | not yet |
-| [07](07-a-clinical-practice-record.md) | A clinical practice's records, each reader seeing their part | not yet |
+| [05](05-planning-an-event.md) | Planning an event with many people and dates | harness |
+| [07](07-a-clinical-practice-record.md) | A clinical practice's records, each reader seeing their part | harness |
 | [08](08-credit-for-contributions.md) | Credit for contributions in an open collaboration | not yet |
 | [09](09-an-agent-on-a-key-you-can-revoke.md) | An agent works on a key you issue and can revoke | harness |
 | [10](10-specs-that-emerge-from-the-work.md) | Specifications that emerge from the work | not yet |

@@ -27,4 +27,9 @@ what is overdue.
 
 ## Checked by
 
-Not yet.
+`usecase_05_planning_an_event.py`: Sarah keeps the wedding as a workspace with Vendors, Guests and
+Budget. A helper joins Vendors by an invitation link as an editor, files a florist's reply there,
+reads the other quotes, and reaches neither the guests, the budget nor the wedding itself; Sarah
+finds the reply by its words. A reminder before the hall deposit is due is a Timer, armed from its
+card in the app, that runs the platform's "Raise an Inbox item" operator once; the reminder waits in
+Sarah's Inbox, naming the quote it is about. RSVPs arriving by themselves wait on inbound adapters.
