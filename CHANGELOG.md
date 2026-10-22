@@ -31,6 +31,8 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 - `use-cases/README.md`, use case 11 and `vision/information-model.md` §4.2: a workflow's steps are operators invoked through their grants, the platform's own granted to every account one by one; an artifact a step works on is a typed link from the workflow; a timer's key reaches each operator and link, narrowed at each use to what its owner holds.
 - `vision/information-model.md` §4.2: a platform operator's tool is reached only by those granted the operator, directly or through any operator card; running a person's own MCP server needs `invoke` on its card; removing a step removes its links.
 - Use cases 05 and 07 are checked by harnesses; 07 states that a single card can be shared on its own and that History names each reader by the name the clinic gave them.
+- Use case 14 is checked by a harness; its page names the Upload button and the operator it answers through, and what is not built (label reading, ranking by taste and price).
+- Use case 08 is checked by a harness; its page names the `contributor` role and the access log as the record of who added what, in place of a commit history the current paths do not write.
 
 ## [2026.10.0] - 2026-10-09
 

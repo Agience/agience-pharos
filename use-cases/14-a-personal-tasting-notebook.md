@@ -18,13 +18,19 @@ not someone else's ratings.
 
 ## What it uses today
 
-Workspaces and collections, file upload, describers, recall.
+Workspaces and collections, file upload (dropped on a workspace, or chosen with its Upload button,
+which on a phone offers the camera), describers, recall, and the platform's "Answer from my notes"
+operator, which cites the notes it answers from.
 
 ## To build
 
 - Label reading from a photo.
-- A mobile capture flow.
+- Ranking by what he liked before, and narrowing by price ("under thirty").
 
 ## Checked by
 
-Not yet.
+`usecase_14_a_personal_tasting_notebook.py`: Marco uploads a label photo from the app's Upload
+button, and it is stored as taken; he asks "which wines go with lamb?" through the platform's
+"Answer from my notes" operator, and the answer cites his two lamb notes in his own words and never
+a colleague's, though theirs says lamb too. Reading the label and ranking by what he liked and paid
+are not checked: they are not built.
