@@ -18,8 +18,8 @@ alarm.
 
 **Mantle** is the memory. A store that holds content under the hash of its own bytes, keeps every
 version in its own ordered time, and encrypts what it holds so it cannot open it without a grant
-that reaches it — ◧ *what it keeps in the clear is artifact metadata — title, description, tags — which is
-grant-controlled; the search index itself holds no plaintext terms.* Authorization is reachability
+that reaches it — ◧ *what it keeps in the clear is the rest of the record — name, description, tags and other
+context fields — which is grant-controlled; the title is sealed with the content; the search index itself holds no plaintext terms.* Authorization is reachability
 across the graph, so revoking access is a single edit — ◧ *effective within the authorisation
 cache's window, 30 seconds by default.*
 
@@ -666,9 +666,11 @@ happens in memory after decryption, in the process that already holds the grant.
 indexed this way: the path is unconditional, and the store has no plaintext search index to fall
 back to — its FTS5 module was removed as a privacy decision.
 
-**What remains in the clear is the record, not the index.** An artifact's metadata and `context`
-fields — title, description, tags — are stored readable and governed by grants rather than by
-encryption. That is the exact scope of "encrypted by default": the content and the queries.
+**What remains in the clear is the record, not the index.** An artifact's name, description and `context`
+fields other than the title — tags, filename, custom keys — are stored readable, in the record and
+in the change feed, and governed by grants rather than by encryption; so are link names, invite
+addresses and the identifiers that give the graph its structure. That is the exact scope of
+"encrypted by default": the content, the title and the index.
 
 **Visibility is bounded to a locality.** The index is partitioned into encrypted cells, and material
 routes to a cell by **similarity** rather than by name — so the store is organised by meaning rather

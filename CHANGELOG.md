@@ -5,6 +5,13 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2026.10.15] - 2026-10-29
+
+### Changed
+
+- `start/overview.md` now describes the title of an artifact as sealed with its content, so "encrypted by default" covers the content, the title and the search index.
+- `start/overview.md` now lists what remains readable and grant-controlled: the artifact name, description and other `context` fields (tags, filename, custom keys), in both the record and the change feed. Link names, invite addresses and the identifiers that give the graph its structure are readable too.
+
 ## [2026.10.14] - 2026-10-28
 
 ### Added
