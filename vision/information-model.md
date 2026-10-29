@@ -397,6 +397,14 @@ Each version names the version it was made from (`parent_id`), so a lineage is a
 several lines of one artifact part, a reconciliation can find where. No version points forward to
 the one that replaced it, since a version may have more than one successor.
 
+A version is read through its artifact: `GET /artifacts/{id}/versions` walks the line back from
+the current version by `parent_id`, `GET /artifacts/{id}/versions/{version_id}` reads one, and
+`POST .../restore` writes a version's content and title as an ordinary edit, so the version it
+replaces is kept. A version is an artifact, so which versions a principal sees is the light cone's
+answer for each version's own id: a grant on the artifact reaches every version through its root,
+and a grant or a deny on one version's id reaches that version alone. A restore is refused when it
+would show a version to someone that version is denied to.
+
 Two fields exist so that lineage survives the storage round trip and are worth naming: `origin_root`,
 the collection's immutable key root, inherited from parent to child rather than walked; and
 `content_ref`, the CAS address of the bytes. A `from_dict` that silently dropped either would

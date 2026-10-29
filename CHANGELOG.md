@@ -5,6 +5,14 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2026.10.14] - 2026-10-28
+
+### Added
+
+- `vision/information-model.md` now describes reading artifact versions: `GET /artifacts/{id}/versions` lists the line back from the current version by `parent_id`, and `GET /artifacts/{id}/versions/{version_id}` reads a single version.
+- `vision/information-model.md` now describes `POST /artifacts/{id}/versions/{version_id}/restore`, which writes a version's content and title as an ordinary edit so the version it replaces is kept. A restore is refused when it would show a version to someone that version is denied to.
+- `vision/information-model.md` now describes version visibility: each version is an artifact, so a principal sees it according to the light cone's answer for that version's own id. A grant on the artifact reaches every version through its root, and a grant or deny on one version's id reaches that version alone.
+
 ## [2026.10.12] - 2026-10-17
 
 ### Added
