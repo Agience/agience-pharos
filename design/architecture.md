@@ -391,7 +391,7 @@ both are stated so neither has to be inferred from the other.
 chorus  -> crystal 36   mantle 31   prism 47
 ember   -> crystal 14   mantle 25   prism 29   entroptics 1
 crystal -> prism   14
-mantle  -> prism   26
+mantle  -> prism   27
 origin  -> prism    7
 ```
 
