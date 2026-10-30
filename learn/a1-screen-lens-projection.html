@@ -314,7 +314,7 @@ GOOGL   May 1106.5 &rarr;  Jun 1082.8
       </ul>
       <p>The scan is the same shape of object: its rows are the scanner&rsquo;s eight passes, top to bottom, and its columns are positions across. You cannot shuffle those rows either.</p>
       <div class="note cool">
-        <p><strong>One honest difference.</strong> The scan&rsquo;s rows are ordered in <em>space</em>, not time &mdash; nothing is happening, it is a picture read top to bottom. Everything below works identically for both, but where the lesson says &ldquo;you must never average two moments&rdquo;, it is the market it has in mind.</p>
+        <p><strong>One real difference.</strong> The scan&rsquo;s rows are ordered in <em>space</em>, not time &mdash; nothing is happening, it is a picture read top to bottom. Everything below works identically for both, but where the lesson says &ldquo;you must never average two moments&rdquo;, it is the market it has in mind.</p>
       </div>
       <figure style="margin-top:16px">
         <svg viewBox="0 0 462 272" role="img" aria-label="The market grid with months running down as an ordered axis and companies across as a relabelable channel axis; two neighbouring company columns are marked as thinkable to merge, and the March 2020 row is marked as never mergeable.">
@@ -590,7 +590,7 @@ the market 7.10 &divide; 8 = <b>0.89</b>   &rarr; &delta; = <b>1.13</b></div>
           </tbody>
         </table>
         </div>
-        <figcaption><span class="mono">2<sup>H</sup></span> runs from 1 to 199 and says nothing you can compare. the fraction is <strong>flat across a 256&times; range of width</strong> &mdash; it reports the structure. (At F=16 the line is barely two channels wide and the count floors at 1, which is the honest reading.)</figcaption>
+        <figcaption><span class="mono">2<sup>H</sup></span> runs from 1 to 199 and says nothing you can compare. the fraction is <strong>flat across a 256&times; range of width</strong> &mdash; it reports the structure. (At F=16 the line is barely two channels wide and the count floors at 1, which is the correct reading.)</figcaption>
       </figure>
       <div class="card">
         <h3>Four real records on one scale</h3>
@@ -618,7 +618,7 @@ the market 7.10 &divide; 8 = <b>0.89</b>   &rarr; &delta; = <b>1.13</b></div>
   <div class="two nr">
     <div>
       <p><span class="mono">&delta;</span> also answers a practical question. If the scan is using 4.89 columns&rsquo; worth, why store 8? Replace neighbouring columns with their weighted average &mdash; exactly how your phone resizes a photo &mdash; and keep <span class="mono">round(F / &delta;)</span> of them.</p>
-      <p>That is the <strong>fold</strong>, and it is only honest if <em>neighbouring columns are actually related</em>. Two separate facts are needed:</p>
+      <p>That is the <strong>fold</strong>, and it is only valid if <em>neighbouring columns are actually related</em>. Two separate facts are needed:</p>
       <ul>
         <li><span class="amber"><strong>Concentration</strong></span> &mdash; how far a fold <em>could</em> go. That is <span class="mono">&delta;</span>, which we have.</li>
         <li><span class="teal"><strong>Continuity</strong></span> &mdash; whether folding is allowed <em>at all</em>. Is column 3 next to column 4 in any real sense?</li>
@@ -1276,7 +1276,7 @@ floor 38.44   <b>K = 6</b></div>
 2&#7476; = 148.0 &rarr; &delta; = 1.73
         <b>folds to 148</b>
 floor 26.22   <b>K = 5</b></div>
-      <p style="margin-top:11px; font-size:14px">The one from Act&nbsp;II. It folds, it resolves five layers &mdash; and, as the honest slide showed, what its <span class="mono">&sigma;</span> was really measuring is not what you would assume.</p>
+      <p style="margin-top:11px; font-size:14px">The one from Act&nbsp;II. It folds, it resolves five layers &mdash; and, as the slide on the fold showed, what its <span class="mono">&sigma;</span> was really measuring is not what you would assume.</p>
     </div>
     <div class="card">
       <h3>A radio burst from another galaxy</h3>

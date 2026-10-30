@@ -12,14 +12,14 @@ documents.
 
 | doc | what it is |
 |---|---|
-| [`the-information-universe.md`](the-information-universe.md) | **Start here.** The whole framework end to end, written to be *studied* — plain language first, precise statement second, and **an honest status tag on every claim**: `[MEASURED]` · `[ESTABLISHED]` · `[HYPOTHESIS]` · `[SPECULATION]` |
+| [`the-information-universe.md`](the-information-universe.md) | **Start here.** The whole framework end to end, written to be *studied* — plain language first, precise statement second, and **a status tag on every claim**: `[MEASURED]` · `[ESTABLISHED]` · `[HYPOTHESIS]` · `[SPECULATION]` |
 | [`extraction-axiom.md`](extraction-axiom.md) | The unified information-theoretic framing the rest sits on |
 | [`forecasting-fractal-series.md`](forecasting-fractal-series.md) | Forecasting a fractal series |
 | [`between-sample-variation.md`](between-sample-variation.md) | **How to claim a measurement.** Rates transfer tightly; mean magnitudes move, but their sign and ordering can be stable — *claim the rate, report the mean*. Split every bench in half and open the replication half once, after the claim is written down. It falsified one result, confirmed two and narrowed a third, for one extra run per claim. |
 
 ## The discipline this tree is written under, and why it is worth copying
 
-`the-information-universe.md` opens with an honesty key, and it is the sharpest statement of method
+`the-information-universe.md` opens with a key to its claim tags, and it is the sharpest statement of method
 anywhere in the corpus:
 
 > *"The rule we have lived by: **if we can calculate it cleanly, with no fitting and no free knobs,
@@ -43,7 +43,7 @@ derived from this tree inherits that obligation.
 |---|---|
 | `entroptics/` | the instrument, the Lean development, the reference implementation |
 | `entroptics-mass-gap/` | the paper, `research/lean/` (`sorry`-free), the certification code |
-| `entroptics-llm/`, `entroptics-rf/`, `entroptics-jlens/` | the domain reads, each with its own `FINDINGS.md` |
+| `entroptics-context/`, `entroptics-rf/`, `entroptics-jlens/` | the domain reads, each with its own `FINDINGS.md` |
 | [`paper-1-the-instrument.md`](paper-1-the-instrument.md) | the instrument written up for submission |
 | [`paper-2-knowledge-without-weights.md`](paper-2-knowledge-without-weights.md) | grounding, identity and consolidation, **including the measured failures** |
 | [`the-economy.md`](the-economy.md) | the economy of verified work — energy, mass, demurrage and settlement, and what each one is not |

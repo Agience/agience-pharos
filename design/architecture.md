@@ -110,7 +110,7 @@ The commitment that makes it a *closed* universe model: **there is no privileged
 
 **The scale wager.** The frontier trained on ~55 TB and it was not enough: a fixed corpus is a snapshot of what was already written down, and generality lives past where the reading runs out. The wager instead: **store the generators, not the outputs.** A 100 GB base of maximally-distinct, keyed, verification-bearing structure, plus operators that fetch, describe, and derive the rest on demand: verification-bearing domains let the system *generate* data instead of collecting it, categorical consolidation stores $O(\text{generators})$ rather than $O(\text{facts})$, and operator retrieval gives unbounded reach into live sources without hoarding them. Target: **100 GB base to start the flywheel; 300 GB of consolidated generators.**
 
-## 4. No models — the deterministic substitutions
+## 4. Not built on a model — the deterministic substitutions
 
 For every place a frontier pipeline reaches for a model, the geometric replacement is named.
 
@@ -137,7 +137,7 @@ For every place a frontier pipeline reaches for a model, the geometric replaceme
 ## 6. The invariants — the constitution
 
 - **The type system is open** Vertex types, edge types, and collections are unbounded; new types are minted as self-describing artifacts whenever observed structure demands them.
-- **No models, anywhere** in the shipped runtime and the answer path — computed, not learned.
+- **Nothing in the platform depends on a model.** Recall, retrieval and the reads are computed, not trained.
 - **No artifact without provenance.** Every artifact carries an edge to its source.
 - **Consolidation is lossless or explicitly-lossy-with-pointer.** Never lose information; store the reconstruction morphism.
 - **Retrieval follows demand.** Store generators and indices; materialize leaves on demand.
@@ -205,9 +205,9 @@ In the design, mass carries the three jobs of a promotion boundary:
 
 The workspace/collection *mechanism* is graph structure — a workspace is a collection whose content type marks it as one, and there is one artifact table. Versions share a `root_id`, and each names the version it was made from (`parent_id`), so a lineage is a DAG rather than a flat grouping. A version is kept when an artifact's content changes: its body, or its title, which is part of the content (declared on the root type `*/*` and inherited by every type). The head of a lineage in the store is its newest non-archived version in proper-time order; a superseded version is `archived`, which keeps it out of head resolution and default recall. Old versions are deleted only by policy, and the policy itself is the audit trail. Delete as a person does it is one such policy: it archives the artifact into that person's Trash (`trashed_by`, `trashed_time` on the lineage head), restorable for 30 days, after which Mantle deletes it as that person.
 
-## 24. The lattice — one store, no external database
+## 24. The lattice — a sharded store, no external database
 
-**Mantle is the type-blind artifact kernel: SQLite plus an encrypted content-addressed filesystem, with zero external database processes.** There is ONE crypto/event chokepoint, keyed on the collection origin root, fail-closed.
+**Mantle is the type-blind artifact kernel, and it is a distributed system.** Each node is a shard: in-process, with no external database to provision, linking to its peers by signed sync. Within a shard, state lives in an embedded SQLite store beside an encrypted content-addressed filesystem; that is an implementation detail of the shard, not what Mantle is. There is ONE crypto/event chokepoint, keyed on the collection origin root, fail-closed.
 
 Within Mantle the request flow is strictly layered — router (thin, validates), service (orchestration), lattice/S3 adapter — and routers never call adapters directly.
 
@@ -219,16 +219,16 @@ Within Mantle the request flow is strictly layered — router (thin, validates),
 
 **There is a vector read seam, and it points inward.** Mantle embeds nothing and configures no provider: the only vectors it can hold are ones a writer handed it on the write that produced the text, or ones already resolved in its long-term cache. With neither, the seam returns empty vectors and search for that text degrades to lexical — which is the ordinary case, not an error. Where a vector does reach the ranker it orders that arm; where none does, the order comes from the narrowing itself. Nothing in the store produces a vector, so no model ships in it.
 
-**The store's index holds no plaintext terms; an ember's corpus index does.** Mantle removed its FTS5 module as a privacy decision, and nothing in mantle writes a cleartext posting. The lexical corpus index lives in `ember.corpus.fts` — FTS5 with Okapi BM25 over cleartext postings, which is what makes ranking free there — and anyone who can read that SQLite file can enumerate the corpus vocabulary and much of each document. That is a per-corpus call an ember node makes about content it already holds in the clear, not a property inherited from the store. The two indexes cover different populations and neither is the other's fallback.
+**The store's index holds no plaintext terms; an ember's corpus index does.** Mantle removed its FTS5 module as a privacy decision, and nothing in mantle writes a cleartext posting. The lexical corpus index lives in `ember.corpus.fts` — FTS5 with Okapi BM25 over cleartext postings, which is what makes ranking free there — and anyone who can read that index file can enumerate the corpus vocabulary and much of each document. That is a per-corpus call an ember node makes about content it was issued keys for and already reads as an authorised reader, not a property inherited from the store. The two indexes cover different populations and neither is the other's fallback.
 
-**The scope of "encrypted by default" is exact: the content, the title and the queries are encrypted.** The title is part of an artifact's content: the root type (`*/*`) declares it in its `context_schema` with `"part": "content"`, so every type inherits it, and the store seals it under the content's key in `context.sealed`, restores it for a reader the key oracle serves, and keeps it out of the change feed. The other metadata and `context` fields — description, tags, state, type, timestamps — are plaintext, protected by grant-based access control rather than field-level encryption.
+**Everything content-related is sealed.** Content and every field of it are sealed per principal; search runs on blind tokens; the store reads only structure: identifiers, types, timestamps, and the grant edges it walks to decide who is issued a key. The title, description, tags, link names and every other `context` field are part of the content: the root type (`*/*`) declares them in its `context_schema` with `"part": "content"`, so every type inherits them, and the store seals them under the content's key in `context.sealed`, restores them for a reader the key oracle serves, and keeps them out of the change feed. The queries are sealed the same way.
 
 **Practical lattice discipline:**
 
 - `count(*)` dereferences every record and zombies the node — a query defect, not a heap shortage. Keyset paging is fine.
 - `LIMIT` bounds output, not work: a `json_extract` predicate is unindexed and scans the whole store despite `LIMIT 5`. Page on an indexed column, filter in the application.
 - Bulk import requires a periodic WAL checkpoint or the WAL fills the disk.
-- Versioning is immutable: a change of content decides — the body (`content_ref`, or inline text) or the title — `root_id` is indexed, reads are head-only, and each version names its parent.
+- Versioning is immutable: a change of content decides — the body (`content_ref`, or inline text) or any sealed field — `root_id` is indexed, reads are head-only, and each version names its parent.
 
 ## 25. The type system is open
 
@@ -266,7 +266,7 @@ The retrieval and matching primitive of the whole system: four measured, relativ
 3. **CLOSE THE GAP IF POSSIBLE (adapt).** Refine — couple tighter, resolve at higher resolution, transform frames — but only as far as the measurement supports. The signal's own entropy sets how far the gap can close.
 4. **KEEP IT MEASURED.** The residual gap is always carried: a match is never returned as exact, but with its measured gap attached.
 
-It is the meaning-side twin of settlement, on one instrument (§27). Live in production as the adaptive cut: `K_signal` plus relative gap, model-free, no embedding, scored against the fixed-knee baseline on the same frames.
+It is the meaning-side twin of settlement, on one instrument (§27). Live in production as the adaptive cut: `K_signal` plus relative gap, with no trained weight and no embedding, scored against the fixed-knee baseline on the same frames.
 
 ## 27. Anchors dissolve into relative adaptation
 
@@ -644,7 +644,7 @@ Crystal hosts the first-party MCP servers on one mount; chorus supplies their te
 
 | persona | domain | what it does |
 |---|---|---|
-| **aria** | output / presentation | response formatting, cards, chat turns; serves chat and visualization views |
+| **aria** | output / presentation | response formatting, artifacts, chat turns; serves chat and visualization views |
 | **astra** | ingestion / extraction / streaming | file ingest, document text extraction, live streaming |
 | **iris** | networking / routing / comms | message routing, channel adapters, webhooks, relay and tunnel — the persona-facing comms surfaces over prism's plane |
 | **lumen** | inference | the reasoning tekton — grounded answers; the arrow algebra; dev operations |
@@ -1160,7 +1160,7 @@ The three grant types Origin serves are `authorization_code`, `refresh_token` an
 
 A secret — a credential, a key, private content — is visible **only to its creator and their delegates, throughout**: at rest, in transit, in compute, in logs, in backups. No fallback, no server-internal exception, no recovery path that widens the visible set, no "the platform can see it to help."
 
-**Delegation is the only way the visible set grows**, and it is explicit and revocable — a grant record. Confidentiality is a PROPERTY of the system, over a stated scope: the store holds content and search tokens it cannot read, keys reach only delegates, and a non-delegated party — **including the platform itself** — cannot derive the secret. The scope is exact and is stated in §24: artifact metadata and `context` are plaintext, protected by the grant check rather than by a key.
+**Delegation is the only way the visible set grows**, and it is explicit and revocable — a grant record. Confidentiality is a PROPERTY of the system, over a stated scope: the store holds content and search tokens it cannot read, keys reach only delegates, and a non-delegated party — **including the platform itself** — cannot derive the secret. The scope is stated in §24: content and every field of it are sealed per principal, and the store reads only structure — identifiers, types, timestamps, and the grant edges it walks to decide who is issued a key.
 
 The property as stated holds under the multi-custodian end-state; the default single-node deployment falls short of it, and §56 carries the gap with the mechanism that closes it.
 
@@ -1185,11 +1185,11 @@ Knowledge converging between embers, bodies flowing to where they are reached-fo
 - **Authorization = reachability.** Key-holders are selected by reachability (§51). A node not holding the fleet key hears noise.
 - **Provenance = observer agreement.** Existence is authority-weighted agreement, and content-addressing computes that agreement for free. Trust is a rung, graded and derived server-side, never a caller's claim — a raw assertion can only lower its own rung.
 
-Tampering, eavesdropping, forgery, and intrusion are each *inexpressible against content bytes and the store's blind-token index* in a content-addressed, encrypted, grant-keyed, agreement-grounded space; metadata, keys resident in process memory, token validity windows, and an ember's own plaintext corpus index remain expressible, and §56 enumerates them.
+Tampering, eavesdropping, forgery, and intrusion are each *inexpressible against content bytes and the store's blind-token index* in a content-addressed, encrypted, grant-keyed, agreement-grounded space; the structure the store reads (identifiers, types, timestamps, grant edges), keys resident in process memory, token validity windows, and an ember's own plaintext corpus index remain expressible, and §56 enumerates them.
 
 ## 55. Sovereignty, residency, and sealed delivery
 
-The platform runs anywhere the operator puts it: on-prem bare metal, sovereign cloud, edge, or fully air-gapped. It is **dependency-severable** — no call-home and no external licensing server in the data path, so an air-gapped instance keeps working when cut off from the vendor entirely. For data at rest, artifacts are customer-key encrypted: **content and the store's lexical query index are ciphertext**, so an engineer with container access, a database administrator with direct access, or a full export sees ciphertext for those; metadata and `context` remain plaintext (§24), carried as a residual risk in §56.
+The platform runs anywhere the operator puts it: on-prem bare metal, sovereign cloud, edge, or fully air-gapped. It is **dependency-severable** — no call-home and no external licensing server in the data path, so an air-gapped instance keeps working when cut off from the vendor entirely. For data at rest, artifacts are customer-key encrypted: **content, every field of it, and the store's lexical query index are ciphertext**, so an engineer with container access, a database administrator with direct access, or a full export sees ciphertext for those and, in the clear, only structure — identifiers, types, timestamps and grant edges (§24); §56 carries it.
 
 **Three key layers, and one caveat.** The local content-addressed cache seals each object with AES-256-GCM under one per-node key, with the object's own `cas/` reference as associated data — key-independent by construction, because the address names the plaintext and so survives a re-key. The per-principal envelope seals under a key derived from that principal's master key, with the principal and the collection scope bound in as associated data. The durable mirror to object storage uses a rotating shared fleet key. Above all three sits a **pluggable key-encryption key**, selected by `MANTLE_KEK_PROVIDER`: `local` wraps with the platform `encryption.key` on disk, which is the self-host default; `kms` and `vault` put the KEK somewhere non-exportable, so the wrapped key travels and the KEK never leaves the boundary. **The caveat:** a stored blob that does not carry the envelope's magic is treated as legacy plaintext and returned as-is, so a caller that requires ciphertext must say so. Encryption at rest is universal for anything written through the envelope, not for everything an existing corpus already holds.
 
@@ -1215,7 +1215,7 @@ The platform runs anywhere the operator puts it: on-prem bare metal, sovereign c
 
 **Residual risk.** These are the risks the operator carries; each names the mechanism that closes it.
 
-- **Operator read of metadata and context other than the title**, which is plaintext and grant-controlled. Closed field by field as types declare more of their context `"part": "content"`; the store seals the title today and does not yet read other declarations. Each sealed field costs the operator server-side filtering on it.
+- **Operator read of structure.** The store reads identifiers, types, timestamps and grant edges, because it walks them to decide who is issued a key. Every content field is sealed, and the cost is that the operator cannot filter server-side on a sealed field.
 - **Single-node trust in the operator:** a principal's master key is unwrapped into process memory, and there is no access-pattern padding. Half of what closes this is already shipped — `MANTLE_KEK_PROVIDER=kms` or `vault` keeps the key-encryption key non-exportable, so the wrapped keys can travel while the KEK never leaves its boundary (§55). What remains is threshold custody of the master key itself, and padding reads to a fixed access profile.
 - **Full compromise of a principal's master key → all of that principal's content.** The key hierarchy is KEK → per-principal master key → HKDF-derived subkeys per purpose, including per-`(collection, cluster)` cell keys that are never persisted. It is not per-artifact, and there is no threshold split on the master key: the store names a Shamir backend as future work and implements none. A Shamir split-and-combine oracle does exist, in Origin, over its own secret store — it is not wired to the store's master keys.
 - **Bearer-token replay inside a token's validity window**, and a stolen refresh token for its full 30 days, since refresh tokens are stateless and not revocable (§52). Closed by requiring proof-of-possession — DPoP or mTLS binding — on every token rather than on internal calls only, and by making refresh revocable.
@@ -1232,13 +1232,13 @@ The platform runs anywhere the operator puts it: on-prem bare metal, sovereign c
 
 | | |
 |---|---|
-| **The universal artifact model** | One lattice — SQLite plus encrypted content-addressed filesystem, zero external database processes. One generic operation route, `op/{op_name}`, served by the gateway over the type's own `operations` block (§24). Mantle holds the storage, the encryption, the platform encryption key and the pluggable KEK, the anchors, and the event bus. |
+| **The universal artifact model** | One lattice, sharded: each node is a shard, in-process, with no external database to provision. One generic operation route, `op/{op_name}`, served by the gateway over the type's own `operations` block (§24). Mantle holds the storage, the encryption, the platform encryption key and the pluggable KEK, the anchors, and the event bus. |
 | **Access = CRUDEASIO grants, end to end** | The light-cone is the one decision. Ownership is grant-derived; `created_by` grants nothing. Reachability computes the recipient set and a standard key-sharing scheme distributes the group key to that set; keys are never derived from traversal, which is what makes revocation one record edit with no re-encryption. |
 | **Identity, credentials, transport-bound auth** | Mandatory audience claim; per-key transport binding; mutual per-service tokens verified against the inline manifest JWKS. Verification runs through `prism.trust`; Origin is reached over HTTP for issuance and is imported by nothing. |
 | **Encrypted lexical search** | Blind tokens under an owner-scoped key; posting lists and manifests encrypted and slot-bound; the storage layer holds ciphertext and never words. Recall answers membership and query coverage; ranking is a separate module that orders by measured reach where the seams are bound and by coverage where they are not (§24). |
 | **MCP both directions** | Server and client; personas, external servers, and desktop relay behind one invocation shape. |
 | **The instrument** | One aperture; the decay law single-sourced; certified intervals; per-screen decay measured live on real conversations. |
-| **The adaptive cut** | `K_signal` plus relative gap, model-free, no embedding. |
+| **The adaptive cut** | `K_signal` plus relative gap, with no trained weight and no embedding. |
 | **Grounded answering** | Every answer carries at least one citation resolving to a real artifact at record granularity; relations come from the edge graph; nothing is asserted that was not measured; the null is empty; no trained model in the shipped answer path (A1–A4). Trained baselines used for comparative validation live outside the product tree and outside the answer path. |
 | **The signal protocol, end to end** | One signed signal; the mass switch, whose cut is a declared input (§113 item 9); delivery, addressing, and the resolver; the ground-plane return with provenance correlation. |
 | **Absorb-and-propagate** | `absorb_transmit` and the frame codec are wired into the live path — activation, consolidation, the crystal, sage's reach provider and the reading junction all call them. What is not is the *streaming* aperture and multi-hop over a live carrier (§110); today a text fallback runs beside it, removed by originating the frame at a facet's `entry` (§113 item 6). |

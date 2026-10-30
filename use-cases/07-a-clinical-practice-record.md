@@ -20,22 +20,21 @@ record and nobody else's. Every read should be on record.
 ## What it uses today
 
 Collections, grants, invitations (a link the clinic sends, claimed once), per-principal encryption,
-the access log, read in the app from a card's History, where each reader is named by the name the
-clinic gave their invitation. A single card can be shared on its own: the nurse holds the care plan
+the access log, read in the app from an artifact's History, where each reader is named by the name the
+clinic gave their invitation. A single artifact can be shared on its own: the nurse holds the care plan
 and nothing else in the record.
 
 ## To build
 
-- **Context encryption** beyond the title (sealed with the content) — the other `context` fields encrypted at rest.
 - An import from standard health-record formats.
 - An install on the clinic's own hardware (roadmap gate G5).
 
 ## Checked by
 
 `usecase_07_a_clinical_practice_record.py`: a clinic keeps two patients' records and a Billing
-collection whose cards are linked into each record. A physician, a nurse, billing and a patient each
+collection whose artifacts are linked into each record. A physician, a nurse, billing and a patient each
 join by an invitation link: the physician to both records, the nurse to one care plan, billing to
 Billing, the patient to their own record. Each reads their part and nothing else, by id, by listing
 and by search; the patient cannot change their record; every read and every refused attempt is on
-the card's access log, which only the clinic reads, and which names each reader by the name the
+the artifact's access log, which only the clinic reads, and which names each reader by the name the
 clinic gave their invitation.

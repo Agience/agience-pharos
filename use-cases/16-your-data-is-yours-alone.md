@@ -13,20 +13,19 @@ same platform — and not the platform's operator — should be able to read the
 
 - Every artifact is reached through a grant. Without one, every surface answers as if it did not
   exist: by id, in a container's listing, in search, through operations, over MCP.
-- Content is encrypted at rest under a per-principal key, and search runs over a blind-token index
-  the store cannot read (`design/architecture.md` §24).
+- Content and every field of it are sealed at rest under a per-principal key, and search runs over a
+  blind-token index the store cannot read. The store reads only structure: identifiers, types,
+  timestamps, and the grant edges it walks to decide who is issued a key (`design/architecture.md` §24).
 - Sharing is a grant to a named person, at the permissions given. Revoking it removes the access at
   once, search included.
 
 ## What it uses today
 
-Grants, per-principal content encryption (the title included: it is part of the content), the
-blind-token search index, recall.
+Grants, per-principal sealing of the content and its title, the blind-token search index,
+recall.
 
 ## To build
 
-- **Context encryption** beyond the title: descriptions, tags and the other `context` fields are
-  plaintext at rest, protected by grants only (§24, residual risk in §56).
 - An install on the team's own hardware that a stranger can complete (roadmap gate G5), for teams
   that cannot use any shared node.
 

@@ -380,20 +380,20 @@ transport           the group element: grant-delta (strong) | rotation ref (em) 
 
 ## 10. Maturity map — what is running, what is being formalized
 
-> ⬢ Running today · ◧ In progress · ◇ Designed (in build)
+> **Running**: serving today. **In progress**: partly built. **Designed**: specified, in build.
 
 | Piece | Status | Reality |
 |---|---|---|
-| Vertices = artifacts, edges with `propagate` masks | **⬢ Running** | The Mantle edge model already is this. |
-| WHO+WHEN always-on invariants | **⬢ Running** | `created_by`/`created_time` on every write. |
-| Strong-force confinement (grants, light cone, 404-not-403) | **⬢ Running** | The access model is built. |
-| WHERE gauge = AnchorSet (model-agnostic, angle-invariant) | **⬢ Running** | The gauge-fixing frame exists and coordinatizes search. |
-| Entropy floor / mass-gap read (`connected_decay_rate`) | **⬢ Running** | The instrument runs; it is the same code that read U2. |
-| RP intensivity → one-cut Collection certificate | **◧ In progress** | Proven for the lattice; the DB-scaling wrapper is to build. |
-| Dark matter = valence-2 + conversion-on-access | **◇ Designed** | The lazy 2→5 materialization path is the main new build. |
-| The five forces as *typed* edge kinds | **◇ Designed** | Edges exist; typing them WHO/WHEN/WHERE/WHAT/HOW is the formalization. |
-| The gap read on Collection membership, feeding mass / Anchored reasoning | **◇ Designed** | Collection membership is stored as edges; reading `m_hi` on a Collection's membership and feeding it into mass is the new build. |
-| `op/{name}` as the typed force-interaction vertex | **◧ In progress** | The dispatcher exists; the force-typing is the formalization. |
+| Vertices = artifacts, edges with `propagate` masks | **Running** | The Mantle edge model already is this. |
+| WHO+WHEN always-on invariants | **Running** | `created_by`/`created_time` on every write. |
+| Strong-force confinement (grants, light cone, 404-not-403) | **Running** | The access model is built. |
+| WHERE gauge = AnchorSet (model-agnostic, angle-invariant) | **Running** | The gauge-fixing frame exists and coordinatizes search. |
+| Entropy floor / mass-gap read (`connected_decay_rate`) | **Running** | The instrument runs; it is the same code that read U2. |
+| RP intensivity → one-cut Collection certificate | **In progress** | Proven for the lattice; the DB-scaling wrapper is to build. |
+| Dark matter = valence-2 + conversion-on-access | **Designed** | The lazy 2→5 materialization path is the main new build. |
+| The five forces as *typed* edge kinds | **Designed** | Edges exist; typing them WHO/WHEN/WHERE/WHAT/HOW is the formalization. |
+| The gap read on Collection membership, feeding mass / Anchored reasoning | **Designed** | Collection membership is stored as edges; reading `m_hi` on a Collection's membership and feeding it into mass is the new build. |
+| `op/{name}` as the typed force-interaction vertex | **In progress** | The dispatcher exists; the force-typing is the formalization. |
 
 **The build, in one line:** the field (vertices, edges, the strong/gravity/EM sectors, the instrument) is already
 running inside Mantle and Entroptics; what this design *formalizes* is (a) typing the edges as the five forces, (b)

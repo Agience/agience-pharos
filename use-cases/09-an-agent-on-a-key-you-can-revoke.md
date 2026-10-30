@@ -12,22 +12,22 @@ where she can read it, and she can cut it off in one step.
 ## How the platform does it
 
 - Dana keeps an **operations log**: a collection.
-- From a **Key card** she issues a key that reaches that collection, read-only or read-write, and
+- From a **Key artifact** she issues a key that reaches that collection, read-only or read-write, and
   nothing else. A key is a grant: its permissions are everything it can do (`POST /grants/keys`).
   The secret is shown once, by the app, never to the card's view.
 - The agent is any MCP client. It holds only the key and speaks to the store's MCP endpoint
   (`/mcp`): it records what it did as artifacts in the log.
 - What the agent writes belongs to Dana and names the key that wrote it.
-- Dana revokes the key from the same card. The agent is refused from that moment; the record stays.
+- Dana revokes the key from the same artifact. The agent is refused from that moment; the record stays.
 
 ## What it uses today
 
-Collections, grant keys, the Key card (Seraph's view in the app), the store's MCP tools
+Collections, grant keys, the Key artifact (Seraph's view in the app), the store's MCP tools
 (`create_artifact`, `get_children`, `recall`), revocation. For the agent's routine checks: a workflow
-(Transform cards, run by Lumen) on a Timer card the owner arms, which runs on a key over the
+(Transform artifacts, run by Lumen) on a Timer artifact the owner arms, which runs on a key over the
 workspace and records each run in the log; a run that fails waits in Dana's Inbox as an item, and
 approving it runs the routine again, as her. An agent may also be an MCP server Dana adds herself;
-the platform reaches it through Iris and its egress guard. A card's History shows Dana who reached
+the platform reaches it through Iris and its egress guard. An artifact's History shows Dana who reached
 it — her, a key, a persona acting for her — and what was refused.
 
 ## To build
@@ -38,12 +38,12 @@ it — her, a key, a persona acting for her — and what was refused.
 
 ## Checked by
 
-`usecase_09_an_agent_works_on_a_key_you_can_revoke.py`: the owner issues the key from the Key card in
+`usecase_09_an_agent_works_on_a_key_you_can_revoke.py`: the owner issues the key from the Key artifact in
 the app; an MCP client holding only the key records a deployment into the log, is refused anywhere
-else, and is refused entirely once the owner revokes the key from the card; the card it was
+else, and is refused entirely once the owner revokes the key from the artifact; the artifact it was
 refused shows that refusal, by the key, in its History. A workflow runs every
 minute on a Timer the owner arms from its card, recording each run in the log, until the owner
 disarms it and the timer's key is revoked. A routine whose step fails is raised into the owner's
 Inbox; the owner fixes the step and approves the item from its card, and the routine runs again
-as the owner and the item is resolved with what it returned. A server card pointing at the node's own address is
-refused, and a server card is reached only by those who can read it.
+as the owner and the item is resolved with what it returned. A server artifact pointing at the node's own address is
+refused, and a server artifact is reached only by those who can read it.

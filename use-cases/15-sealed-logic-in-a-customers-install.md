@@ -25,7 +25,6 @@ a dependency-severable install.
 ## To build
 
 - Sealed execution: operator logic the host runs but cannot read.
-- **Context encryption**.
 - An install a stranger completes on their own hardware (roadmap gate G5).
 
 ## Checked by

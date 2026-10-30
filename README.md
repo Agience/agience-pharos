@@ -6,8 +6,8 @@
 
 **The lighthouse — Agience's documentation, and the system's knowledge of itself.**
 
-Agience is a model-free intelligence platform: a self-compressing knowledge universe built on one
-store, where every capability is a shareable, signed, content-addressed artifact. Signals cross a
+Agience is an intelligence platform that is not built on a model: a self-compressing knowledge
+universe built on one store, where every capability is a shareable, signed, content-addressed artifact. Signals cross a
 boundary, condense into typed content, invoke instruments, and every exchange of energy is measured.
 The same machinery runs in a browser tab and on a corpus node; the difference is mass, not kind.
 
@@ -59,8 +59,8 @@ This repository is the public set. It ships the narrative and the reader's overv
 course, the live capability notes, the design canon, the papers and the physics lineage, and the
 forward direction.
 
-Three kinds of material are deliberately absent: the in-progress design records, the measured-state and
-claims registers that govern what may be said outward, and the pre-GENESIS product history. They are
+Three kinds of material are deliberately absent: the in-progress design records, the internal
+status and gap tracking, and the pre-GENESIS product history. They are
 working trees, they are not published, and nothing here links into them.
 
 Documents whose evidence is code that is not published are held back with that code rather than shipped

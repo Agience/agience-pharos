@@ -5,6 +5,13 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2026.10.16] - 2026-10-30
+
+### Changed
+
+- `start/overview.md`, `design/architecture.md`, `design/spine.md` and `vision/information-model.md` now describe every content field as sealed — the title, description, tags, link names and every other `context` field — and the store as reading only structure: identifiers, types, timestamps and grant edges.
+- `start/overview.md`, `design/architecture.md` and `vision/information-model.md` now describe Mantle as a distributed system of shards: each node is a shard of one lattice, in-process, with no external database to provision.
+
 ## [2026.10.15] - 2026-10-29
 
 ### Changed

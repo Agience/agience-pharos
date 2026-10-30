@@ -228,7 +228,7 @@ finds five, then five is what it will add to every real measurement you ever mak
 <p>The test is cheap, it needs no ground truth, and it is the only way to catch a null that is
 simply set too low. On the next slide it is run on a real object: the internal transport of a small
 language model, the same kind of thing unit D1 read.</p>
-<p class="note">This check tells you the level is honest. Whether the null asks the right question
+<p class="note">This check tells you the level is calibrated. Whether the null asks the right question
 is a separate matter: a perfectly calibrated null can still destroy the wrong thing.</p>
 <p class="note cool">The level has a name in the instrument: the read is <code>noise_floor</code>,
 and the count of what stands above it is <code>basis_dim</code> &mdash; how many directions the
@@ -275,7 +275,7 @@ the most respectable way to get a wrong answer.</p>
 <h2>Nulls that keep the shape</h2>
 <p>The fix follows from the rule. The question is whether the magnitudes line up into a pattern, so
 that alignment is what a null destroys. How big the entries are and where the weight sits &mdash;
-the object's magnitude profile &mdash; is what an honest null holds fixed.</p>
+the object's magnitude profile &mdash; is what a fair null holds fixed.</p>
 <p>So three nulls, each holding the profile fixed and destroying only the alignment:</p>
 <table class="tab"><thead><tr><th>null</th><th>keeps</th><th>destroys</th></tr></thead><tbody>
 <tr><td>sign flip</td><td>every entry's size <em>exactly</em> &mdash; every row total, every column total, the lot</td><td>the signs</td></tr>
@@ -339,7 +339,7 @@ destroys more manufactures the very bulk the floor is measured from.</li>
 <li><strong>Run the null against itself.</strong> Cheap, needs no ground truth, and catches the
 whole class of floors that are simply too low.</li>
 <li><strong>A null can be calibrated and still be the wrong question.</strong> The check tells you
-the level is honest, not that you asked the right thing.</li>
+the level is calibrated, not that you asked the right thing.</li>
 </ul>
 <p class="warn">Which reframes a result in unit D2. A method compared against plain similarity
 lost badly &mdash; because the two sides had been given different stopping rules. That was not a bad

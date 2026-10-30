@@ -14,9 +14,9 @@ document, are the evidence.
 
 Neurosymbolic architectures usually bolt a symbolic layer onto a trained model, and the trained
 model stays in the answer path. Agience is the other arrangement: a **typed substrate where every
-artifact carries its own identity and provenance**, a **reasoning surface that structurally cannot
-call a model**, and a **model-free instrument** that measures what is resolvable in the signal
-between them. No trained weights appear in the answer path at all.
+artifact carries its own identity and provenance**, a **reasoning surface that does not call a
+model**, and an **instrument with nothing trained in it** that measures what is resolvable in the
+signal between them. Nothing in the answer path depends on a model.
 
 Whether that is a *good* way to build such a system is open. That it is *a* way, and that it runs,
 is checkable today.
@@ -51,7 +51,7 @@ metadata attached.
 **A reasoning surface that refuses models — Lumen.** Grounded operators over that graph, with the
 model path removed as above.
 
-**A model-free reader — Entroptics.** It reads any 2-D signal as a finite optical aperture whose
+**A reader with nothing trained in it — Entroptics.** It reads any 2-D signal as a finite optical aperture whose
 resolution is fixed by the signal's own entropy, returning a rank, a noise floor and a
 reconstruction with nothing fitted, trained or tuned per dataset. It supplies the measurement the
 operators reason over, and it has been validated on four unrelated substrates — radio astronomy,

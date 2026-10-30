@@ -109,7 +109,7 @@ Note: Mantle's Origin client is down to one call, `get_operator_id`, and it degr
 platform went further than the design asked: rather than defaulting to local, it became
 local-only.
 
-- **Grants** live in Mantle's own store — the SQLite lattice reached through `db.backend` — and
+- **Grants** live in Mantle's own store — the lattice, reached on each shard through `db.backend` — and
   Mantle enforces authorization itself, in `services/dependencies`, with no call to Origin.
   Origin is identity-only. `services/grant_store.py` carries this. There is no `origin` backend
   to select between, so `GRANT_BACKEND` does not exist.

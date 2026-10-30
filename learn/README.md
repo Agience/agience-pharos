@@ -60,11 +60,11 @@ Three disciplines are enforced mechanically rather than by care:
 | B5 | [Telling Things Apart](b5-telling-things-apart.html) | the diffraction limit, measured on records: how many things can be resolved | 5 | 109 |
 | B6 | [The Constant in Front](b6-the-constant-in-front.html) | the shape factor: the number that turns a measured width into a gap | 8 | 94 |
 | B7 | [Only Two Endings](b7-only-two-endings.html) | a decay built of finitely many pieces has two endings, and the third costs infinitely many | 7 | 117 |
-| C1 | [Signal](c1-signal.html) | how words become coordinates with no model | 9 | 49 |
+| C1 | [Signal](c1-signal.html) | how words become coordinates with nothing trained | 9 | 49 |
 | C2 | [A Record That Is a Picture](c2-a-picture.html) | the instrument on a photograph, where a reader can see what the numbers mean | 5 | 59 |
 | C3 | [Two Populations in One Record](c3-two-populations.html) | land and sea floor in one grid, and the control that decides what the difference means | 4 | 25 |
 | C4 | [Observer](c4-observer.html) | why tense is decay | 9 | 38 |
-| C5 | [Generation Without a Model](c5-operators.html) | continuing a sentence with no trained weights anywhere | 7 | 21 |
+| C5 | [Generation Without a Model](c5-operators.html) | continuing a sentence with nothing trained in the path | 7 | 21 |
 | D1 | [The Lens Inside a Language Model](d1-jacobian-lens.html) | a language model's transport, read as geometry | 8 | 45 |
 | D5 | [A Claim About the World](d5-mass-gap.html) | checking a claim about physical reality, and what checking found | 9 | 88 |
 | D5a | [The Entropy Floor](d5a-entropy-floor.html) | the counting that fixes kappa_0, carried out in front of the reader | 10 | 36 |

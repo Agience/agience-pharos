@@ -29,7 +29,7 @@ dynamics are linear. The single tabulated constant is a table of the $\mathrm{TW
 | seeded ground truth | operator recovery to **4.49e-16**; planted-mode accuracy **1.000** at snr 1–2 across four shapes; $K=0$ specificity **0.950** |
 | lattice gauge configurations | 231 ensembles, **11,756 configurations, 11.13 GB**. U(1) steps, SU(2)/SU(3) flat; transition certified at $\beta_c = 1.011$, confined ceiling below the Coulomb floor at **95%** |
 | dynamical systems | exact identification at **800–5000× fewer parameters** than a trained network, better forecast |
-| a trained model's boundary | retrieval cut F1 **0.630 vs 0.291**; per-token attribution **87.33%** against 33.3% chance; a 41-point gap at a 20% budget from projection alone |
+| a trained model's boundary | how many to keep, F1 **1.000 vs 0.806** at four facets; per-token attribution **87.33%** against 33.3% chance; a 41-point gap at a 20% budget from projection alone |
 
 The governing law those boundary results establish: **a subspace read beats a summary statistic
 exactly when the deciding distribution is multi-modal, and the margin grows with the number of
@@ -481,10 +481,11 @@ Determinism dominates compact domains — arithmetic, physics, formal math; open
 
 | read | result |
 |---|---|
-| retrieval cut, BeIR scifact | F1 **0.630 vs 0.291** fixed top-5 — $2.2\times$ |
-| multi-modal drift | **+0.17 AUROC** at 5 topics |
-| foreign-content anomaly | AUROC **0.994 vs 0.971**; real attacks **0.90 vs 0.72** |
-| unified pipeline, HotpotQA | baseline answer F1 at **49% of the context tokens** |
+| how many to keep, relevance over R facets | F1 **1.000 vs 0.806** for a cosine cut at R = 4, and **1.000 vs 0.000** at R = 5–6; the same stopping rule on both sides |
+| foreign content, real attacks (`deepset/prompt-injections` in wikitext-103) | AUROC **0.970 vs 0.901** for a centroid at 2 sources and **0.907 vs 0.733** at 5, where a 5-nearest-neighbour detector leads at 0.927 |
+| whether a continuation belongs | AUROC **0.872 vs 0.717** for a centroid at 5 sources |
+| unimodal retrieval, four BEIR corpora | a tie: every interval contains zero, as the law below predicts |
+| unified pipeline, HotpotQA | the derived count spends **36%** of a fixed top-5's tokens, at −0.133 F1 with a 7B model |
 | per-token multi-source attribution | **87.33%** argmax accuracy against 33.3% chance — $2.62\times$ |
 
 **The governing law:** a subspace read beats a summary statistic exactly when the deciding distribution is multi-modal, and the margin grows with the number of modes.
@@ -492,9 +493,13 @@ Determinism dominates compact domains — arithmetic, physics, formal math; open
 | facets | cosine F1 | subspace F1 | margin |
 |---|---|---|---|
 | 1 | 1.000 | 1.000 | 0.000 |
-| 2 | 0.999 | 1.000 | +0.001 |
-| 3 | 0.839 | 0.981 | **+0.143** |
-| 4 | 0.755 | 0.938 | **+0.182** |
+| 2 | 1.000 | 1.000 | 0.000 |
+| 3 | 1.000 | 1.000 | 0.000 |
+| 4 | 0.806 | 1.000 | **+0.194** |
+| 5 | 0.000 | 1.000 | **+1.000** |
+| 6 | 0.000 | 1.000 | **+1.000** |
+
+Figures from `entroptics-context` (`research/benchmarks/`: `bench_facets.py`, `bench_injection.py`, `bench_drift.py`, `bench_beir.py`, `bench_hotpot_e2e.py`); 60 items with 12 relevant over 40 draws for the facets, bge-small-en-v1.5 and 150 trials per row for the injection and drift reads.
 
 **The wins are at the boundary — choosing what enters and scoring what leaves.** A trained network's interior is gradient-owned and compensates for any geometric substitution made there: attention temperature converges to $\sqrt{d}$; quantization bit-allocation is far worse than uniform; early-exit exits at layer 1; KV-cache compression inside a trained network loses to random, notwithstanding the 0.999 recall the same read achieves on §16's synthetic KV; fine-tune token weighting is indistinguishable from uniform; embedding migration is won by a trivial linear map 84% to 18%.
 

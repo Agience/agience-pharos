@@ -3,7 +3,7 @@
 **Agience is the substrate on which a finite observer's knowledge carries its own trust** — a lens
 that measures any signal at its own resolution, a memory that proves where everything came from, and
 a seat no one else controls. Every capability is a shareable, signed, content-addressed artifact.
-Nothing is a trained weight. Meaning is computed by measurement, and every exchange of energy is
+Nothing in the platform depends on a model. Meaning is computed by measurement, and every exchange of energy is
 measured rather than set.
 
 No observer sees the whole. Everything anyone knows arrives through a lens — the senses, an

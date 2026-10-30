@@ -18,10 +18,10 @@ evidence supports which version — without anyone's original being overwritten.
 
 ## What it uses today
 
-Collections, grants, provenance pointers, the access log (a card's History in the app); Lumen's
+Collections, grants, provenance pointers, the access log (an artifact's History in the app); Lumen's
 `reconcile` operator, which compares the facts each account states as `Label: value` lines (an
 incident form's shape) and writes the reconciliation beside them, with each difference raised as
-an Inbox item; a workflow card built from the "Reconcile accounts" recipe in the app; the Inbox.
+an Inbox item; a workflow artifact built from the "Reconcile accounts" recipe in the app; the Inbox.
 An account's `evidence` (artifact ids in its context) is carried to each version it supports.
 
 ## To build

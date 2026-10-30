@@ -18,10 +18,10 @@ alarm.
 
 **Mantle** is the memory. A store that holds content under the hash of its own bytes, keeps every
 version in its own ordered time, and encrypts what it holds so it cannot open it without a grant
-that reaches it — ◧ *what it keeps in the clear is the rest of the record — name, description, tags and other
-context fields — which is grant-controlled; the title is sealed with the content; the search index itself holds no plaintext terms.* Authorization is reachability
-across the graph, so revoking access is a single edit — ◧ *effective within the authorisation
-cache's window, 30 seconds by default.*
+that reaches it. Content and every field of it are sealed per principal; search runs on blind
+tokens; the store reads only structure: identifiers, types, timestamps, and the grant edges it walks
+to decide who is issued a key. Authorization is reachability across the graph, so revoking access is
+a single edit, effective within the authorisation cache's window, 30 seconds by default.
 
 **Agience** is the observer: the workflow engine, where an **ember** grounds a bundle on a prism and
 runs the loop that turns signals into typed content, invokes instruments, and files what it learned
@@ -215,8 +215,9 @@ flowchart LR
 **On the substrate side, three properties are worth attention.** Content and
 queries are *both* ciphertext on the encrypted arm — ranked search runs over blind tokens, so the
 storage layer performs the search without ever reading it, and one encrypted posting list serves both
-the keyword and the semantic arm. ◧ *Both arms are unconditional — every artifact is indexed this way, with no feature flag and
-no plaintext fallback: a node missing the prerequisites returns 503 rather than degrading.* Authorization is graph reachability over nine permissions (**C**reate, **R**ead,
+the keyword and the semantic arm. Both arms are unconditional: every artifact is indexed this way,
+with no feature flag and no unsealed fallback, and a node missing the prerequisites returns 503
+rather than degrading. Authorization is graph reachability over nine permissions (**C**reate, **R**ead,
 **U**pdate, **D**elete, **E**vict, **A**dd, **S**hare, **I**nvoke, **O**wner), and confidentiality is
 a *separate* key scheme whose recipients that reachability computes — keys are never derived from
 traversal, which is exactly why **revoking is one edge edit with nothing re-encrypted**.
@@ -263,12 +264,12 @@ The same instrument, with nothing changed between one of these and the next:
 
 ### The same guarantee, measured in four unrelated fields
 
-*Every figure here is recorded with its method, its date and its qualifier, and the qualifiers
-travel with the numbers — here and on every other surface.*
+*Every figure here is recorded with its method and its conditions, and the conditions travel with
+the numbers — here and on every other surface.*
 
 | field | what nobody chose | measured |
 |---|---|---|
-| **Retrieval**, with no trained weight in the answer path | no embeddings, no similarity cutoff | **2–8×** a lexical baseline where the question shares no words with its answer — *what-is* nouns **59/60 vs 7/60**, modifiers **41/60 vs 17/60**. ◧ *And where the query IS the answer's text, BM25 wins and should: 83/90 vs 90/90* |
+| **Retrieval**, with no trained weight in the answer path | no embeddings, no similarity cutoff | **2–8×** a lexical baseline where the question shares no words with its answer — *what-is* nouns **59/60 vs 7/60**, modifiers **41/60 vs 17/60**. Where the query is the answer's own text, BM25 wins and should: 83/90 vs 90/90 |
 | **The baseline itself** | — | reproduces published **BEIR** within **0.016**; the geometry reproduces published **Jiang–Conrath** on SimLex-999 at **ρ = 0.5935**. *The comparison is against the field's own yardstick, not a private one* |
 | **Retrieval-augmented generation and the KV cache** | how many to keep is a measurement, not a hyperparameter | cut F1 **1.000** against cosine's **0.806** — an edge of **+0.194**, 95% CI [+0.099, +0.301]. At the cache, **94% of the oracle's attention mass at 10% kept**, scored in 8 dimensions instead of 64 |
 | **Pharmaceutical measurement** | head-to-head against the reductions the industry actually uses, each with a known ground truth | **three wins, one recorded negative.** *The loss is published* |
@@ -340,7 +341,7 @@ flowchart TB
   end
   subgraph L2["<b>L2 · THE STORE</b> &nbsp;—&nbsp; Apache-2.0 &nbsp;·&nbsp; <b>publishes today</b>"]
     direction LR
-    MAN["<b>mantle</b> — the lattice<br/>SQLite + encrypted content-addressed store<br/><b>zero external database processes</b><br/>+ <b>the cut</b>, the reduced instrument"]
+    MAN["<b>mantle</b> — the lattice<br/>each node a shard, in-process<br/><b>no external database to provision</b><br/>peers linked by signed sync<br/>+ <b>the cut</b>, the reduced instrument"]
     CRY["<b>crystal</b> — the junction<br/>routing · instrument injected"]
   end
   subgraph L1["<b>L1 · THE CONTRACT</b> &nbsp;—&nbsp; Apache-2.0 &nbsp;·&nbsp; <b>publishes today</b>"]
@@ -584,7 +585,7 @@ Eight units, one instrument, and a handful of words used inside them. Each is on
 |---|---|
 | **Prism** | the environment an observer is grounded on — the hardware and what it can physically do: reach a network, touch a file, drive a sensor, render to a person. It also carries the protocol, implemented for Python, JavaScript and C. Its base install has **zero dependencies** |
 | **Beam** | the signal object, and the aperture that reads it — the measurement of energy at a cut. Streaming, and adaptively forgetting |
-| **Mantle** | the lattice — the store, and the ground. SQLite plus an encrypted content-addressed filesystem |
+| **Mantle** | the lattice — the store, and the ground. A distributed system: each node is a shard, in-process, with no external database to provision, linking to its peers by signed sync |
 | **Crystal** | the junction. Condensation and routing: signal in, typed content out |
 | **Chorus** | the operators, grouped by domain — and the worked examples a developer forks |
 | **Ember** | an observer unit: crystals plus energy. The same machinery at every size |
@@ -642,7 +643,7 @@ something exists.
 And the property that makes revocation cheap: **reachability decides *who qualifies* to hold a key;
 a standard key-sharing scheme then issues it.** Keys are never derived from the traversal itself.
 That separation is the whole reason **revoking access is a single edge edit with nothing
-re-encrypted**, ◧ *effective within the authorisation cache's window — 30 seconds by default* — a design that derived keys from the graph would have to re-key everyone affected
+re-encrypted**, effective within the authorisation cache's window, 30 seconds by default. A design that derived keys from the graph would have to re-key everyone affected
 every time anyone lost access.
 
 ### What about secrets specifically?
@@ -657,8 +658,9 @@ never crosses the network at all.
 
 ### What is encrypted?
 
-**Content is ciphertext.** Every artifact's body is encrypted at rest, under keys the storage layer
-does not hold.
+**Content is ciphertext, and so is every field of it.** Every artifact's body, title, description,
+tags and other `context` fields are sealed per principal at rest, under keys the storage layer does
+not hold.
 
 **The index holds no plaintext terms.** Search terms are one-way-transformed before they are
 stored, each posting list is encrypted under a key derived from that transformed term, and ranking
@@ -666,11 +668,10 @@ happens in memory after decryption, in the process that already holds the grant.
 indexed this way: the path is unconditional, and the store has no plaintext search index to fall
 back to — its FTS5 module was removed as a privacy decision.
 
-**What remains in the clear is the record, not the index.** An artifact's name, description and `context`
-fields other than the title — tags, filename, custom keys — are stored readable, in the record and
-in the change feed, and governed by grants rather than by encryption; so are link names, invite
-addresses and the identifiers that give the graph its structure. That is the exact scope of
-"encrypted by default": the content, the title and the index.
+**The store reads only structure.** Content and every field of it are sealed per principal —
+name, description, tags, filename, custom keys, link names and invite addresses included; they are sealed in the
+record and kept out of the change feed. Search runs on blind tokens. What the store reads is structure:
+identifiers, types, timestamps, and the grant edges it walks to decide who is issued a key.
 
 **Visibility is bounded to a locality.** The index is partitioned into encrypted cells, and material
 routes to a cell by **similarity** rather than by name — so the store is organised by meaning rather
@@ -782,7 +783,7 @@ to be read and forked rather than imported.
 
 | | |
 |---|---|
-| **aria** | presentation — responses, cards, views |
+| **aria** | presentation — responses, artifacts, views |
 | **astra** | ingestion — files, extraction, live streams |
 | **iris** | networking — routing, channels, webhooks, relay |
 | **lumen** | workflows, timers and grounded evidence — runs a person's workflows and scheduled timers, and answers a question with cited extracts from what they may read |

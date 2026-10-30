@@ -1,7 +1,7 @@
 # The Information Universe: the whole framework, start to finish
 
 > A working synthesis of the extraction-axiom program. Written to be *studied*: plain
-> language first, precise statement second, and an honest status tag on every claim so we never
+> language first, precise statement second, and a status tag on every claim so we never
 > confuse what we measured with what we are betting on. This is the map we will use to hunt the
 > one missing idea.
 >
@@ -9,7 +9,7 @@
 
 ---
 
-## 0. How to read this (the honesty key)
+## 0. How to read this (the claim key)
 
 Every claim carries one of these tags. The whole point is to keep them separate.
 
@@ -312,7 +312,7 @@ constant `Λ`, here, is *not* the energy of empty space; it is the **current siz
 (`Λ⁻¹ ≈ horizon area in Planck pixels`). But be precise: this is a **reframing, not a derivation of the
 magnitude.** The number 10⁻¹²² still rides on *today's* horizon, which is an input, not an output. The
 public-physics attempts to actually *derive* it from the horizon are the Cohen-Kaplan-Nelson bound
-and holographic dark energy `ρ ∝ M_Pl²/L²`, and both **fail the honesty gate**: *which* IR length
+and holographic dark energy `ρ ∝ M_Pl²/L²`, and both **fail the no-free-knobs rule**: *which* IR length
 `L` you pick is a knob chosen to return the observed value, and they quietly swap a
 subtraction-dependent bare quantity for the renormalized constant. So we **dissolve the
 substance**; we do **not** yet **derive the number**.

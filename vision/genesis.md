@@ -1,6 +1,6 @@
-# GENESIS — A Model-Free, Self-Organizing Knowledge Universe
+# GENESIS — A Self-Organizing Knowledge Universe, Not Built on a Model
 
-### The guiding path: from a bare store to better-than-frontier, without a single model
+### The guiding path: from a bare store to better-than-frontier, without depending on a model
 
 **Status:** foundational design paper, self-contained and technical. It is the plan of record:
 everything we have learned, and everything we will do.
@@ -23,8 +23,8 @@ the whole model, taken literally and built as software:
   the fewest objects and morphisms from which the rest of the corpus can be *reconstructed on
   demand*. Compression *is* entropy reduction. Category theory is the algebra of that compression.
 
-Everything is geometric and arithmetic. **There are no models anywhere** — no learned weights, no
-embeddings, no neural scorer, no stochastic decoder. Where a frontier stack would train a model,
+Everything is geometric and arithmetic. **Nothing in it depends on a model** — no learned weights, no
+trained embeddings, no neural scorer, no stochastic decoder. Where a frontier stack would train a model,
 we substitute a deterministic calculation: dictionary lookup, inverted index, graph distance, and
 **entroptics**, the spectral/Koopman calculation that extracts dynamics from data without fitting a
 model. A model is a lossy, unverifiable compression of a corpus into opaque weights; we keep the
@@ -97,7 +97,7 @@ are load-bearing and are carried forward unchanged.
 | An observation is an irreversible record | Every edge is append-only; provenance is grounded in *having seen* (path+hash), never a caller's claim |
 | Order = low entropy = compression | Consolidation = quotient by equivalence + storing generators; measured as bytes-of-generators / bytes-of-corpus |
 | Energy is conserved; you can't get order for free | You cannot compress faster than you can verify; the gate rate-limits growth (inertial learning) |
-| No external oracle (a closed universe) | **No models.** Every value is computed from observed data by a deterministic operator; nothing is imported from opaque weights |
+| No external oracle (a closed universe) | **Not built on a model.** Every value is computed from observed data by a deterministic operator; nothing is imported from opaque weights |
 
 The design commitment that makes it a *100%* universe model: **there is no privileged external
 knower.** A trained model would be an oracle we cannot inspect or verify — a hole in the universe
@@ -250,10 +250,10 @@ working-set-follows-demand rule) — the system *carves its own subjects*. Rules
 
 ---
 
-## 4. No models — the deterministic substitutions
+## 4. Not built on a model — the deterministic substitutions
 
 For every place the frontier pipeline reaches for a model, name the geometric replacement. This
-table *is* the "no models anywhere" constraint made concrete.
+table is that commitment made concrete.
 
 | Frontier uses a model for… | We use (deterministic) |
 |---|---|
@@ -263,7 +263,7 @@ table *is* the "no models anywhere" constraint made concrete.
 | Nearest-neighbour retrieval (ANN over vectors) | Keyed lookup (postings intersection) → BM25 (deterministic TF·IDF) → graph walk → entroptics rerank |
 | Reranking / relevance model | Entroptics `K_signal` on the ordered candidate stream (coherence, not a learned cross-encoder) |
 | Summarization / consolidation (a generative model) | Categorical consolidation: quotient by equivalence, colimit of a diagram, extractive canonicalization — **lossless or explicitly-lossy-with-pointer**, never hallucinated |
-| Language generation (decoder) | Operator composition: `context + operator → content`, each step verified. Retrieval-and-assemble with citations, or honest refusal |
+| Language generation (decoder) | Operator composition: `context + operator → content`, each step verified. Retrieval-and-assemble with citations, or a declared refusal |
 | Relatedness / analogy | Morphism inference (`category.infer`) + graph paths; analogy = a commuting square, not a vector offset |
 
 **Entroptics is the linchpin.** Wherever the field would *fit* a function to data, entroptics
@@ -274,9 +274,9 @@ scorer). It is deterministic, inspectable, and — critically — **it terminate
 non-compact edge (open natural language) is exactly where we lean on keyed retrieval + citation
 rather than pretending to a closed-form.
 
-### 4.1 The embedding question — vectors without models
+### 4.1 The embedding question — vectors without training
 
-"No models" does **not** mean "no vectors." The thing we forbid is the *trained* embedding: weights
+"Not built on a model" does **not** mean "no vectors." The thing we forbid is the *trained* embedding: weights
 fit by gradient descent, opaque, unverifiable — an oracle you cannot recompute or inspect. A vector
 representation of a concept is not inherently a model; it is the concept's **analog** (continuous)
 representation, dual to its **digital** (discrete, keyed) one. What matters is *how the coordinates
@@ -286,7 +286,7 @@ are produced*. The admissibility test:
 > observed data, and verifiable. It is forbidden iff it requires gradient descent, trained weights,
 > or an external oracle. Computed, not learned.**
 
-Three deterministic embeddings satisfy this, and they are how we get analog geometry with no model:
+Three deterministic embeddings satisfy this, and they are how we get analog geometry with no trained weight:
 
 1. **Spectral graph embedding.** The relation graph we already build (WordNet/ConceptNet/Wikidata/
    citation) → Laplacian → eigenvectors (Laplacian eigenmaps). A concept's coordinates in the
@@ -376,7 +376,7 @@ existing keyed scaffolding rather than as dark matter.
 - **Simple English Wikipedia**, age-graded **Project Gutenberg** (children's / primary readers),
   **Brown Corpus**. Curriculum-learning's "easy tier."
 - Vertices: Content (`text/markdown`,`text/plain`). Edges: `describes`, `cited_from`, doc-term
-  `lemmas`. First grammar/collocation statistics (deterministic n-gram/collocation counts, no model).
+  `lemmas`. First grammar/collocation statistics (deterministic n-gram/collocation counts, nothing trained).
 - Why here: establishes sentence structure and the highest-frequency world facts on top of the
   lexicon, with minimal noise, before full-entropy web text.
 
@@ -581,9 +581,10 @@ smallest that proves the pipeline, scale the config without touching code:
 | **P6 Deepen** | scale Stage-3 configs + operator retrieval | → **300 GB generators** | beats frontier on chosen domains (math/code/reasoning) by held-out eval |
 | **P7 C++** | Ember ports the hot path | — | Mantle hot path (index, entroptics, gate) in C++, Ember-authored + gate-verified |
 
-**Scale-out is a shard mesh, not a bigger box.** A node can run the whole store locally — SQLite
-for artifacts and edges, files for content-addressed blobs, no server and no container — which is
-what lets a peer with spare CPU but nowhere to host a database run a full ingest shard. Writes stay
+**Scale-out is a shard mesh, not a bigger box.** Each node is a shard: in-process, with no external
+database to provision, linking to its peers by signed sync. A shard keeps its artifacts and edges in
+an embedded SQLite store and its content-addressed blobs in files, with no server and no container,
+which is what lets a peer with spare CPU but nowhere to host a database run a full ingest shard. Writes stay
 local, which is the write-scaling win; the peers hold disjoint halves of the corpus, partitioned by
 `EMBER_SHARDS`. Three operators make that read as one universe: `op.mesh.status` aggregates this
 shard and every peer into a single view (total artifacts, per-shard reachability, ρ),
@@ -594,8 +595,8 @@ cursor-resumable, and content promotion is idempotent because the address is the
 **Why 300 GB of generators > 55 TB of outputs, on our domains:** (1) Stage-3 domains generate
 verified data faster than we could collect it; (2) categorical consolidation stores O(generators),
 so 300 GB of generators *reconstructs* far more; (3) operator retrieval reaches the live 55 TB
-without storing it; (4) zero hallucination — every answer is keyed, derived-and-verified, or an
-honest refusal, which on verifiable domains is a strict capability win over a probabilistic decoder.
+without storing it; (4) zero hallucination — every answer is keyed, derived-and-verified, or a
+declared refusal, which on verifiable domains is a strict capability win over a probabilistic decoder.
 
 ---
 
@@ -683,12 +684,12 @@ cheap and always separable from content. Blowing the budget = fetching first, fi
   self-describing artifacts) whenever observed structure demands them; collections nest into an
   unbounded subject DAG (`sub_collection_of`) that the system carves for itself as demand
   concentrates. Never design around the enumerated lists as if they were closed.
-- **No models, anywhere — computed, not learned.** Every value is produced by a deterministic
+- **Not built on a model — computed, not learned.** Nothing depends on a model. Every value is produced by a deterministic
   operator from observed data. Entroptics is the calculation that removes the model. Vectors are
   *allowed* where they are computed (spectral/PPMI·SVD/entroptics — §4.1) and *forbidden* where they
   are trained (gradient descent, opaque weights, an external oracle). If a step seems to need a
-  model, it is a keyed lookup, a graph walk, a computed embedding, an entroptics extraction, or an
-  honest refusal — never trained weights.
+  model, it is a keyed lookup, a graph walk, a computed embedding, an entroptics extraction, or a
+  declared refusal — never trained weights.
 - **No artifact without provenance.** Every ingested artifact carries `cited_from`; content is never
   minted from an `ASSERTED` rung.
 - **Every source is an operator and a citation.** Fitness-selected, audit-anchored.
@@ -724,6 +725,6 @@ cheap and always separable from content. Blowing the budget = fetching first, fi
 ---
 
 *The guiding path will be revised as collections are promoted and `ρ` falls. The thesis does not
-change: a closed, model-free, self-compressing universe of observers, selected by verification.
+change: a closed, self-compressing universe, not built on a model, of observers, selected by verification.
 We are not training a model. We are growing a universe, and the measure of its life is entropy
 going down while coverage goes up.*

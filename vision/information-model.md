@@ -16,8 +16,8 @@ The model is conceptual and implementation-driving. Where the code has since set
 different name for something described here, this document uses the code's name. What remains
 unbuilt is collected at the end.
 
-The lattice is the store: one SQLite file plus FS-CAS content, opened in-process, with no external
-database process and no backend selector.
+The lattice is the store, and it is a distributed system. Each node is a shard: in-process, with no
+external database to provision, linking to its peers by signed sync. There is no backend selector.
 
 ---
 
@@ -232,10 +232,10 @@ an Inbox item, list my collections, ask a model — sit in a "Platform operators
 are granted to every account one by one, so each can be withheld or metered on its own; which
 operators are the platform's is said by the node (`GET /artifacts/platform-operators`), never by
 what an operator says of itself. The tool a platform operator runs is reached only by someone who
-may invoke that operator, whether called directly on its persona or through any operator card
+may invoke that operator, whether called directly on its persona or through any operator artifact
 naming it, so withholding an operator withholds its tool. Anyone offers an operator the same way:
-a card of their own, bound to their own server or authorizer by a link, shared by their grants;
-running a person's own MCP server needs `invoke` on its card, and reading the card shows only what
+an artifact of their own, bound to their own server or authorizer by a link, shared by their grants;
+running a person's own MCP server needs `invoke` on its artifact, and reading the artifact shows only what
 it offers.
 
 An argument naming an artifact (`"format": "artifact-id"` in the operator's `input_schema`, with
@@ -245,13 +245,13 @@ person running it. Removing the step removes its links, and nothing they named. 
 from the invoke request (`?` when it may be absent) and `@relationship.<name>` from the
 operator's links.
 
-The runner (Lumen's `execute_transform`, reached by invoking a Transform card) runs `workflow`
-(steps, with an optional `retry` block). A card made before steps were operators — `mcp-tool`, a
+The runner (Lumen's `execute_transform`, reached by invoking a Transform artifact) runs `workflow`
+(steps, with an optional `retry` block). An artifact made before steps were operators — `mcp-tool`, a
 `transform-ref`, or steps naming a `transform_id` — still runs, and its builder offers to rebuild
 it as operator steps. `llm` is refused by design: a model is reached through its own tekton,
 where the call is explicit. `webhook` is a declared placeholder.
 
-Every run of a workflow is a Run card (`vnd.agience.run+json`), written into the workflow's own
+Every run of a workflow is a Run artifact (`vnd.agience.run+json`), written into the workflow's own
 Runs collection (`context.runs_to`, made on its first run): when it ran, its status, and each
 step's status, output and error. It is the run's record, open to anyone who can read it, and the
 state a step's `condition` and a `retry` read. A step's inputs can name what an earlier step
@@ -259,7 +259,7 @@ returned: `$.previous` (the step just before), `$.steps.<name>`, and a field ins
 (`$.previous.reconciliation_id`, `$.steps.List.items[0].id`); a path that leads nowhere leaves the
 argument out.
 
-A Timer card (`vnd.agience.timer+json`, Lumen) runs any artifact's operation — usually a workflow's
+A Timer artifact (`vnd.agience.timer+json`, Lumen) runs any artifact's operation — usually a workflow's
 `invoke` — every N minutes, daily at a time, or once. It acts on a grant key its owner issues when
 they arm it, over the timer's workspace and target, where it records runs and raises failures, and
 each operator and linked artifact of the workflow it runs. Each firing, through every step and
@@ -381,7 +381,7 @@ indefinitely unless an age bound is configured.
 
 Layer B is per-tool rather than platform-wide. Derived artifacts carry a `derived_from` block
 naming their sources, and a grounded-answer tool produces a citation receipt giving each cited
-card's sha256, length and title, and reporting the ones it could not resolve.
+artifact's sha256, length and title, and reporting the ones it could not resolve.
 
 The receipt schema for Layer C is unspecified.
 
@@ -410,8 +410,8 @@ the collection's immutable key root, inherited from parent to child rather than 
 `content_ref`, the CAS address of the bytes. A `from_dict` that silently dropped either would
 re-key or re-inline content on the next save.
 
-This is consistent with the current store model: one SQLite lattice plus content-addressed
-filesystem content, with no external database process.
+This is consistent with the store model: each node a shard, in-process, with no external database
+to provision, and its content in a content-addressed filesystem.
 
 ### 5.4 Context as an artifact
 
@@ -458,7 +458,7 @@ A **Person** is a human principal.
 - owns workspaces/collections, or participates via shares
 
 A person's profile is an ordinary artifact (`application/vnd.agience.person+json`) living in a
-platform-managed people directory; members reach only their own card, through its owner grant.
+platform-managed people directory; members reach only their own profile artifact, through its owner grant.
 
 ### 6.3 Agency / Agent
 
@@ -594,7 +594,7 @@ These are credential primitives.
   secrets), stored as a credential artifact (`application/vnd.agience.credential+json`). The value
   IS the artifact's content, so the envelope encrypts it at rest under the origin-root principal
   and the light cone decides who may read it — no second store, no second authorization path. Its
-  `context` stays plaintext and carries only non-secret metadata (provider, kind, label).
+  `context` (provider, kind, label) is sealed with the content, like every other field.
 - **Key**: outbound credential given to a client — a JWT access token, or a raw grant-key token
   prefixed `agk_`. The older `agc_` API keys are retired: a token presenting that prefix is
   refused by name, so a stale key reads as a decommissioned credential rather than a malformed
@@ -674,8 +674,8 @@ record — has no code and no receipt format.
 This model intentionally fits the current architecture.
 
 Already true today:
-- The lattice — one SQLite file plus FS-CAS content, no external database process — holds workspace
-  and collection artifacts in one table. It is the one backend, so anyone designing operator
+- The lattice — each node a shard, in-process, with no external database to provision —
+  holds workspace and collection artifacts in one table. It is the one backend, so anyone designing operator
   persistence must build for the lattice.
 - Artifacts store `content` and `context`; where a content tier is mounted, the body moves to the
   CAS and the row keeps the address. With no tier reachable the body stays inline, so an

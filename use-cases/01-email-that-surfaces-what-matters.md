@@ -26,7 +26,7 @@ for the morning digest; the Inbox for what needs her.
 
 - **Inbound adapters** — receiving mail as artifacts.
 - A draft reply as an Inbox item whose approval sends it through Iris (an item's action is an
-  artifact's operation; sending is a persona tool, so it needs a Transform card that sends).
+  artifact's operation; sending is a persona tool, so it needs a Transform artifact that sends).
 
 ## Checked by
 

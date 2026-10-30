@@ -32,14 +32,14 @@ platform cannot do yet fails the harness, or is carried in it as a named expecte
 A use case is a workspace with what it needs in it, made in the app:
 
 1. **Collections** for what it gathers, and grants on them for the people and agents taking part.
-2. **A workflow card** (a Transform). Its builder starts from a recipe or a blank: pick an
+2. **A workflow artifact** (a Transform). Its builder starts from a recipe or a blank: pick an
    operator the person may invoke — one of the platform's own, granted to every account one by
    one, one of their own, or one shared with them — fill in the form made from its inputs,
    choosing each artifact it works on with the app's picker (kept as a link from the workflow),
    and add steps in order; a step's input can be what an earlier step returned. **Run now** shows
-   the answer, and every run is a Run card in the workflow's Runs collection, listed in the
+   the answer, and every run is a Run artifact in the workflow's Runs collection, listed in the
    builder with each step's output or error.
-3. **A schedule**: the builder makes a Timer card beside the workflow, with failures sent to the
+3. **A schedule**: the builder makes a Timer artifact beside the workflow, with failures sent to the
    person's Inbox; the person arms it there, approving the key it runs on, which reaches the
    workspace and each operator and linked artifact the workflow uses, and no more than the person
    holds there.
@@ -53,11 +53,11 @@ Built once, used by many. Each is named on the pages that need it.
 
 | component | what it is | needed by |
 |---|---|---|
-| **Timer** | **Built.** A Timer card (Lumen) runs an artifact's operation — a workflow, an operator — every N minutes, daily, or once, and records each run. Its owner arms it from the card, which issues the grant key it acts on; disarming revokes the key | 01, 02, 04, 05, 07, 09 |
-| **Inbox** | **Built.** An Inbox item card (Lumen) holds what needs a person — an outlier, a failed routine, a draft to approve — with why and what it came from, moving `new → triaged → resolved`. An item may carry an action; approving runs it as the approver. A Timer raises a failed run into its owner's Inbox, and any workflow step can raise one | 01, 02, 04, 05 |
+| **Timer** | **Built.** A Timer artifact (Lumen) runs an artifact's operation — a workflow, an operator — every N minutes, daily, or once, and records each run. Its owner arms it from the card, which issues the grant key it acts on; disarming revokes the key | 01, 02, 04, 05, 07, 09 |
+| **Inbox** | **Built.** An Inbox item artifact (Lumen) holds what needs a person — an outlier, a failed routine, a draft to approve — with why and what it came from, moving `new → triaged → resolved`. An item may carry an action; approving runs it as the approver. A Timer raises a failed run into its owner's Inbox, and any workflow step can raise one | 01, 02, 04, 05 |
 | **Inbound adapters** | Receiving mail, chat messages and form posts as artifacts. Iris sends mail; nothing receives it | 01, 02, 05, 08 |
 | **Data connectors** | Read access to accounting, CRM, calendar and similar sources, on a key the person issues | 04, 05, 09 |
-| **Context encryption** | **Title built:** the title is part of the content (the root type declares it) and is sealed under the content key. The other `context` fields are plaintext, protected by grants (`design/architecture.md` §24); a type will declare more of them `part: content` | 07, 15, 16 |
+| **Context encryption** | Content and every field of it — title, description, tags and every other `context` field — are sealed under the content key; the store reads only structure: identifiers, types, timestamps and grant edges (`design/architecture.md` §24) | 07, 15, 16 |
 | **Transcription** | Speech to text for a stream, written into the stream's session | 03, 12 |
 | **Reconciliation operator** | **Built for stated facts:** Lumen's `reconcile` compares the `Label: value` facts several accounts state and writes what all agree on, where they differ (with the accounts and evidence behind each version) and what only one states; each difference is an Inbox item. Reading facts out of free prose, or grouping overlapping ideas, needs an operator on an LLM connection | 08, 11, 12 |
-| **History view** | **Built.** A card's History, in its window: what was added to and removed from what it holds (its commits), for anyone who can read it; and who reached it — a person, a key, or a persona acting for a person — what they did, and whether it was allowed, for those who administer it | 07, 08, 09, 10, 11 |
+| **History view** | **Built.** An artifact's History, in its card's window: what was added to and removed from what it holds (its commits), for anyone who can read it; and who reached it — a person, a key, or a persona acting for a person — what they did, and whether it was allowed, for those who administer it | 07, 08, 09, 10, 11 |

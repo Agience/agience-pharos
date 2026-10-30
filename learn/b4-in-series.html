@@ -251,7 +251,7 @@ added, measured. Hold that against the link's condition number, <strong>3.30</st
 sits <em>at or below</em> it, which is what conditioning compounding looks like. A chain of n links
 inherits about the n-th power of one link's conditioning, and the arithmetic runs out when that
 reaches the size of the record itself.</p>
-<p class="note">The two numbers are close and they are not the same number, which is the honest
+<p class="note">The two numbers are close and they are not the same number, which is the accurate
 picture: the condition number is a worst case over every direction, and the record only explores
 some of them. A measured growth <em>under</em> the bound is the bound doing its job.</p>
 <p class="note cool">So the claim from the previous slide holds with a qualification worth having.
@@ -317,7 +317,7 @@ in closed form</td></tr>
 <p>The practical rule is short. <strong>Certify each link, then certify the chain</strong>, because
 the second is not implied by the first in the direction that matters: every link passing is
 necessary and the chain passing is what you actually rely on.</p>
-<p class="note">And the honest limit. These are five lenses on one record, run to a depth of 64.
+<p class="note">And the real limit. These are five lenses on one record, run to a depth of 64.
 Composition is a structural claim and this is evidence for it, not a proof &mdash; the library
 certifies whatever chain you hand it, and <strong>the cheap thing is to hand it yours</strong>
 and read what it certifies.</p>

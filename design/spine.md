@@ -3,8 +3,8 @@
 > This is not the story — it is the vocabulary the story is written in, and the boundary of what
 > any surface may claim.
 >
-> **Every factual claim here carries a measurement and a mandatory qualifier**, held in the claims
-> register that governs every Agience surface. A claim without its qualifier is not licensed.
+> **Every factual claim here carries its measurement and its conditions.** What is still to build
+> is tracked in `_scratch/CURRENT/PRODUCT_BRIEFS/GAPS.md`.
 
 ---
 
@@ -179,8 +179,8 @@ package, so it does not belong in a licence list, where it would read as one.
 
 **A licence correction the July story got wrong.** It listed the Apache instruments as
 *"Entroptics, Mantle, Beam, Crystal, Prism."* Measured: `entroptics` is Apache-2.0, but
-**`entroptics-llm` and `entroptics-rf` are AGPL-3.0-only** — they are products, not instruments,
-which is the two-tier model working exactly as designed.
+**`entroptics-context` is AGPL-3.0-only and `entroptics-rf` is proprietary** — they are products, not
+instruments, which is the two-tier model working exactly as designed.
 
 ### 4.2a The product nouns
 
@@ -222,25 +222,22 @@ The persona names are internal routing. The host mounts each one at `/<name>` an
 its own, so the names describe where a request goes inside the system rather than what a reader is
 offered. A public surface leads with the capability, not with the name of the process that serves it.
 
-## 5. The values, restated as mechanisms
+## 5. The values
 
-Seven values ship as iconography on `agience.ai` today and appear in none of the papers.
-Each is restated as a consequence of the architecture — a thing that is *true of the code*, not
-a thing we promise. **Where no mechanism exists, that is said.**
+Nine values make up the ethos on `agience.ai`, as the company wrote them: *the values we hold as a company, as a community, and as builders of infrastructure that other people's work depends on.* They describe Ikailo's relationship with society. They are not product properties, and no surface restates them as mechanisms.
 
-| value | the mechanism |
+| value | as written |
 |---|---|
-| **Non-bias** | No constant is tuned and no threshold is chosen. There is no fitted parameter for a preference to hide in, and the one input a reader supplies — their own false-alarm tolerance — is named out loud rather than baked in |
-| **Privacy** | Content is encrypted per principal and bound cryptographically to the collection it was written for; the key is issued only to a grant that reaches it. ◧ What the store holds in the clear is what it must read to find things |
-| **Dignity** | Authority is human. An agent acts only by short-lived delegation, never as itself, and nothing a model touched enters the record without a person staking judgment |
-| **Truth** | A claim carries a weight that is **derived** — from who is speaking, what authority attests them, and how much independent agreement has accrued — rather than declared. Saying it louder moves nothing |
-| **Equality** | Self-host is at full parity with the hosted tier at $0. The same machinery runs at every price; what upper tiers add is federation, SLA, tenancy and capacity — never capability |
-| **Accessibility** | Reads and search queries are unmetered, at every tier including free. And the floor of participation is a cheap box and no account: self-sovereign keygen, no signup, install propagating peer-to-peer. Two Raspberry Pi nodes exist and are **blocked on Python 3.9 against a mesh requiring 3.11+** — the claim is the design, and the design is not yet proven on the smallest hardware |
-| **Sustainability** | **Nothing in the answer path is a trained weight.** There is no training run, no retraining cycle and no GPU fleet behind an answer — the core instrument is numpy-only, and knowledge is consolidated by compression over what has been observed rather than by fitting. The energy cost of knowing something here is not a model |
+| **Ethics** | *Integrity in every layer.* We uphold transparency, fairness, and accountability in everything we build. The interests of the people who use the platform come first. |
+| **Dignity** | *Humans beyond their output.* Human worth extends well beyond what a person produces or automates. We build tools that serve people, and we take seriously what that means as AI takes on more of what humans once did. |
+| **Truth** | *The truth economy.* We believe economics can drive truth. When verified, provenance-linked information commands more value, the incentive to be accurate becomes financial. Agience is built so that truth is the highest-value commodity. |
+| **Non-Bias** | *Objective by design.* We work proactively to prevent discriminatory outcomes in the design of the platform, the training of models, and the governance of the community. Bias is an engineering problem as much as an ethical one. |
+| **Accessibility** | *Built for everyone.* We build tools that are accessible regardless of physical ability, cognitive style, or technical background. Everyone who needs this should be able to use it. |
+| **Inclusivity** | *All voices, by design.* Technology built with diverse input is more accurate, more useful, and more trustworthy. We design for the full range of human experience from the start. |
+| **Equality** | *A levelling field.* We build technology that amplifies fairness across race, gender, socioeconomic status, and geography. Access to trusted AI infrastructure should be broadly available. |
+| **Sustainability** | *Long-term responsibility.* We take seriously the environmental impact of the infrastructure we build and the compute we consume. Sustainability is a condition of building responsibly. |
+| **Sovereignty** | *Your knowledge, your infrastructure.* You own your data, your collections, and your deployment. Self-hosting is a first-class option. No lock-in, no forced dependency on our infrastructure. The platform is open source because trust requires inspectability. |
 
-**Inclusivity** was in the icon set and has **no distinct mechanism** — it collapses into Equality
-and Accessibility. Retire the separate value rather than write a sentence for it. That
-subtraction is the method working: a value that cannot name its mechanism does not survive the fold.
 
 ---
 
@@ -251,7 +248,7 @@ grant · provenance · light cone · the record · mass · weight · stake · ob
 non-custodial · **educating, not training**.
 
 **Do not say:** ground truth · *the* source of truth · objective · unbiased (say *no tuned
-constant*) · AI-powered (no model runs here) · military-grade · zero-knowledge (not what the
+constant*) · AI-powered · military-grade · zero-knowledge (not what the
 scheme is) · blockchain — *as a description of what the platform is*; the economy's settlement
 layer is a separate thing and is named as such · *"trust us."*
 
@@ -272,9 +269,9 @@ be restored to canon and then used everywhere.
 rejects. **The distinction this list draws lives in what a sentence is doing, not in which words
 it contains**, so an automated check was discarded rather than shipped with a baseline of noise.
 
-**One rule that outranks all of them.** *A surface may say what is in the claims register, with its
-qualifier, and nothing else.* When a surface needs a claim that is not there, the claim gets
-measured and added first.
+**One rule that outranks all of them.** *A surface says what the system does, in the present tense,
+and every number carries its conditions.* What is still to build is tracked in
+`_scratch/CURRENT/PRODUCT_BRIEFS/GAPS.md`; each line there is a present-tense statement a surface makes that the code does not yet back.
 
 ---
 

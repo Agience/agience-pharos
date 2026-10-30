@@ -20,7 +20,7 @@ filed when agreed — and to be told when code and specification disagree.
 
 ## What it uses today
 
-Workspaces, collections, versions of each artifact and the access log (a card's History in the app), typed
+Workspaces, collections, versions of each artifact and the access log (an artifact's History in the app), typed
 artifacts, Astra's code and document indexes, grant keys for the agents doing the work.
 
 ## To build

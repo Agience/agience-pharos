@@ -59,11 +59,12 @@ content cannot be swapped without changing the address it is reached by. Version
 supersede rather than overwrite, each stamped in the store's own ordered time, so the record can
 reconstruct what was known and when. The audit is not a separate system — the audit is the data
 structure. **Grants** authorize: who can reach an object is computed as reachability across the
-edges of the graph, from a principal's grants outward, deny before allow. The content itself is
-encrypted at rest, and its keys are managed on the platform — associated with identities and shared
-by a standard key-sharing scheme. Content blobs are ciphertext and so is the search index: every term is one-way-transformed
-before it is stored, and every posting list is encrypted. What the store keeps readable is an
-artifact's metadata — title, description, tags — which is governed by grants instead. Grants and keys are
+edges of the graph, from a principal's grants outward, deny before allow. Content and every field of it —
+title, description, tags — are sealed per principal, and the keys are associated with identities and
+issued by a standard key-sharing scheme to the grants that reach them. Search runs on blind tokens:
+every term is one-way-transformed before it is stored, and every posting list is encrypted. The
+store reads only structure: identifiers, types, timestamps, and the grant edges it walks to decide
+who is issued a key. Grants and keys are
 distinct instruments: a grant is authorization, revoked with one edit; a key is the standard
 cryptographic means by which authorized parties read. A secret stays a secret throughout — visible
 only to its creator and their delegates, at rest, in transit, and in compute, with no fallback and
@@ -102,8 +103,8 @@ running, its slice of the lattice filling with what it has observed. An ember is
 that observes, and it is the same machinery at every size — a browser tab and a knowledge node
 differ in mass, not in kind.
 
-Nothing in this system is a trained weight. A capability is an artifact: created by a person,
-signed, published to the store, discovered by what it offers, and invoked where the capability
+Agience is not built on a model: recall, retrieval and the reads are not trained. A capability is
+an artifact: created by a person, signed, published to the store, discovered by what it offers, and invoked where the capability
 physically exists. The store is the registry; the hash is the version; the signature and the
 provenance decide whether code is allowed to ground at all. Knowledge is learned the way a mind
 learns — verified foundations first, duplicates consolidated with their provenance, categories
@@ -116,14 +117,13 @@ as unresolved, until enough of its kind arrives for the category to form.
 
 The principle is a claim about geometry: that a system which measures rather than tunes stays
 coherent wherever it is pointed. That is testable, and it has been tested in four unrelated fields.
-Every figure carries the qualifier it was measured under.
+Every figure carries the conditions it was measured under.
 
 **Retrieval, with no trained weight in the answer path.** Where a query shares no words with its
-answer, the model-free geometry is worth **2–8× the lexical baseline** — *what-is* nouns **59/60
-against 7/60**, modifiers **41/60 against 17/60**. *Qualifier, and it is a strength: where the
-query **is** the answer's text, BM25 wins and should — reverse dictionary 83/90 against 90/90. The
-system is not uniformly better at retrieval; it is much better at one kind of question and slightly
-worse at another.* The baseline is the field's own yardstick rather than a private one: BM25 reproduces
+answer, the ontology geometry, with no trained weight in it, is worth **2–8× the lexical baseline** —
+*what-is* nouns **59/60 against 7/60**, modifiers **41/60 against 17/60**. Where the query **is**
+the answer's text, BM25 wins and should — reverse dictionary 83/90 against 90/90. The geometry is
+much better at one kind of question and slightly behind at another. The baseline is the field's own yardstick rather than a private one: BM25 reproduces
 published **BEIR within 0.016** on three datasets, and the geometry reproduces published
 **Jiang–Conrath on SimLex-999 at ρ = 0.5935**.
 
@@ -138,11 +138,10 @@ Entroptics-side number has no fitted constant and one declared input. The negati
 because a method that only publishes its wins has not been tested.
 
 **The economic clock.** The rate is read, never legislated: **14.24, 81.56 and 91.04** on three live
-streams, **13.02 and 14.85** on two live conversations. *Qualifier: the economic layer is exact and
-tested as pure functions and is **not yet wired**.*
+streams, **13.02 and 14.85** on two live conversations. Never one value, and never a declared one.
 
-Four fields, one instrument, no per-substrate tuning. That is the whole of the evidence, and its
-limits are stated with it.
+Four fields, one instrument, no per-substrate tuning. That is the whole of the evidence, and each
+figure carries its conditions.
 
 ---
 
@@ -216,7 +215,7 @@ the next time. The system asks for less over time, on every subject it touches.
 ## What it means
 
 Agience is an operating system for truth and fair exchange: **knowledge that is verifiable,
-authority that is accountable, and compensation that is just.** The instruments spread freely,
+authority that is accountable, and contribution that is fairly credited.** The instruments spread freely,
 because a trust substrate has to be inspectable and exitable to be trusted at all; the whole system
 is open, self-hostable to fully disconnected, and holds no custody of a person's data, name,
 identity, or money.

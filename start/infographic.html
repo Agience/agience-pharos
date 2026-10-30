@@ -769,10 +769,8 @@ td.k2{ width:34mm; }
           inside it.</p>
         <p><b>The hash is the coordinate.</b> A change to the body <i>is</i> a new version, so
           agreeing on the index is agreeing on the content.</p>
-        <p><b>Content and queries are both ciphertext on the encrypted arm.</b> Ranked search runs
-          over blind tokens &mdash; the storage layer performs the search without ever reading it.
-          That arm covers <b>5.9%</b> of the reference corpus today; the rest is served by a
-          plaintext lexical index, which is what it exists to replace.</p>
+        <p><b>Content and queries are both ciphertext.</b> Ranked search runs over blind tokens
+          &mdash; the storage layer performs the search without ever reading it.</p>
         <p><b>Read, share, invoke and revoke are one permission set</b>, resolved by reachability.
           Confidentiality is a separate key scheme whose recipients that reachability computes, so
           revoking is one edge edit with nothing re-encrypted.</p>

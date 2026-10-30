@@ -139,7 +139,7 @@ This is the architectural property that makes everything else work. Every layer 
 | **Identity** | DNS-based (`agi://` resolution via DNS TXT + DNSSEC + JWS) — identity survives any single chain or cooperative going down |
 | **Authority chains** | Independent — sovereignty of each authority is structural, not granted |
 | **Artifact stamps** | Content hashes are portable — can be re-stamped on a new chain |
-| **Content** | Lives in Mantle's SQLite lattice + content-addressed filesystem, with zero external database processes — not on any chain |
+| **Content** | Lives in Mantle's lattice — each node a shard, in-process, with no external database to provision, linking to its peers by signed sync — not on any chain |
 | **Software** | Open source; commercial license for proprietary/white-label use. Per-repo (measured 2026-07-31): Apache-2.0 for beam, crystal, mantle, prism, entroptics, bundle; AGPL-3.0-only for ember, origin, chorus |
 | **Governance** | Merit-weighted DAO with constitutional limits — designed for community handover |
 | **Transport** | Multi-transport (IP, LoRa, BLE, offline) — no single network dependency |

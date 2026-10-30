@@ -328,7 +328,7 @@ generate it is the same machinery that reads zero.</p>
 where measurements are asked to <em>produce</em> something &mdash; and the answer turns out to need
 no new idea, only the reads already in hand plus one rule about when to stop.</p>
 <ul class="pieces">
-<li><strong>No model anywhere</strong>, checked by walking 118 files' syntax trees with none
+<li><strong>Nothing depends on a model</strong>, checked by walking 118 files' syntax trees with none
 unreadable, and the count of unreadable files reported alongside it.</li>
 <li><strong>The horizon is kept.</strong> Every operator rolled exactly the number of steps it
 announced, and the stream with no structure produced none.</li>
@@ -336,7 +336,7 @@ announced, and the stream with no structure produced none.</li>
 numbers, it agrees with the library on every case tested &mdash; 5 of 5.</li>
 <li><strong>No structure means no output</strong>, with a reason attached.</li>
 </ul>
-<p>What makes the generation honest is the <strong>horizon</strong>. The operator reports its own
+<p>What makes the generation trustworthy is the <strong>horizon</strong>. The operator reports its own
 margin, the margin says how far it can be rolled before the signal is spent, and the sequence stops
 there &mdash; at a length the operator derived. A generator that runs past its horizon is still
 producing text, and it has stopped reading.</p>
