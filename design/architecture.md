@@ -391,8 +391,8 @@ both are stated so neither has to be inferred from the other.
 chorus  -> crystal 36   mantle 31   prism 48
 ember   -> crystal 14   mantle 25   prism 30   entroptics 1
 crystal -> prism   14
-mantle  -> prism   29
-origin  -> prism    7
+mantle  -> prism   31
+origin  -> prism    8
 ```
 
 `ember -> entroptics 1` is the single aperture: `ember/optics.py` is the only module in the scanned

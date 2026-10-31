@@ -5,6 +5,11 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2026.10.22] - 2026-10-31
+
+### Changed
+- `design/architecture.md` §29's module counts: mantle imports prism from 31 modules and origin from 8, for threshold key custody (`prism.trust.shamir`).
+
 ## [2026.10.17] - 2026-10-30
 
 ### Changed
