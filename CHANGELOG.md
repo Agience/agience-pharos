@@ -5,6 +5,13 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2026.10.17] - 2026-10-30
+
+### Changed
+
+- `design/spine.md` §5 places the ethos on ikailo.com, where the nine values now appear.
+- `design/architecture.md` §29's module counts: chorus, ember and mantle each import prism from one more module, for the node-key sealing (`mantle.db.node_seal`) and the keyed-token lexical index.
+
 ## [2026.10.16] - 2026-10-30
 
 ### Changed

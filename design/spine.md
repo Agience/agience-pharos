@@ -224,7 +224,7 @@ offered. A public surface leads with the capability, not with the name of the pr
 
 ## 5. The values
 
-Nine values make up the ethos on `agience.ai`, as the company wrote them: *the values we hold as a company, as a community, and as builders of infrastructure that other people's work depends on.* They describe Ikailo's relationship with society. They are not product properties, and no surface restates them as mechanisms.
+Nine values make up the ethos on `ikailo.com`, as the company wrote them: *the values we hold as a company, as a community, and as builders of infrastructure that other people's work depends on.* They describe Ikailo's relationship with society. They are not product properties, and no surface restates them as mechanisms.
 
 | value | as written |
 |---|---|
