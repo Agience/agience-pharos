@@ -5,6 +5,11 @@ All notable changes to `agience-pharos` are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2026.11.0] - 2026-11-08
+
+### Changed
+- `design/architecture.md` §29's module counts: mantle imports prism from 39 modules, origin from 14 and crystal from 15, and ember imports mantle from 24, for the co-signed authority ledger, Origin's use verdicts and the shared service names in `prism.trust`.
+
 ## [2026.10.22] - 2026-10-31
 
 ### Changed
